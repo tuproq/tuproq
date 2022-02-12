@@ -1,5 +1,5 @@
 extension String {
-    func dropLeadingSlash() -> String {
+    var droppingLeadingSlash: String {
         first == "/" ? String(dropFirst()) : self
     }
 }

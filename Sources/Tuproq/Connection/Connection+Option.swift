@@ -52,7 +52,7 @@ extension Connection {
             port = urlComponents.port ?? driver.port
             username = urlComponents.user
             password = urlComponents.password
-            let database = urlComponents.path.dropLeadingSlash()
+            let database = urlComponents.path.droppingLeadingSlash
 
             if !database.isEmpty {
                 self.database = database
