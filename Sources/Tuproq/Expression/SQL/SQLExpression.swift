@@ -1,7 +1,7 @@
-class SQLExpression: Expression {
-    let raw: String
+public class SQLExpression: Expression {
+    public let raw: String
 
-    init(raw: String = "") {
+    public init(raw: String = "") {
         self.raw = raw
     }
 }
@@ -91,5 +91,14 @@ extension SQLExpression {
         case `where` = "WHERE"
 
         var description: String { rawValue }
+    }
+}
+
+extension SQLExpression {
+    public enum Sorting: String, CustomStringConvertible {
+        case asc = "ASC"
+        case desc = "DESC"
+
+        public var description: String { rawValue }
     }
 }

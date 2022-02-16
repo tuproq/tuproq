@@ -4,7 +4,7 @@ import XCTest
 final class OrderBySQLExpressionTests: XCTestCase {
     func testInit() {
         // Arrange
-        let columns: [(String, Bool)] = [("column1", true), ("column2", false)]
+        let columns: [(String, SQLExpression.Sorting)] = [("column1", .asc), ("column2", .desc)]
 
         // Act
         let expression = OrderBySQLExpression(columns: columns)

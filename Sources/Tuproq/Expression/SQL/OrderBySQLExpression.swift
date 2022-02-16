@@ -1,13 +1,12 @@
 final class OrderBySQLExpression: SQLExpression {
-    let columns: [(String, Bool)]
+    let columns: [(String, Sorting)]
 
-    init(columns: [(String, Bool)]) {
+    init(columns: [(String, Sorting)]) {
         self.columns = columns
         var raw = "\(Kind.orderBy)"
 
         for (index, column) in columns.enumerated() {
-            let sorting: Sorting = column.1 ? .asc : .desc
-            raw += " \(column.0) \(sorting)"
+            raw += " \(column.0) \(column.1)"
 
             if index != columns.endIndex - 1 {
                 raw += ","
@@ -15,14 +14,5 @@ final class OrderBySQLExpression: SQLExpression {
         }
 
         super.init(raw: raw)
-    }
-}
-
-extension OrderBySQLExpression {
-    enum Sorting: String, CustomStringConvertible {
-        case asc = "ASC"
-        case desc = "DESC"
-
-        var description: String { rawValue }
     }
 }
