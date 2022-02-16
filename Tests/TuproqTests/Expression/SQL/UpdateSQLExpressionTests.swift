@@ -5,7 +5,7 @@ final class UpdateSQLExpressionTests: XCTestCase {
     func testInit() {
         // Arrange
         let table = "table"
-        let values: [String: Any?] = ["column1": 1, "column2": "value2", "column3": nil]
+        let values: [(String, Any?)] = [("column1", 1), ("column2", "value2"), ("column3", nil)]
 
         // Act
         let expression = UpdateSQLExpression(table: table, values: values)
@@ -13,14 +13,17 @@ final class UpdateSQLExpressionTests: XCTestCase {
         // Assert
         XCTAssertEqual(expression.table, table)
         XCTAssertEqual(expression.values.count, values.count)
-        XCTAssertEqual(expression.values["column1"] as! Int, values["column1"] as! Int)
-        XCTAssertEqual(expression.values["column2"] as! String, values["column2"] as! String)
-        XCTAssertNil(expression.values["column3"]!)
+        XCTAssertEqual(expression.values[0].0, values[0].0)
+        XCTAssertEqual(expression.values[0].1 as! Int, values[0].1 as! Int)
+        XCTAssertEqual(expression.values[1].0, values[1].0)
+        XCTAssertEqual(expression.values[1].1 as! String, values[1].1 as! String)
+        XCTAssertEqual(expression.values[2].0, values[2].0)
+        XCTAssertNil(expression.values[2].1)
         XCTAssertEqual(
             expression.raw,
             """
             \(SQLExpression.Kind.update) \(table) \
-            \(SQLExpression.Kind.set) \(values.map({ "\($0.key) = \($0.value ?? "NULL")" }).joined(separator: ", "))
+            \(SQLExpression.Kind.set) column1 = 1, column2 = "value2", column3 = NULL
             """
         )
         XCTAssertEqual(expression.raw, expression.description)
