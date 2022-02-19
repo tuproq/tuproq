@@ -1,4 +1,4 @@
-public enum Driver: String {
+public enum DatabaseDriver: String {
     case mysql, postgresql
 
     public var port: Int {

@@ -3,7 +3,7 @@ import Foundation
 extension Connection {
     public struct Option: Equatable {
         public static let defaultHost = "127.0.0.1"
-        public var driver: Driver
+        public var driver: DatabaseDriver
         public var host: String
         public var port: Int
         public var username: String?
@@ -11,7 +11,7 @@ extension Connection {
         public var database: String?
 
         public init(
-            driver: Driver,
+            driver: DatabaseDriver,
             host: String = Option.defaultHost,
             username: String? = nil,
             password: String? = nil,
@@ -28,7 +28,7 @@ extension Connection {
         }
 
         public init(
-            driver: Driver,
+            driver: DatabaseDriver,
             host: String = Option.defaultHost,
             port: Int,
             username: String? = nil,
@@ -46,7 +46,7 @@ extension Connection {
         public init?(url: URL) {
             guard let urlComponents = URLComponents(string: url.absoluteString),
                   let driverName = urlComponents.scheme,
-                  let driver = Driver(rawValue: driverName) else { return nil }
+                  let driver = DatabaseDriver(rawValue: driverName) else { return nil }
             self.driver = driver
             host = urlComponents.host ?? Option.defaultHost
             port = urlComponents.port ?? driver.port

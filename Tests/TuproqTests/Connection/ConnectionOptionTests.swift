@@ -2,7 +2,7 @@
 import XCTest
 
 final class ConnectionOptionTests: XCTestCase {
-    let driver = Driver.postgresql
+    let driver = DatabaseDriver.postgresql
     let host = "localhost"
     let port = 5432
     let username = "username"
