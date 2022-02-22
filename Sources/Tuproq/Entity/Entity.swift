@@ -1,4 +1,4 @@
-public protocol Entity: Codable, Equatable {
+public protocol Entity: AnyObject, Codable, Equatable {
     associatedtype ID: Codable, Hashable
     var id: ID { get }
 }
