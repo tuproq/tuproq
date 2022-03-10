@@ -11,11 +11,12 @@ final class AnyEntityTests: XCTestCase {
 
         // Assert
         XCTAssertEqual(anyEntity.entity as! ConcreteEntity, concreteEntity)
+        XCTAssertEqual(anyEntity.name, String(describing: ConcreteEntity.self))
     }
 }
 
 extension AnyEntityTests {
-    private class ConcreteEntity: Entity {
+    private final class ConcreteEntity: Entity {
         var id: Int
 
         init(id: Int) {
