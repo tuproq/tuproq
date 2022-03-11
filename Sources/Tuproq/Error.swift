@@ -34,3 +34,7 @@ enum ErrorType: CustomStringConvertible {
         }
     }
 }
+
+func error(_ errorType: ErrorType) -> TuproqError {
+    TuproqError(errorType)
+}
