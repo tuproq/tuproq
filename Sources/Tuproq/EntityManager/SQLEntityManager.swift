@@ -197,7 +197,7 @@ final class SQLEntityManager: EntityManager {
         let entityState = entityStates[entityID]
 
         switch entityState {
-        case .detached: throw NSError()
+        case .detached: throw error(.detachedObjectNotPersistable)
         case .managed: break
         case .new:
             entityInsertions[entityID] = AnyEntity(entity)

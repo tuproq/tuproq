@@ -13,7 +13,7 @@ extension Encodable {
             with: data,
             options: .fragmentsAllowed
         ) as? [String: Any?] else {
-            throw NSError()
+            throw error(.entityToDictionaryFailed)
         }
 
         return dictionary
