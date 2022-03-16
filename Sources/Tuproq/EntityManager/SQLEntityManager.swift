@@ -139,10 +139,6 @@ final class SQLEntityManager: EntityManager {
         }
     }
 
-    func flush<E: Entity>(_ entity: E) async throws {
-        // TODO: implement
-    }
-
     func getRepository<R: Repository>(_ repositoryType: R.Type) -> R {
         let entityType = String(describing: repositoryType.E)
 
