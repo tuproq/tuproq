@@ -50,20 +50,6 @@ final class SQLEntityManager: EntityManager {
         SQLQueryBuilder()
     }
 
-    func detach<E: Entity>(_ entity: E) {
-        var entities = [AnyHashable: AnyEntity]()
-        detach(entity, visited: &entities)
-    }
-
-    private func detach<E: Entity>(_ entity: E, visited entities: inout [AnyHashable: AnyEntity]) {
-        let entityID = entity.id
-        guard entities[entityID] == nil else { return }
-        entities[entityID] = AnyEntity(entity)
-        let entityState = entityStates[entityID]
-
-        // TODO: implement
-    }
-
     func find<E: Entity, I: Hashable>(_ entityType: E.Type, id: I) async throws -> E? {
         let query = createQueryBuilder()
             .select()
@@ -170,10 +156,6 @@ final class SQLEntityManager: EntityManager {
         return repository
     }
 
-    func merge<E: Entity>(_ entity: E) {
-        // TODO: implement
-    }
-
     func persist<E: Entity>(_ entity: inout E) throws {
         var entities = [AnyHashable: AnyEntity]()
         try persist(&entity, visited: &entities)
@@ -197,7 +179,6 @@ final class SQLEntityManager: EntityManager {
         let entityState = entityStates[entityID]
 
         switch entityState {
-        case .detached: throw error(.detachedObjectNotPersistable)
         case .managed: break
         case .new:
             entityInsertions[entityID] = AnyEntity(entity)
@@ -225,9 +206,6 @@ final class SQLEntityManager: EntityManager {
         let entityState = entityStates[entityID]
 
         switch entityState {
-        case .detached:
-            // TODO: implement
-            break
         case .managed:
             // TODO: implement
             break
@@ -291,7 +269,6 @@ final class SQLEntityManager: EntityManager {
 
 extension SQLEntityManager {
     enum EntityState {
-        case detached
         case new
         case managed
         case removed
