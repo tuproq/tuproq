@@ -78,7 +78,7 @@ final class SQLQueryBuilderTests: XCTestCase {
         XCTAssertEqual(
             query.raw,
             """
-            UPDATE table SET column1 = 1, column2 = "value2", column3 = NULL WHERE column1 = 1
+            UPDATE table SET column1 = 1, column2 = 'value2', column3 = NULL WHERE column1 = 1
             """
         )
     }
