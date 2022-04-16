@@ -4,6 +4,7 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  workflow_dispatch:
 jobs:
   macos:
     runs-on: macos-12
@@ -15,7 +16,7 @@ jobs:
     - name: Run tests
       run: swift test --enable-code-coverage --sanitize=thread
     - name: Generate documentation
-      uses: steven0351/publish-jazzy-docs@v1
+      uses: sukhrobkhakimov/publish-jazzy-docs@v1
       with:
         personal_access_token: ${{ secrets.ACCESS_TOKEN }}
         args: "--theme fullwidth"
