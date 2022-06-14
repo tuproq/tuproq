@@ -129,3 +129,14 @@ extension SQLQueryBuilder {
         return self
     }
 }
+
+extension SQLQueryBuilder {
+    public func returning(_ columns: String...) -> Self {
+        returning(columns)
+    }
+
+    public func returning(_ columns: [String]) -> Self {
+        expressions.append(ReturningSQLExpression(columns: columns))
+        return self
+    }
+}
