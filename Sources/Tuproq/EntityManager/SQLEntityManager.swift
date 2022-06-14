@@ -1,29 +1,32 @@
 import Foundation
 
 final class SQLEntityManager: EntityManager {
-    private typealias ChangeSet = [String: (Codable?, Codable?)] // [propertyName: (oldValue, newValue)]
+    private typealias ChangeSet = [String: (Codable?, Codable?)] // [property: (oldValue, newValue)]
+    private typealias EntityMap = [String: Any?]
 
     let connection: Connection
+    private var allQueries = ""
 
-    private var entityChangeSets = [AnyHashable: ChangeSet]()
+    private var entityChangeSets = [String: [AnyHashable: ChangeSet]]()
 
-    private var entityDeletions = [AnyHashable: AnyEntity]()
-    private var entityInsertions = [AnyHashable: AnyEntity]()
-    private var entityUpdates = [AnyHashable: AnyEntity]()
+    private var entityDeletions = [String: [AnyHashable: EntityMap]]()
+    private var entityInsertions = [String: [AnyHashable: EntityMap]]()
+    private var entityUpdates = [String: [AnyHashable: EntityMap]]()
 
     private var entityStates = [AnyHashable: EntityState]()
-    private var identityMap = [String: [AnyHashable: AnyEntity]]()
+    private var identityMap = [String: [AnyHashable: EntityMap]]()
     private var repositories = [String: AnyRepository]()
 
     init(connection: Connection) {
         self.connection = connection
+
         NotificationCenter.default.addObserver(
             forName: propertyValueChanged,
             object: nil,
             queue: nil
         ) { [self] notification in
             if let dictionary = notification.object as? [String: Any?] {
-                var entityName = dictionary["entityName"] as! String
+                var entityName = dictionary["entity"] as! String
                 entityName = entityName.components(separatedBy: ".").last!
                 var entityID = dictionary["id"] as! AnyHashable
 
@@ -36,8 +39,18 @@ final class SQLEntityManager: EntityManager {
                 let propertyOldValue = property["oldValue"] as? Codable
                 let propertyNewValue = property["newValue"] as? Codable
                 let entity = identityMap[entityName]![entityID]!
-                entityUpdates[entityID] = entity
-                entityChangeSets[entityID] = [propertyName: (propertyOldValue, propertyNewValue)]
+
+                if entityUpdates[entityName] == nil {
+                    entityUpdates[entityName] = [entityID: entity]
+                } else {
+                    entityUpdates[entityName]?[entityID] = entity
+                }
+
+                if entityChangeSets[entityName] == nil {
+                    entityChangeSets[entityName] = [entityID: [propertyName: (propertyOldValue, propertyNewValue)]]
+                } else {
+                    entityChangeSets[entityName]?[entityID] = [propertyName: (propertyOldValue, propertyNewValue)]
+                }
             }
         }
     }
@@ -57,10 +70,10 @@ final class SQLEntityManager: EntityManager {
             .where("id = \"\(id)\"")
             .getQuery()
 
-        if let dictionary = try await connection.connection.simpleQuery(query.raw).first {
+        if let dictionary = try await connection.connection.simpleQuery(query.raw)?.data.first {
             let entity = try dictionary.decode(to: E.self)
             entityStates[entity.id] = .managed
-            addToIdentityMap(entity)
+            addToIdentityMap(entity: entity)
 
             return entity
         }
@@ -69,95 +82,147 @@ final class SQLEntityManager: EntityManager {
     }
 
     func flush() async throws {
-        var allQueries = ""
-        let queryBuilder = createQueryBuilder()
+        do {
+            let insertedIDsMap = try prepareInserts()
+            prepareUpdates()
+            prepareDeletions()
 
-        for entity in entityInsertions.values {
-            let dictionary = try entity.entity.asDictionary()
-            let table = entity.name
-            var columns = [String]()
-            var values = [Any?]()
+            if !allQueries.isEmpty {
+                allQueries = "BEGIN;\(allQueries)COMMIT;"
+                var postInserts = [[String: Any?]]()
 
-            for (key, value) in dictionary {
-                columns.append(key)
-
-                if let value = value {
-                    values.append(value)
-                } else {
-                    values.append("NULL") // TODO: it may not be necessary
+                if let data = try await connection.connection.simpleQuery(allQueries)?.data {
+                    postInserts = data
                 }
+
+                postFlush(insertedIDsMap: insertedIDsMap, postInserts: postInserts)
             }
-
-            let query = queryBuilder.insert(into: table, columns: columns, values: values).getQuery()
-            allQueries += "\(query);"
+        } catch {
+            allQueries = ""
+            throw error
         }
+    }
 
-        for (id, entity) in entityUpdates {
-            let table = entity.name
-            var values = [(String, Any?)]()
+    private func prepareInserts() throws -> [String: [AnyHashable]] {
+        var idsMap = [String: [AnyHashable]]()
 
-            if let changeSet = entityChangeSets[id] {
-                for (key, (_, newValue)) in changeSet {
-                    if let value = newValue {
-                        values.append((key, value))
+        for (table, entityMap) in entityInsertions {
+            for (id, dictionary) in entityMap {
+                var columns = [String]()
+                var values = [Any?]()
+
+                for (key, value) in dictionary {
+                    columns.append(key)
+
+                    if let value = value {
+                        values.append(value)
                     } else {
-                        values.append((key, "NULL"))
+                        values.append("NULL") // TODO: it may not be necessary
                     }
                 }
 
-                let query = queryBuilder.update(table, set: values).where("id = \"\(id)\"").getQuery()
+                if idsMap[table] == nil {
+                    idsMap[table] = [id]
+                } else {
+                    idsMap[table]?.append(id)
+                }
+
+                let query = createQueryBuilder()
+                    .insert(into: table, columns: columns, values: values)
+                    .returning()
+                    .getQuery()
                 allQueries += "\(query);"
             }
         }
 
-        for (id, entity) in entityDeletions {
-            let table = entity.name
-            let query = queryBuilder.delete().from(table).where("id = \"\(id)\"").getQuery()
-            allQueries += "\(query);"
-        }
+        return idsMap
+    }
 
-        if !allQueries.isEmpty {
-            allQueries = "BEGIN;\(allQueries)COMMIT;"
+    private func prepareUpdates() {
+        for (table, entityMap) in entityUpdates {
+            for id in entityMap.keys {
+                var values = [(String, Any?)]()
 
-            try await connection.connection.simpleQuery(allQueries)
+                if let changeSet = entityChangeSets[table]?[id] {
+                    for (key, (_, newValue)) in changeSet {
+                        if let value = newValue {
+                            values.append((key, value))
+                        } else {
+                            values.append((key, "NULL"))
+                        }
+                    }
 
-            for id in entityInsertions.keys {
-                entityStates[id] = .managed
+                    let query = createQueryBuilder()
+                        .update(table, set: values).where("id = \"\(id)\"")
+                        .returning()
+                        .getQuery()
+                    allQueries += "\(query);"
+                }
             }
-
-            entityInsertions.removeAll()
-
-            entityUpdates.removeAll()
-            entityChangeSets.removeAll()
-
-            for (id, entity) in entityDeletions {
-                entityStates.removeValue(forKey: id)
-                removeFromIdentityMap(entity: entity.entity, id: id)
-            }
-
-            entityDeletions.removeAll()
         }
     }
 
-    func getRepository<R: Repository>(_ repositoryType: R.Type) -> R {
-        let entityType = String(describing: repositoryType.E)
+    private func prepareDeletions() {
+        for (table, entityMap) in entityDeletions {
+            for id in entityMap.keys {
+                let query = createQueryBuilder()
+                    .delete()
+                    .from(table).where("id = \"\(id)\"")
+                    .returning()
+                    .getQuery()
+                allQueries += "\(query);"
+            }
+        }
+    }
 
-        if let repository = repositories[entityType] {
+    private func postFlush(insertedIDsMap: [String: [AnyHashable]], postInserts: [[String: Any?]]) {
+        for (table, insertedIDs) in insertedIDsMap {
+            for (index, insertedID) in insertedIDs.enumerated() {
+                let postInsert = postInserts[index]
+                let postInsertID = postInsert["id"] as! AnyHashable
+
+                if insertedID != postInsertID {
+                    entityStates.removeValue(forKey: insertedID)
+                    entityStates[postInsertID] = .managed
+                    removeFromIdentityMap(entityName: table, id: insertedID)
+                    addToIdentityMap(entityName: table, entityMap: postInsert, id: postInsertID)
+                }
+            }
+        }
+
+        for (table, entityMap) in entityDeletions {
+            for id in entityMap.keys {
+                entityStates.removeValue(forKey: id)
+                removeFromIdentityMap(entityName: table, id: id)
+            }
+        }
+
+        entityInsertions.removeAll()
+        entityUpdates.removeAll()
+        entityChangeSets.removeAll()
+        entityDeletions.removeAll()
+        allQueries = ""
+    }
+
+    func getRepository<R: Repository>(_ repositoryType: R.Type) -> R {
+        let entityName = repositoryType.E.entity
+
+        if let repository = repositories[entityName] {
             return repository.repository as! R
         }
 
         let repository = R()
-        repositories[entityType] = AnyRepository(repository)
+        repositories[entityName] = AnyRepository(repository)
 
         return repository
     }
 
     func persist<E: Entity>(_ entity: inout E) throws {
-        var entities = [AnyHashable: AnyEntity]()
+        var entities = [AnyHashable: EntityMap]()
         try persist(&entity, visited: &entities)
     }
 
-    private func persist<E: Entity>(_ entity: inout E, visited entities: inout [AnyHashable: AnyEntity]) throws {
+    private func persist<E: Entity>(_ entity: inout E, visited entities: inout [AnyHashable: EntityMap]) throws {
         // Set entityID in Field property wrappers
         let dictionary = try entity.asDictionary()
         entity = try dictionary.decode(to: E.self)
@@ -171,34 +236,45 @@ final class SQLEntityManager: EntityManager {
         }
 
         guard entities[entityID] == nil else { return }
-        entities[entityID] = AnyEntity(entity)
-        let entityState = entityStates[entityID]
+        entities[entityID] = try! entity.asDictionary()
 
-        switch entityState {
-        case .managed: break
-        case .new:
-            entityInsertions[entityID] = AnyEntity(entity)
-            addToIdentityMap(entity)
-        case .removed:
-            entityDeletions.removeValue(forKey: entityID)
-            addToIdentityMap(entity)
-            entityStates[entityID] = .managed
-        default:
-            entityInsertions[entityID] = AnyEntity(entity)
-            addToIdentityMap(entity)
+        if let entityState = entityStates[entityID] {
+            switch entityState {
+            case .managed: break
+            case .new:
+                if entityInsertions[E.entity] == nil {
+                    entityInsertions[E.entity] = [entityID: try! entity.asDictionary()]
+                } else {
+                    entityInsertions[E.entity]?[entityID] = try! entity.asDictionary()
+                }
+
+                addToIdentityMap(entity: entity)
+            case .removed:
+                entityDeletions[E.entity]?.removeValue(forKey: entityID)
+                addToIdentityMap(entity: entity)
+                entityStates[entityID] = .managed
+            }
+        } else {
+            if entityInsertions[E.entity] == nil {
+                entityInsertions[E.entity] = [entityID: try! entity.asDictionary()]
+            } else {
+                entityInsertions[E.entity]?[entityID] = try! entity.asDictionary()
+            }
+
+            addToIdentityMap(entity: entity)
             entityStates[entityID] = .new
         }
     }
 
     func refresh<E: Entity>(_ entity: inout E) throws {
-        var entities = [AnyHashable: AnyEntity]()
+        var entities = [AnyHashable: EntityMap]()
         try refresh(&entity, visited: &entities)
     }
 
-    private func refresh<E: Entity>(_ entity: inout E, visited entities: inout [AnyHashable: AnyEntity]) throws {
+    private func refresh<E: Entity>(_ entity: inout E, visited entities: inout [AnyHashable: EntityMap]) throws {
         let entityID = entity.id
         guard entities[entityID] == nil else { return }
-        entities[entityID] = AnyEntity(entity)
+        entities[entityID] = try! entity.asDictionary()
         let entityState = entityStates[entityID]
 
         switch entityState {
@@ -218,47 +294,50 @@ final class SQLEntityManager: EntityManager {
     }
 
     func remove<E: Entity>(_ entity: E) {
-        var entities = [AnyHashable: AnyEntity]()
+        var entities = [AnyHashable: EntityMap]()
         remove(entity, visited: &entities)
     }
 
-    private func remove<E: Entity>(_ entity: E, visited entities: inout [AnyHashable: AnyEntity]) {
+    private func remove<E: Entity>(_ entity: E, visited entities: inout [AnyHashable: EntityMap]) {
         let entityID = entity.id
         guard entities[entityID] == nil else { return }
-        entities[entityID] = AnyEntity(entity)
+        entities[entityID] = try! entity.asDictionary()
         let entityState = entityStates[entityID]
 
         switch entityState {
         case .managed:
-            entityDeletions[entityID] = AnyEntity(entity)
+            if entityDeletions[E.entity] == nil {
+                entityDeletions[E.entity] = [entityID: try! entity.asDictionary()]
+            } else {
+                entityDeletions[E.entity]?[entityID] = try! entity.asDictionary()
+            }
+
             entityStates[entityID] = .removed
         case .new:
-            entityInsertions.removeValue(forKey: entityID)
-            removeFromIdentityMap(entity)
+            entityInsertions[E.entity]?.removeValue(forKey: entityID)
+            removeFromIdentityMap(entity: entity)
             entityStates.removeValue(forKey: entityID)
         default: break
         }
     }
 
-    private func addToIdentityMap<E: Entity>(_ entity: E) {
-        let entityID = entity.id
-        let entityName = String(describing: type(of: entity))
+    private func addToIdentityMap<E: Entity>(entity: E) {
+        addToIdentityMap(entityName: E.entity, entityMap: try! entity.asDictionary(), id: entity.id)
+    }
 
+    private func addToIdentityMap(entityName: String, entityMap: EntityMap, id: AnyHashable) {
         if identityMap[entityName] == nil {
-            identityMap[entityName] = [entityID: AnyEntity(entity)]
+            identityMap[entityName] = [id: entityMap]
         } else {
-            identityMap[entityName]?[entityID] = AnyEntity(entity)
+            identityMap[entityName]?[id] = entityMap
         }
     }
 
-    private func removeFromIdentityMap<E: Entity>(_ entity: E) {
-        let entityID = entity.id
-        let entityName = String(describing: type(of: entity))
-        identityMap[entityName]?.removeValue(forKey: entityID)
+    private func removeFromIdentityMap<E: Entity>(entity: E) {
+        removeFromIdentityMap(entityName: E.entity, id: entity.id)
     }
 
-    private func removeFromIdentityMap(entity: Codable, id: AnyHashable) {
-        let entityName = String(describing: type(of: entity))
+    private func removeFromIdentityMap(entityName: String, id: AnyHashable) {
         identityMap[entityName]?.removeValue(forKey: id)
     }
 }

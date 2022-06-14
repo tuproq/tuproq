@@ -1,9 +1,5 @@
 import Foundation
 
-extension Entity {
-    public typealias Field<V: Codable> = FieldProperty<Self, V>
-}
-
 @propertyWrapper
 public struct FieldProperty<E: Entity, V: Codable>: Codable {
     public let name: String
@@ -13,7 +9,9 @@ public struct FieldProperty<E: Entity, V: Codable>: Codable {
     private var isInit = true
 
     public var wrappedValue: V {
-        get { return value }
+        get {
+            return value
+        }
         set {
             let oldValue = value
             value = newValue
@@ -21,15 +19,15 @@ public struct FieldProperty<E: Entity, V: Codable>: Codable {
             if isInit {
                 isInit = false
             } else {
-                if let entityID = entityID {
+                if let id = entityID {
                     let property: [String: Any?] = [
                         "name": name,
                         "oldValue": oldValue,
                         "newValue": value
                     ]
                     let dictionary: [String: Any?] = [
-                        "entityName": String(describing: E.self),
-                        "id": entityID,
+                        "entity": E.entity,
+                        "id": id,
                         "property": property
                     ]
                     NotificationCenter.default.post(name: propertyValueChanged, object: dictionary)

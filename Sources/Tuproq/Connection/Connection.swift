@@ -1,13 +1,14 @@
 import PostgreSQL
 
 public class Connection {
+    public typealias Entity = AnyObject & Swift.Codable
     public static let defaultName = "default"
     public let name: String
     public let option: Option
-    public let entities: [Codable.Type]
+    public let entities: [Entity.Type]
     let connection: PostgreSQL.Connection
 
-    public init(name: String = Connection.defaultName, option: Option, entities: [Codable.Type] = .init()) {
+    public init(name: String = Connection.defaultName, option: Option, entities: [Entity.Type] = .init()) {
         self.name = name
         self.option = option
         self.entities = entities
