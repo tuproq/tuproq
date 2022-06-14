@@ -71,6 +71,7 @@ extension SQLExpression {
         case outerJoin = "OUTER JOIN"
         case primaryKey = "PRIMARY KEY"
         case procedure = "PROCEDURE"
+        case returning = "RETURNING"
         case rightJoin = "RIGHT JOIN"
         case rowNumber = "ROWNUM"
         case select = "SELECT"
