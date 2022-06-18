@@ -181,6 +181,19 @@ final class SQLEntityManager: EntityManager {
                 let postInsert = postInserts[index]
                 let postInsertID = postInsert["id"] as! AnyHashable
 
+                for (name, value) in postInsert {
+                    let property: [String: Any?] = [
+                        "name": name,
+                        "value": value
+                    ]
+                    let dictionary: [String: Any?] = [
+                        "entity": table,
+                        "id": insertedID,
+                        "property": property
+                    ]
+                    NotificationCenter.default.post(name: propertyPostFlushValueChanged, object: dictionary)
+                }
+
                 if insertedID != postInsertID {
                     entityStates.removeValue(forKey: insertedID)
                     entityStates[postInsertID] = .managed

@@ -1,7 +1,7 @@
 import Foundation
 
 @propertyWrapper
-public struct FieldProperty<E: Entity, V: Codable>: Codable {
+public final class FieldProperty<E: Entity, V: Codable>: Codable {
     public let name: String
     public let type: `Type`
     private var entityID: AnyHashable?
@@ -9,9 +9,7 @@ public struct FieldProperty<E: Entity, V: Codable>: Codable {
     private var isInit = true
 
     public var wrappedValue: V {
-        get {
-            return value
-        }
+        get { return value }
         set {
             let oldValue = value
             value = newValue
@@ -39,11 +37,13 @@ public struct FieldProperty<E: Entity, V: Codable>: Codable {
     public init(name: String) {
         self.name = name
         type = .string // TODO: set the default type based on the type of value
+        addPropertyObserver()
     }
 
     public init(name: String, type: `Type`) {
         self.name = name
         self.type = type
+        addPropertyObserver()
     }
 
     public init(from decoder: Decoder) throws {
@@ -59,11 +59,43 @@ public struct FieldProperty<E: Entity, V: Codable>: Codable {
 
         let container = try decoder.singleValueContainer()
         wrappedValue = try container.decode(V.self)
+        addPropertyObserver()
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(wrappedValue)
+    }
+
+    private func addPropertyObserver() {
+        NotificationCenter.default.addObserver(
+            forName: propertyPostFlushValueChanged,
+            object: nil,
+            queue: nil
+        ) { [self] notification in
+            let dictionary = notification.object as! [String: Any?]
+            let entity = dictionary["entity"] as! String
+            var id = dictionary["id"] as! AnyHashable
+            let property = dictionary["property"] as! [String: Any?]
+            let propertyName = property["name"] as! String
+            var propertyValue = property["value"]
+
+            if let uuid = id as? UUID { // TODO: check if the field type is UUID
+                id = AnyHashable(uuid.uuidString)
+            }
+
+            if let uuid = propertyValue as? UUID { // TODO: check if the field type is UUID
+                propertyValue = uuid.uuidString
+            }
+
+            if entity == E.entity && id == entityID && propertyName == name {
+                value = propertyValue as? V
+
+                if name == "id" {
+                    entityID = propertyValue as? AnyHashable
+                }
+            }
+        }
     }
 }
 
