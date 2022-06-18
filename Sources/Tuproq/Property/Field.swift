@@ -89,7 +89,9 @@ public final class FieldProperty<E: Entity, V: Codable>: Codable {
             }
 
             if entity == E.entity && id == entityID && propertyName == name {
-                value = propertyValue as? V
+                if let propertyValue = propertyValue as? V { // TODO: check if Field is nullable or not.
+                    value = propertyValue
+                }
 
                 if name == "id" {
                     entityID = propertyValue as? AnyHashable
