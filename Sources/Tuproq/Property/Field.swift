@@ -1,7 +1,7 @@
 import Foundation
 
 @propertyWrapper
-public final class FieldProperty<E: Entity, V: Codable>: Codable {
+public class FieldProperty<E: Entity, V: Codable>: Codable {
     public let name: String
     public let type: `Type`
     private var entityID: AnyHashable?
@@ -9,7 +9,7 @@ public final class FieldProperty<E: Entity, V: Codable>: Codable {
     private var isInit = true
 
     public var wrappedValue: V {
-        get { return value }
+        get { value }
         set {
             let oldValue = value
             value = newValue
@@ -36,17 +36,38 @@ public final class FieldProperty<E: Entity, V: Codable>: Codable {
 
     public init(name: String) {
         self.name = name
-        type = .string // TODO: set the default type based on the type of value
+        let valueType = V.Type.self
+
+        if valueType == Bool.Type.self {
+            type = .bool
+        } else if valueType == Character.Type.self {
+            type = .character
+        } else if valueType == Date.Type.self {
+            type = .date
+        } else if valueType == Double.Type.self {
+            type = .double
+        } else if valueType == Float.Type.self {
+            type = .float
+        } else if valueType == Int.Type.self {
+            type = .int
+        } else if valueType == String.Type.self {
+            type = .string
+        } else if valueType == UUID.Type.self {
+            type = .uuid
+        } else {
+            type = .string
+        }
+
         addPropertyObserver()
     }
 
     public init(name: String, type: `Type`) {
         self.name = name
-        self.type = type
+        self.type = type // TODO: check if type is supported and matches the value type
         addPropertyObserver()
     }
 
-    public init(from decoder: Decoder) throws {
+    public required init(from decoder: Decoder) throws {
         entityID = decoder.userInfo[CodingUserInfoKey(rawValue: "id")!] as? AnyHashable
 
         if let name = decoder.codingPath.first?.stringValue {
@@ -60,6 +81,10 @@ public final class FieldProperty<E: Entity, V: Codable>: Codable {
         let container = try decoder.singleValueContainer()
         wrappedValue = try container.decode(V.self)
         addPropertyObserver()
+    }
+
+    deinit {
+        removePropertyObserver()
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -99,11 +124,15 @@ public final class FieldProperty<E: Entity, V: Codable>: Codable {
             }
         }
     }
+
+    private func removePropertyObserver() {
+        NotificationCenter.default.removeObserver(self, name: propertyPostFlushValueChanged, object: nil)
+    }
 }
 
 extension FieldProperty {
     public enum `Type`: String {
-        case boolean
+        case bool
         case character
         case date
         case double
