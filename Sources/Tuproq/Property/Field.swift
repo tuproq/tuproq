@@ -1,5 +1,9 @@
 import Foundation
 
+extension Entity {
+    public typealias Field<V: Codable> = FieldProperty<Self, V>
+}
+
 @propertyWrapper
 public class FieldProperty<E: Entity, V: Codable>: Codable {
     public let name: String
@@ -32,6 +36,10 @@ public class FieldProperty<E: Entity, V: Codable>: Codable {
                 }
             }
         }
+    }
+
+    public convenience init() {
+        self.init(name: "")
     }
 
     public init(name: String) {

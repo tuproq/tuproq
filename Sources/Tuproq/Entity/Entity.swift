@@ -1,8 +1,8 @@
 import Foundation
 
 public protocol Entity: AnyObject, Codable, Equatable {
-    associatedtype ID: Codable, Hashable
-    var id: ID { get }
+    associatedtype Identifiable: Codable, Hashable
+    var id: Identifiable { get }
 
     static var entity: String { get }
 }
@@ -13,8 +13,4 @@ public extension Entity {
     static func == (lhs: Self, rhs: Self) -> Bool {
         ObjectIdentifier(lhs) == ObjectIdentifier(rhs) || lhs.id == rhs.id
     }
-}
-
-extension Entity {
-    public typealias Field<V: Codable> = FieldProperty<Self, V>
 }
