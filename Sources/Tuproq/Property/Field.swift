@@ -38,11 +38,7 @@ public class FieldProperty<E: Entity, V: Codable>: Codable {
         }
     }
 
-    public convenience init() {
-        self.init(name: "")
-    }
-
-    public init(name: String) {
+    public init(name: String = "") {
         self.name = name
         let valueType = V.Type.self
 
@@ -69,7 +65,7 @@ public class FieldProperty<E: Entity, V: Codable>: Codable {
         addPropertyObserver()
     }
 
-    public init(name: String, type: `Type`) {
+    public init(name: String = "", type: `Type`) {
         self.name = name
         self.type = type // TODO: check if type is supported and matches the value type
         addPropertyObserver()
