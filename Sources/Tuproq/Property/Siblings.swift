@@ -9,11 +9,7 @@ public final class SiblingsProperty<E: Entity, V: Codable>: FieldProperty<E, V> 
         set { super.wrappedValue = newValue }
     }
 
-    public init() {
-        super.init(name: "")
-    }
-
-    public override init(name: String) {
+    public override init(name: String = "") {
         super.init(name: name)
     }
 
