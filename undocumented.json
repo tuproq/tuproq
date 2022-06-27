@@ -1,0 +1,1006 @@
+{
+  "warnings": [
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection+Option.swift",
+      "line": 4,
+      "symbol": "Connection.Option",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection+Option.swift",
+      "line": 5,
+      "symbol": "Connection.Option.defaultHost",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection+Option.swift",
+      "line": 6,
+      "symbol": "Connection.Option.driver",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection+Option.swift",
+      "line": 7,
+      "symbol": "Connection.Option.host",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection+Option.swift",
+      "line": 8,
+      "symbol": "Connection.Option.port",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection+Option.swift",
+      "line": 9,
+      "symbol": "Connection.Option.username",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection+Option.swift",
+      "line": 10,
+      "symbol": "Connection.Option.password",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection+Option.swift",
+      "line": 11,
+      "symbol": "Connection.Option.database",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection+Option.swift",
+      "line": 13,
+      "symbol": "Connection.Option.init(driver:host:username:password:database:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection+Option.swift",
+      "line": 30,
+      "symbol": "Connection.Option.init(driver:host:port:username:password:database:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection+Option.swift",
+      "line": 46,
+      "symbol": "Connection.Option.init(url:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection.swift",
+      "line": 3,
+      "symbol": "Connection",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection.swift",
+      "line": 3,
+      "symbol": "Connection",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection.swift",
+      "line": 4,
+      "symbol": "Connection.Entity",
+      "symbol_kind": "source.lang.swift.decl.typealias",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection.swift",
+      "line": 5,
+      "symbol": "Connection.defaultName",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection.swift",
+      "line": 6,
+      "symbol": "Connection.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection.swift",
+      "line": 7,
+      "symbol": "Connection.option",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection.swift",
+      "line": 8,
+      "symbol": "Connection.entities",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection.swift",
+      "line": 11,
+      "symbol": "Connection.init(name:option:entities:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection.swift",
+      "line": 27,
+      "symbol": "Connection.connect()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection.swift",
+      "line": 31,
+      "symbol": "Connection.close()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Connection/Connection.swift",
+      "line": 36,
+      "symbol": "Connection",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/DatabaseDriver.swift",
+      "line": 1,
+      "symbol": "DatabaseDriver",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/DatabaseDriver.swift",
+      "line": 2,
+      "symbol": "DatabaseDriver.mysql",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/DatabaseDriver.swift",
+      "line": 2,
+      "symbol": "DatabaseDriver.postgresql",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/DatabaseDriver.swift",
+      "line": 4,
+      "symbol": "DatabaseDriver.port",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Entity/Entity.swift",
+      "line": 1,
+      "symbol": "Entity",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Entity/Entity.swift",
+      "line": 1,
+      "symbol": "Entity",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Entity/Entity.swift",
+      "line": 1,
+      "symbol": "Entity",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Entity/Entity.swift",
+      "line": 1,
+      "symbol": "Entity",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Entity/Entity.swift",
+      "line": 3,
+      "symbol": "Entity",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Entity/Entity.swift",
+      "line": 3,
+      "symbol": "Entity",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Entity/Entity.swift",
+      "line": 4,
+      "symbol": "Entity.Identifiable",
+      "symbol_kind": "source.lang.swift.decl.associatedtype",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Entity/Entity.swift",
+      "line": 5,
+      "symbol": "Entity.id",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Entity/Entity.swift",
+      "line": 7,
+      "symbol": "Entity.entity",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Entity/Entity.swift",
+      "line": 10,
+      "symbol": "Entity",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Entity/Entity.swift",
+      "line": 11,
+      "symbol": "Entity.entity",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/EntityManager/EntityManager.swift",
+      "line": 1,
+      "symbol": "EntityManager",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/EntityManager/EntityManager.swift",
+      "line": 2,
+      "symbol": "EntityManager.Q",
+      "symbol_kind": "source.lang.swift.decl.associatedtype",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/EntityManager/EntityManager.swift",
+      "line": 4,
+      "symbol": "EntityManager.createQueryBuilder()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/EntityManager/EntityManager.swift",
+      "line": 5,
+      "symbol": "EntityManager.find(_:id:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/EntityManager/EntityManager.swift",
+      "line": 6,
+      "symbol": "EntityManager.flush()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/EntityManager/EntityManager.swift",
+      "line": 7,
+      "symbol": "EntityManager.getRepository(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/EntityManager/EntityManager.swift",
+      "line": 8,
+      "symbol": "EntityManager.persist(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/EntityManager/EntityManager.swift",
+      "line": 9,
+      "symbol": "EntityManager.refresh(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/EntityManager/EntityManager.swift",
+      "line": 10,
+      "symbol": "EntityManager.remove(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Error.swift",
+      "line": 3,
+      "symbol": "TuproqError",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Expression/Expression.swift",
+      "line": 1,
+      "symbol": "Expression",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Expression/Expression.swift",
+      "line": 2,
+      "symbol": "Expression.raw",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Expression/Expression.swift",
+      "line": 5,
+      "symbol": "Expression",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Expression/SQL/SQLExpression.swift",
+      "line": 1,
+      "symbol": "SQLExpression",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Expression/SQL/SQLExpression.swift",
+      "line": 2,
+      "symbol": "SQLExpression.raw",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Expression/SQL/SQLExpression.swift",
+      "line": 4,
+      "symbol": "SQLExpression.init(raw:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Expression/SQL/SQLExpression.swift",
+      "line": 98,
+      "symbol": "SQLExpression",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Expression/SQL/SQLExpression.swift",
+      "line": 99,
+      "symbol": "SQLExpression.Sorting",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Expression/SQL/SQLExpression.swift",
+      "line": 100,
+      "symbol": "SQLExpression.Sorting.asc",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Expression/SQL/SQLExpression.swift",
+      "line": 101,
+      "symbol": "SQLExpression.Sorting.desc",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Children.swift",
+      "line": 2,
+      "symbol": "Entity.Children",
+      "symbol_kind": "source.lang.swift.decl.typealias",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Children.swift",
+      "line": 6,
+      "symbol": "ChildrenProperty",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Children.swift",
+      "line": 7,
+      "symbol": "ChildrenProperty.wrappedValue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Children.swift",
+      "line": 12,
+      "symbol": "ChildrenProperty.init(name:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Children.swift",
+      "line": 16,
+      "symbol": "ChildrenProperty.init(from:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 4,
+      "symbol": "Entity.Field",
+      "symbol_kind": "source.lang.swift.decl.typealias",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 8,
+      "symbol": "FieldProperty",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 9,
+      "symbol": "FieldProperty.name",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 10,
+      "symbol": "FieldProperty.type",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 15,
+      "symbol": "FieldProperty.wrappedValue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 41,
+      "symbol": "FieldProperty.init(name:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 68,
+      "symbol": "FieldProperty.init(name:type:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 137,
+      "symbol": "FieldProperty",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 138,
+      "symbol": "FieldProperty.Type",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 139,
+      "symbol": "FieldProperty.Type.bool",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 140,
+      "symbol": "FieldProperty.Type.character",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 141,
+      "symbol": "FieldProperty.Type.date",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 142,
+      "symbol": "FieldProperty.Type.double",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 143,
+      "symbol": "FieldProperty.Type.float",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 144,
+      "symbol": "FieldProperty.Type.int",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 145,
+      "symbol": "FieldProperty.Type.string",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Field.swift",
+      "line": 146,
+      "symbol": "FieldProperty.Type.uuid",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/ID.swift",
+      "line": 2,
+      "symbol": "Entity.ID",
+      "symbol_kind": "source.lang.swift.decl.typealias",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/ID.swift",
+      "line": 6,
+      "symbol": "IDProperty",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/ID.swift",
+      "line": 7,
+      "symbol": "IDProperty.wrappedValue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/ID.swift",
+      "line": 12,
+      "symbol": "IDProperty.init(name:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/ID.swift",
+      "line": 16,
+      "symbol": "IDProperty.init(name:type:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/ID.swift",
+      "line": 20,
+      "symbol": "IDProperty.init(from:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Parent.swift",
+      "line": 2,
+      "symbol": "Entity.Parent",
+      "symbol_kind": "source.lang.swift.decl.typealias",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Parent.swift",
+      "line": 6,
+      "symbol": "ParentProperty",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Parent.swift",
+      "line": 7,
+      "symbol": "ParentProperty.wrappedValue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Parent.swift",
+      "line": 12,
+      "symbol": "ParentProperty.init(name:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Parent.swift",
+      "line": 16,
+      "symbol": "ParentProperty.init(from:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Siblings.swift",
+      "line": 2,
+      "symbol": "Entity.Siblings",
+      "symbol_kind": "source.lang.swift.decl.typealias",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Siblings.swift",
+      "line": 6,
+      "symbol": "SiblingsProperty",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Siblings.swift",
+      "line": 7,
+      "symbol": "SiblingsProperty.wrappedValue",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Siblings.swift",
+      "line": 12,
+      "symbol": "SiblingsProperty.init(name:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Siblings.swift",
+      "line": 16,
+      "symbol": "SiblingsProperty.init(name:type:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Property/Siblings.swift",
+      "line": 20,
+      "symbol": "SiblingsProperty.init(from:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/Query.swift",
+      "line": 1,
+      "symbol": "Query",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/QueryBuilder.swift",
+      "line": 1,
+      "symbol": "QueryBuilder",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/QueryBuilder.swift",
+      "line": 2,
+      "symbol": "QueryBuilder.Q",
+      "symbol_kind": "source.lang.swift.decl.associatedtype",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/QueryBuilder.swift",
+      "line": 4,
+      "symbol": "QueryBuilder.getQuery()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQuery.swift",
+      "line": 1,
+      "symbol": "SQLQuery",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQuery.swift",
+      "line": 2,
+      "symbol": "SQLQuery.raw",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQuery.swift",
+      "line": 4,
+      "symbol": "SQLQuery.init(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 1,
+      "symbol": "SQLQueryBuilder",
+      "symbol_kind": "source.lang.swift.decl.class",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 4,
+      "symbol": "SQLQueryBuilder.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 6,
+      "symbol": "SQLQueryBuilder.getQuery()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 23,
+      "symbol": "SQLQueryBuilder",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 24,
+      "symbol": "SQLQueryBuilder.insert(into:columns:values:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 28,
+      "symbol": "SQLQueryBuilder.insert(into:columns:values:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 34,
+      "symbol": "SQLQueryBuilder",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 35,
+      "symbol": "SQLQueryBuilder.update(_:set:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 39,
+      "symbol": "SQLQueryBuilder.update(_:set:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 45,
+      "symbol": "SQLQueryBuilder",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 46,
+      "symbol": "SQLQueryBuilder.delete()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 52,
+      "symbol": "SQLQueryBuilder",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 53,
+      "symbol": "SQLQueryBuilder.select(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 57,
+      "symbol": "SQLQueryBuilder.select(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 63,
+      "symbol": "SQLQueryBuilder",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 64,
+      "symbol": "SQLQueryBuilder.from(_:as:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 69,
+      "symbol": "SQLQueryBuilder.from(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 73,
+      "symbol": "SQLQueryBuilder.from(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 79,
+      "symbol": "SQLQueryBuilder",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 80,
+      "symbol": "SQLQueryBuilder.where(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 85,
+      "symbol": "SQLQueryBuilder.andWhere(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 90,
+      "symbol": "SQLQueryBuilder.orWhere(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 96,
+      "symbol": "SQLQueryBuilder",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 97,
+      "symbol": "SQLQueryBuilder.having(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 102,
+      "symbol": "SQLQueryBuilder.andHaving(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 107,
+      "symbol": "SQLQueryBuilder.orHaving(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 113,
+      "symbol": "SQLQueryBuilder",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 114,
+      "symbol": "SQLQueryBuilder.join(_:as:on:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 122,
+      "symbol": "SQLQueryBuilder",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 123,
+      "symbol": "SQLQueryBuilder.orderBy(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 127,
+      "symbol": "SQLQueryBuilder.orderBy(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 133,
+      "symbol": "SQLQueryBuilder",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 134,
+      "symbol": "SQLQueryBuilder.returning(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Query/SQL/SQLQueryBuilder.swift",
+      "line": 138,
+      "symbol": "SQLQueryBuilder.returning(_:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Repository/Repository.swift",
+      "line": 1,
+      "symbol": "Repository",
+      "symbol_kind": "source.lang.swift.decl.protocol",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Repository/Repository.swift",
+      "line": 2,
+      "symbol": "Repository.E",
+      "symbol_kind": "source.lang.swift.decl.associatedtype",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Repository/Repository.swift",
+      "line": 4,
+      "symbol": "Repository.entityType",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Repository/Repository.swift",
+      "line": 6,
+      "symbol": "Repository.init()",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Repository/Repository.swift",
+      "line": 9,
+      "symbol": "Repository",
+      "symbol_kind": "source.lang.swift.decl.extension",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/runner/work/tuproq/tuproq/Sources/Tuproq/Repository/Repository.swift",
+      "line": 10,
+      "symbol": "Repository.entityType",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    }
+  ],
+  "source_directory": "/Users/runner/work/tuproq/tuproq"
+}
