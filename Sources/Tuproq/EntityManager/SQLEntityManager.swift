@@ -62,7 +62,14 @@ final class SQLEntityManager: EntityManager {
             .where("id = \"\(id)\"")
             .getQuery()
 
-        if let dictionary = try await connection.connection.simpleQuery(query.raw)?.data.first {
+        if let result = try await connection.connection.simpleQuery(query.raw), let row = result.rows.first {
+            var dictionary = [String: Any?]()
+
+            for (index, value) in row.enumerated() {
+                let column = result.columns[index]
+                dictionary[column.name] = value
+            }
+
             let entity = try dictionary.decode(to: E.self)
             entityStates[entity.id] = .managed
             addToIdentityMap(entity: entity)
@@ -83,8 +90,17 @@ final class SQLEntityManager: EntityManager {
                 allQueries = "BEGIN;\(allQueries)COMMIT;"
                 var postInserts = [[String: Any?]]()
 
-                if let data = try await connection.connection.simpleQuery(allQueries)?.data {
-                    postInserts = data
+                if let result = try await connection.connection.simpleQuery(allQueries) {
+                    for row in result.rows {
+                        var dictionary = [String: Any?]()
+
+                        for (index, value) in row.enumerated() {
+                            let column = result.columns[index]
+                            dictionary[column.name] = value
+                        }
+
+                        postInserts.append(dictionary)
+                    }
                 }
 
                 postFlush(insertedIDsMap: insertedIDsMap, postInserts: postInserts)
@@ -107,7 +123,11 @@ final class SQLEntityManager: EntityManager {
                     columns.append(key)
 
                     if let value = value {
-                        values.append(value)
+                        if let valueDictionary = value as? [String: Any?] {
+                            values.append(valueDictionary["id"]!)
+                        } else {
+                            values.append(value)
+                        }
                     } else {
                         values.append("NULL") // TODO: it may not be necessary
                     }
@@ -259,6 +279,15 @@ final class SQLEntityManager: EntityManager {
             addToIdentityMap(entity: entity)
             entityStates[id] = .new
         }
+
+        try cascadePersist(&entity, visited: &entities)
+    }
+
+    private func cascadePersist<E: Entity>(
+        _ entity: inout E,
+        visited entities: inout [AnyHashable: EntityMap]
+    ) throws {
+        // TODO: implement
     }
 
     func refresh<E: Entity>(_ entity: inout E) throws {
