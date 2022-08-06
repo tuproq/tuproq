@@ -9,12 +9,12 @@ public final class SiblingsProperty<E: Entity, V: Codable>: FieldProperty<E, V> 
         set { super.wrappedValue = newValue }
     }
 
-    public override init(name: String = "") {
-        super.init(name: name)
+    public override init(_ name: String) {
+        super.init(name)
     }
 
-    public override init(name: String, type: `Type`) {
-        super.init(name: name, type: type)
+    public override init(_ name: String, type: `Type`) {
+        super.init(name, type: type)
     }
 
     public required init(from decoder: Decoder) throws {

@@ -9,8 +9,8 @@ public final class ChildrenProperty<E: Entity, V: Codable>: FieldProperty<E, V> 
         set { super.wrappedValue = newValue }
     }
 
-    public override init(name: String = "") {
-        super.init(name: name)
+    public override init(_ name: String) {
+        super.init(name)
     }
 
     public required init(from decoder: Decoder) throws {

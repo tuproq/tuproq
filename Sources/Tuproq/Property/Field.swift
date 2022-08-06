@@ -38,7 +38,7 @@ public class FieldProperty<E: Entity, V: Codable>: Codable {
         }
     }
 
-    public init(name: String = "") {
+    public init(_ name: String) {
         self.name = name
         let valueType = V.Type.self
 
@@ -65,7 +65,7 @@ public class FieldProperty<E: Entity, V: Codable>: Codable {
         addPropertyObserver()
     }
 
-    public init(name: String = "", type: `Type`) {
+    public init(_ name: String, type: `Type`) {
         self.name = name
         self.type = type // TODO: check if type is supported and matches the value type
         addPropertyObserver()
@@ -74,7 +74,7 @@ public class FieldProperty<E: Entity, V: Codable>: Codable {
     public required init(from decoder: Decoder) throws {
         entityID = decoder.userInfo[CodingUserInfoKey(rawValue: "id")!] as? AnyHashable
 
-        if let name = decoder.codingPath.first?.stringValue {
+        if let name = decoder.codingPath.first?.stringValue, !name.isEmpty {
             self.name = name
         } else {
             name = "" // TODO: throw error
