@@ -21,6 +21,17 @@ public class SQLQueryBuilder: QueryBuilder {
 }
 
 extension SQLQueryBuilder {
+    public func create(table: String, columns: Column...) -> Self {
+        create(table: table, columns: columns)
+    }
+
+    public func create(table: String, columns: [Column] = .init()) -> Self {
+        expressions.append(CreateTableSQLExpression(table: Table(name: table, columns: columns)))
+        return self
+    }
+}
+
+extension SQLQueryBuilder {
     public func insert(into table: String, columns: String..., values: Any?...) -> Self {
         insert(into: table, columns: columns, values: values)
     }
