@@ -12,7 +12,7 @@ extension EntityMapping {
 
     var table: String {
         switch strategy {
-        case .same: return String(describing: entity).lowercased()
+        case .same: return String(describing: entity)
         case .snakeCased: return String(describing: entity).snakeCased
         }
     }
