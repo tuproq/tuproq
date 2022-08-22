@@ -62,12 +62,12 @@ final class SQLEntityManager: EntityManager {
             .where("id = \"\(id)\"")
             .getQuery()
 
-        if let result = try await connection.connection.simpleQuery(query.raw), let row = result.rows.first {
+        if let result = try await connection.query(query.raw), let row = result.rows.first {
             var dictionary = [String: Any?]()
 
             for (index, value) in row.enumerated() {
                 let column = result.columns[index]
-                dictionary[column.name] = value
+                dictionary[column] = value
             }
 
             let entity = try dictionary.decode(to: E.self)
@@ -90,13 +90,13 @@ final class SQLEntityManager: EntityManager {
                 allQueries = "BEGIN;\(allQueries)COMMIT;"
                 var postInserts = [[String: Any?]]()
 
-                if let result = try await connection.connection.simpleQuery(allQueries) {
+                if let result = try await connection.query(allQueries) {
                     for row in result.rows {
                         var dictionary = [String: Any?]()
 
                         for (index, value) in row.enumerated() {
                             let column = result.columns[index]
-                            dictionary[column.name] = value
+                            dictionary[column] = value
                         }
 
                         postInserts.append(dictionary)
