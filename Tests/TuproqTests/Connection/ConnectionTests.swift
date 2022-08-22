@@ -12,7 +12,6 @@ final class ConnectionTests: XCTestCase {
         // Assert
         XCTAssertEqual(connection.name, Connection.defaultName)
         XCTAssertEqual(connection.option, option)
-        XCTAssertTrue(connection.entities.isEmpty)
     }
 
     func testEquality() {
