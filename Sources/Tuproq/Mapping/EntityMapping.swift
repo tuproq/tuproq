@@ -4,6 +4,7 @@ public protocol EntityMapping {
     var strategy: MappingStrategy { get }
     var entity: E.Type { get }
     var table: String { get }
+    var id: IDMapping { get }
     var fields: Set<FieldMapping> { get }
 }
 
