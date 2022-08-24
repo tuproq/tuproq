@@ -1,7 +1,8 @@
 extension Table {
     struct Column {
-        var name: String
-        var type: String
-        var constraints: [Constraint]
+        let name: String
+        let type: String
+        var length: UInt? = nil
+        var constraints = [Constraint]()
     }
 }
