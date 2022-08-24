@@ -21,11 +21,11 @@ public class SQLQueryBuilder: QueryBuilder {
 }
 
 extension SQLQueryBuilder {
-    func create(table: String, columns: Column...) -> Self {
+    func create(table: String, columns: Table.Column...) -> Self {
         create(table: table, columns: columns)
     }
 
-    func create(table: String, columns: [Column] = .init()) -> Self {
+    func create(table: String, columns: [Table.Column] = .init()) -> Self {
         expressions.append(CreateTableSQLExpression(table: Table(name: table, columns: columns)))
         return self
     }

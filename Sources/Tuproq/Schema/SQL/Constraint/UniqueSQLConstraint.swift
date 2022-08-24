@@ -1,4 +1,4 @@
 struct UniqueConstraint: Constraint {
     let name = "UNIQUE"
-    var column: Column
+    var column: Table.Column
 }
