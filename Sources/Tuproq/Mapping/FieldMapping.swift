@@ -2,7 +2,7 @@ public struct FieldMapping: Hashable {
     public let name: String
     public let column: String
     public let type: Kind
-    public let length: UInt
+    public let length: UInt?
     public let isUnique: Bool
     public let isNullable: Bool
     public let precision: UInt
@@ -12,7 +12,7 @@ public struct FieldMapping: Hashable {
         name: String,
         column: String? = nil,
         type: Kind,
-        length: UInt = 255,
+        length: UInt? = nil,
         isUnique: Bool = false,
         isNullable: Bool = false,
         precision: UInt = 0,
