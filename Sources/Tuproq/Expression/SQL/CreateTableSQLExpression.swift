@@ -10,10 +10,6 @@ final class CreateTableSQLExpression: SQLExpression {
             raw += table.columns.map { column in
                 var columnDefinition = "\(column.name) \(column.type)"
 
-                if let length = column.length {
-                    columnDefinition += "(\(length))"
-                }
-
                 if !column.constraints.isEmpty {
                     columnDefinition += " \(column.constraints.map { $0.name }.joined(separator: " "))"
                 }
