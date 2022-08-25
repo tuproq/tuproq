@@ -2,7 +2,6 @@ public struct FieldMapping: Hashable {
     public let name: String
     public let column: String
     public let type: Kind
-    public let length: UInt?
     public let isUnique: Bool
     public let isNullable: Bool
     public let precision: UInt
@@ -12,7 +11,6 @@ public struct FieldMapping: Hashable {
         name: String,
         column: String? = nil,
         type: Kind,
-        length: UInt? = nil,
         isUnique: Bool = false,
         isNullable: Bool = false,
         precision: UInt = 0,
@@ -21,7 +19,6 @@ public struct FieldMapping: Hashable {
         self.name = name
         self.column = column ?? name
         self.type = type
-        self.length = length
         self.isUnique = isUnique
         self.isNullable = isNullable
         self.precision = precision
@@ -34,9 +31,26 @@ public struct FieldMapping: Hashable {
 }
 
 public extension FieldMapping {
-    enum Kind: String {
+    enum Kind: Hashable {
+        case text
         case timestamptz
         case uuid
-        case varchar
+        case varchar(_ length: UInt? = nil)
+
+        var value: String {
+            switch self {
+            case .text: return "text"
+            case .timestamptz: return "timestamptz"
+            case .uuid: return "uuid"
+            case .varchar(let length):
+                let value = "varchar"
+
+                if let length = length {
+                    return "\(value)(\(length))"
+                }
+
+                return value
+            }
+        }
     }
 }
