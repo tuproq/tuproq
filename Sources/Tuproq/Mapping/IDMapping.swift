@@ -1,7 +1,7 @@
 public struct IDMapping: Hashable {
     public let name: String
-    public let column: String
     public let type: Kind
+    public let column: String
 
     public init(name: String, type: Kind, column: String? = nil) {
         self.name = name

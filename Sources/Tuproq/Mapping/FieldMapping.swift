@@ -1,7 +1,7 @@
 public struct FieldMapping: Hashable {
     public let name: String
-    public let column: String
     public let type: Kind
+    public let column: String
     public let isUnique: Bool
     public let isNullable: Bool
 
