@@ -7,14 +7,14 @@ public struct FieldMapping: Hashable {
 
     public init(
         name: String,
-        column: String? = nil,
         type: Kind,
+        column: String? = nil,
         isUnique: Bool = false,
         isNullable: Bool = false
     ) {
         self.name = name
-        self.column = column ?? name
         self.type = type
+        self.column = column ?? name
         self.isUnique = isUnique
         self.isNullable = isNullable
     }

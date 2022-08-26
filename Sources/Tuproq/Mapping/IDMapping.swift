@@ -3,10 +3,10 @@ public struct IDMapping: Hashable {
     public let column: String
     public let type: Kind
 
-    public init(name: String, column: String? = nil, type: Kind) {
+    public init(name: String, type: Kind, column: String? = nil) {
         self.name = name
-        self.column = column ?? name
         self.type = type
+        self.column = column ?? name
     }
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
