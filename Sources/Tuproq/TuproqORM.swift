@@ -22,7 +22,7 @@ extension TuproqORM {
             var columns: [Table.Column] = [
                 Table.Column(
                     name: mapping.id.column,
-                    type: mapping.id.type.rawValue,
+                    type: type(from: mapping.id.type),
                     constraints: [
                         PrimaryKeyConstraint(key: "pk_\(mapping.id.column)")
                     ]
@@ -42,7 +42,7 @@ extension TuproqORM {
 
                 let column = Table.Column(
                     name: field.column,
-                    type: type(from: field),
+                    type: type(from: field.type),
                     constraints: constraints
                 )
                 columns.append(column)
@@ -59,9 +59,8 @@ extension TuproqORM {
         }
     }
 
-    private func type(from field: FieldMapping) -> String {
+    private func type(from type: FieldType) -> String {
         let driver = connection.driver
-        let type = field.type
 
         switch type {
         case .bool:
@@ -83,7 +82,7 @@ extension TuproqORM {
                 switch driver {
                 case .mysql:
                     if length <= 255 {
-                        return isFixed ? "BINARY(\(length))" : "VARBINARY(\(length))" // TINYBLOB
+                        return isFixed ? "BINARY(\(length))" : "VARBINARY(\(length))" // options: TINYBLOB
                     } else if length <= 65535 {
                         return "BLOB"
                     } else if length <= 16777215 {
@@ -148,7 +147,7 @@ extension TuproqORM {
                 switch driver {
                 case .mysql:
                     if length <= 255 {
-                        return "VARCHAR(\(length))" // TINYTEXT
+                        return "VARCHAR(\(length))" // options: TINYTEXT
                     } else if length <= 65535 {
                         return "TEXT"
                     } else if length <= 16777215 {
