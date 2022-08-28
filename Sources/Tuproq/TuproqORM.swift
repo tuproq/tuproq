@@ -98,8 +98,7 @@ extension TuproqORM {
                 switch driver {
                 case .mysql: return "LONGBLOB"
                 case .postgresql: return "BYTEA"
-                case .oracle: return "BLOB"
-                case .sqlite: return "BLOB"
+                case .oracle, .sqlite: return "BLOB"
                 case .sqlserver: return "VARBINARY(MAX)"
                 }
             }
