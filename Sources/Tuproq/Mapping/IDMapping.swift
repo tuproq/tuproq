@@ -3,7 +3,7 @@ public struct IDMapping: Hashable {
     public let type: FieldType
     public let column: String
 
-    public init(name: String, type: FieldType, column: String? = nil) {
+    public init(name: String, type: FieldType = .id(), column: String? = nil) {
         self.name = name
         self.type = type
         self.column = column ?? name

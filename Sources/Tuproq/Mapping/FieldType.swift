@@ -1,4 +1,4 @@
-public enum FieldType: Hashable {
+public indirect enum FieldType: Hashable {
     case bool
     case character
     case data(length: UInt? = nil, isFixed: Bool = false)
@@ -6,6 +6,7 @@ public enum FieldType: Hashable {
     case decimal(precision: UInt, scale: UInt, isUnsigned: Bool = false)
     case double(isUnsigned: Bool = false)
     case float(isUnsigned: Bool = false)
+    case id(strategy: IDGeneratorStrategy = .auto)
     case int8
     case int16
     case int32

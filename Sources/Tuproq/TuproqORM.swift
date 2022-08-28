@@ -117,29 +117,40 @@ extension TuproqORM {
             case .mysql: return isUnsigned ? "UNSIGNED" : "DOUBLE PRECISION"
             case .postgresql, .oracle, .sqlite, .sqlserver: return "DOUBLE PRECISION"
             }
+        case .id(let strategy):
+            switch strategy {
+            case .auto:
+                switch driver {
+                case .mysql: return "AUTO_INCREMENT"
+                case .postgresql: return "BIGSERIAL"
+                case .oracle, .sqlserver: return "IDENTITY"
+                case .sqlite: return "INTEGER"
+                }
+            case .none(let type): return self.type(from: type)
+            }
         case .int8, .int16, .uint8, .uint16:
             switch driver {
-            case .mysql: return type == .int8 || type == .int16 ? "SMALLINT" : "UNSIGNED" // options: AUTO_INCREMENT
+            case .mysql: return type == .int8 || type == .int16 ? "SMALLINT" : "UNSIGNED"
             case .postgresql: return "SMALLINT"
             case .oracle: return "NUMBERS(5)"
             case .sqlite: return "INTEGER"
-            case .sqlserver: return "SMALLINT" // options: IDENTITY
+            case .sqlserver: return "SMALLINT"
             }
         case .int32, .uint32:
             switch driver {
-            case .mysql: return type == .int32 ? "INT" : "UNSIGNED" // options: AUTO_INCREMENT
-            case .postgresql: return "INT" // options: SERIAL
+            case .mysql: return type == .int32 ? "INT" : "UNSIGNED"
+            case .postgresql: return "INT"
             case .oracle: return "NUMBERS(10)"
             case .sqlite: return "INTEGER"
-            case .sqlserver: return "INT" // options: IDENTITY
+            case .sqlserver: return "INT"
             }
         case .int64, .uint64:
             switch driver {
-            case .mysql: return type == .int64 ? "BIGINT" : "UNSIGNED" // options: AUTO_INCREMENT
-            case .postgresql: return "BIGINT" // options: BIGSERIAL
+            case .mysql: return type == .int64 ? "BIGINT" : "UNSIGNED"
+            case .postgresql: return "BIGINT"
             case .oracle: return "NUMBERS(20)"
             case .sqlite: return "INTEGER"
-            case .sqlserver: return "BIGINT" // options: IDENTITY
+            case .sqlserver: return "BIGINT"
             }
         case .string(let length, let isFixed):
             if let length = length {

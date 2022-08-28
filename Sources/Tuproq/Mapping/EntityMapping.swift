@@ -10,6 +10,7 @@ public protocol EntityMapping {
 
 extension EntityMapping {
     var strategy: MappingStrategy { .same }
+    var id: IDMapping { .init(name: "id") }
 
     var table: String {
         switch strategy {
