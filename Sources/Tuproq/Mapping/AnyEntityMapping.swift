@@ -5,11 +5,13 @@ struct AnyEntityMapping {
     let table: String
     let id: IDMapping
     let fields: Set<FieldMapping>
+    let parents: Set<ParentMapping>
 
     init<M: EntityMapping>(_ mapping: M) {
-        self.entity = mapping.entity
-        self.table = mapping.table
-        self.id = mapping.id
-        self.fields = mapping.fields
+        entity = mapping.entity
+        table = mapping.table
+        id = mapping.id
+        fields = mapping.fields
+        parents = mapping.parents
     }
 }
