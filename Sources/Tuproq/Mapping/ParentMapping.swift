@@ -4,12 +4,7 @@ public struct ParentMapping: Hashable {
     public let column: String
     public let isNullable: Bool
 
-    public init<E: EntityMapping>(
-        name: String,
-        parent: E,
-        column: String? = nil,
-        isNullable: Bool = false
-    ) {
+    public init<E: EntityMapping>(name: String, parent: E, column: String? = nil, isNullable: Bool = false) {
         self.name = name
         self.parent = AnyEntityMapping(parent)
         self.column = column ?? name
