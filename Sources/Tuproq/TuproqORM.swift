@@ -15,10 +15,10 @@ extension TuproqORM {
 
 extension TuproqORM {
     public func migrate() async throws {
-        let queryBuilder = SQLQueryBuilder()
         var allQueries = ""
 
         for mapping in mappings {
+            let queryBuilder = SQLQueryBuilder()
             var columns: [Table.Column] = [
                 Table.Column(
                     name: mapping.id.column,
@@ -43,6 +43,22 @@ extension TuproqORM {
                 let column = Table.Column(
                     name: field.column,
                     type: type(from: field.type),
+                    constraints: constraints
+                )
+                columns.append(column)
+            }
+
+            for parent in mapping.parents {
+                var constraints = [Constraint]()
+                constraints.append(ForeignKeyConstraint(key: parent.column))
+
+                if !parent.isNullable {
+                    constraints.append(NotNullConstraint())
+                }
+
+                let column = Table.Column(
+                    name: parent.column,
+                    type: type(from: parent.parent.id.type),
                     constraints: constraints
                 )
                 columns.append(column)
