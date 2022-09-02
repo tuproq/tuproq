@@ -1,4 +1,4 @@
-struct Table {
-    var name: String
-    var columns = [Column]()
+public struct Table {
+    public var name: String
+    public var columns = [Column]()
 }
