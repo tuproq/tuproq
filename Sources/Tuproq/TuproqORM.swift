@@ -18,7 +18,7 @@ extension TuproqORM {
         var allQueries = ""
 
         for mapping in mappings {
-            let queryBuilder = SQLQueryBuilder()
+            let queryBuilder = PostgreSQLQueryBuilder()
             var columns: [Table.Column] = [
                 Table.Column(
                     name: mapping.id.column,

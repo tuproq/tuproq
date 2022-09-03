@@ -1,6 +1,6 @@
 import Foundation
 
-final class SQLEntityManager: EntityManager {
+final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private typealias ChangeSet = [String: (Codable?, Codable?)] // [property: (oldValue, newValue)]
     private typealias EntityMap = [String: Any?]
 
@@ -51,8 +51,8 @@ final class SQLEntityManager: EntityManager {
         NotificationCenter.default.removeObserver(self, name: propertyValueChanged, object: nil)
     }
 
-    func createQueryBuilder() -> SQLQueryBuilder {
-        SQLQueryBuilder()
+    func createQueryBuilder() -> QB {
+        QB()
     }
 
     func find<E: Entity, I: Hashable>(_ entityType: E.Type, id: I) async throws -> E? {
@@ -117,13 +117,13 @@ final class SQLEntityManager: EntityManager {
         for (table, entityMap) in entityInsertions {
             for (id, dictionary) in entityMap {
                 var columns = [String]()
-                var values = [Any?]()
+                var values = [Codable?]()
 
                 for (key, value) in dictionary {
                     columns.append(key)
 
-                    if let value = value {
-                        if let valueDictionary = value as? [String: Any?] {
+                    if let value = value as? Codable {
+                        if let valueDictionary = value as? [String: Codable?] {
                             values.append(valueDictionary["id"]!)
                         } else {
                             values.append(value)
@@ -153,7 +153,7 @@ final class SQLEntityManager: EntityManager {
     private func prepareUpdates() {
         for (table, entityMap) in entityUpdates {
             for id in entityMap.keys {
-                var values = [(String, Any?)]()
+                var values = [(String, Codable?)]()
 
                 if let changeSet = entityChangeSets[table]?[id] {
                     for (key, (_, newValue)) in changeSet {
@@ -165,7 +165,7 @@ final class SQLEntityManager: EntityManager {
                     }
 
                     let query = createQueryBuilder()
-                        .update(table, set: values).where("id = \"\(id)\"")
+                        .update(table: table, values: values).where("id = \"\(id)\"")
                         .returning()
                         .getQuery()
                     allQueries += "\(query);"
@@ -265,6 +265,7 @@ final class SQLEntityManager: EntityManager {
 
         if let entityState = entityStates[id] {
             switch entityState {
+            case .detached: break // TODO: implement
             case .managed: break
             case .new:
                 insert(entity: entity, id: id)
@@ -390,13 +391,5 @@ final class SQLEntityManager: EntityManager {
 
     private func removeFromIdentityMap(entityName: String, id: AnyHashable) {
         identityMap[entityName]?.removeValue(forKey: id)
-    }
-}
-
-extension SQLEntityManager {
-    enum EntityState {
-        case new
-        case managed
-        case removed
     }
 }

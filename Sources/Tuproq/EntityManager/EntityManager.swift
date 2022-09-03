@@ -1,4 +1,4 @@
-public protocol EntityManager {
+public protocol EntityManager: AnyObject {
     associatedtype Q: QueryBuilder
 
     func createQueryBuilder() -> Q

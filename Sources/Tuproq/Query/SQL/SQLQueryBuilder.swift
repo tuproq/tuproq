@@ -1,9 +1,11 @@
-public class SQLQueryBuilder: QueryBuilder {
-    private var expressions = [SQLExpression]()
+public protocol SQLQueryBuilder: QueryBuilder {
+    var expressions: [SQLExpression] { set get }
 
-    public init() {}
+    init()
+}
 
-    public func getQuery() -> SQLQuery {
+public extension SQLQueryBuilder {
+    func getQuery() -> SQLQuery {
         var raw = ""
 
         for expression in expressions {
@@ -32,22 +34,22 @@ public extension SQLQueryBuilder {
 }
 
 public extension SQLQueryBuilder {
-    func insert(into table: String, columns: String..., values: Any?...) -> Self {
+    func insert(into table: String, columns: String..., values: Codable?...) -> Self {
         insert(into: table, columns: columns, values: values)
     }
 
-    func insert(into table: String, columns: [String] = .init(), values: [Any?]) -> Self {
+    func insert(into table: String, columns: [String] = .init(), values: [Codable?]) -> Self {
         expressions.append(InsertIntoSQLExpression(table: table, columns: columns, values: values))
         return self
     }
 }
 
 public extension SQLQueryBuilder {
-    func update(_ table: String, set values: (String, Any?)...) -> Self {
-        update(table, set: values)
+    func update(table: String, values: (String, Codable?)...) -> Self {
+        update(table: table, values: values)
     }
 
-    func update(_ table: String, set values: [(String, Any?)]) -> Self {
+    func update(table: String, values: [(String, Codable?)]) -> Self {
         expressions.append(UpdateSQLExpression(table: table, values: values))
         return self
     }
