@@ -1,4 +1,4 @@
 public enum IDGeneratorStrategy: Hashable {
     case auto
-    case none(type: FieldType)
+    case concrete(type: FieldType)
 }

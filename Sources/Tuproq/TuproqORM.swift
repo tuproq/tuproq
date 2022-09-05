@@ -142,7 +142,7 @@ extension TuproqORM {
                 case .oracle, .sqlserver: return "IDENTITY"
                 case .sqlite: return "INTEGER"
                 }
-            case .none(let type): return self.type(from: type)
+            case .concrete(let type): return self.type(from: type)
             }
         case .int8, .int16, .uint8, .uint16:
             switch driver {
