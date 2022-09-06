@@ -9,7 +9,7 @@ public protocol EntityMapping {
     var parents: Set<ParentMapping> { get }
 }
 
-extension EntityMapping {
+public extension EntityMapping {
     var strategy: MappingStrategy { .same }
     var id: IDMapping { .init(name: "id") }
     var parents: Set<ParentMapping> { .init() }
