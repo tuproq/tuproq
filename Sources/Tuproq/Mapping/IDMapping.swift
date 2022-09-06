@@ -9,6 +9,10 @@ public struct IDMapping: Hashable {
         self.column = column ?? name
     }
 
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.name == rhs.name
+    }
+
     public func hash(into hasher: inout Hasher) {
         hasher.combine(name)
     }
