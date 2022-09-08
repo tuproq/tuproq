@@ -1,4 +1,6 @@
 struct ForeignKeyConstraint: Constraint {
     let name = "FOREIGN KEY"
-    var key: String
+    let column: String
+    let relationTable: String
+    let relationColumn: String
 }

@@ -19,52 +19,66 @@ extension TuproqORM {
 
         for mapping in mappings {
             let queryBuilder = PostgreSQLQueryBuilder()
-            var columns: [Table.Column] = [
-                Table.Column(
-                    name: mapping.id.column,
+            var constraints = [Constraint]()
+            var columns = [Table.Column]()
+
+            if mapping.id.columns.count > 1 {
+                constraints.append(PrimaryKeyConstraint(columns: mapping.id.columns))
+            } else {
+                let columnName = mapping.id.columns[0]
+                let column = Table.Column(
+                    name: columnName,
                     type: mapping.id.type.name(for: connection.driver),
                     constraints: [
-                        PrimaryKeyConstraint(key: "pk_\(mapping.id.column)")
+                        PrimaryKeyConstraint(column: columnName)
                     ]
                 )
-            ]
+                columns.append(column)
+            }
 
             for field in mapping.fields {
-                var constraints = [Constraint]()
+                var columnConstraints = [Constraint]()
 
                 if !field.isNullable {
-                    constraints.append(NotNullConstraint())
+                    columnConstraints.append(NotNullConstraint())
                 }
 
                 if field.isUnique {
-                    constraints.append(UniqueConstraint(column: field.column))
+                    columnConstraints.append(UniqueConstraint(column: field.column))
                 }
 
                 let column = Table.Column(
                     name: field.column,
                     type: field.type.name(for: connection.driver),
-                    constraints: constraints
+                    constraints: columnConstraints
                 )
                 columns.append(column)
             }
 
             for parent in mapping.parents {
-                var constraints = [Constraint]()
-                constraints.append(ForeignKeyConstraint(key: parent.column))
+                constraints.append(
+                    ForeignKeyConstraint(
+                        column: parent.column,
+                        relationTable: parent.parent.table,
+                        relationColumn: "id"
+                    )
+                )
+
+                var columnConstraints = [Constraint]()
 
                 if !parent.isNullable {
-                    constraints.append(NotNullConstraint())
+                    columnConstraints.append(NotNullConstraint())
                 }
 
                 let column = Table.Column(
                     name: parent.column,
                     type: parent.parent.id.type.name(for: connection.driver),
-                    constraints: constraints
+                    constraints: columnConstraints
                 )
                 columns.append(column)
             }
 
-            let query = queryBuilder.create(table: mapping.table, columns: columns).getQuery()
+            let query = queryBuilder.create(table: mapping.table, columns: columns, constraints: constraints).getQuery()
             allQueries += "\(query);"
         }
 

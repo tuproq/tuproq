@@ -16,6 +16,17 @@ final class CreateTableSQLExpression: SQLExpression {
 
                 return columnDefinition
             }.joined(separator: ", ")
+            raw += table.constraints.map { constraint in
+                var columnDefinition = ", "
+
+                if let primaryKeyConstraint = constraint as? PrimaryKeyConstraint {
+                    columnDefinition += "\(primaryKeyConstraint.name) (\(primaryKeyConstraint.columns.joined(separator: ", ")))"
+                } else if let foreignKeyConstraint = constraint as? ForeignKeyConstraint {
+                    columnDefinition += "\(foreignKeyConstraint.name) (\(foreignKeyConstraint.column)) REFERENCES \(foreignKeyConstraint.relationTable)(\(foreignKeyConstraint.relationColumn))"
+                }
+
+                return columnDefinition
+            }.joined(separator: ", ")
             raw += ")"
         }
 
