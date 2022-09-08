@@ -23,8 +23,8 @@ final class CreateTableSQLExpression: SQLExpression {
                     constraintDefinition += "\(primaryKey.name) (\(primaryKey.columns.joined(separator: ", ")))"
                 } else if let foreignKey = constraint as? ForeignKeyConstraint {
                     constraintDefinition += """
-                    "\(foreignKey.name) (\(foreignKey.column)) \
-                    REFERENCES \(foreignKey.relationTable)(\(foreignKey.relationColumn))
+                    "\(foreignKey.name) (\(foreignKey.columns.joined(separator: ", "))) \
+                    REFERENCES \(foreignKey.relationTable)(\(foreignKey.relationColumns.joined(separator: ", ")))
                     """
                 }
 
