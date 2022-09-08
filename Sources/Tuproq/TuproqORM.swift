@@ -21,14 +21,16 @@ extension TuproqORM {
             let queryBuilder = PostgreSQLQueryBuilder()
             var constraints = [Constraint]()
             var columns = [Table.Column]()
+            let ids = Array(mapping.ids)
 
-            if mapping.id.columns.count > 1 {
-                constraints.append(PrimaryKeyConstraint(columns: mapping.id.columns))
+            if ids.count > 1 {
+                constraints.append(PrimaryKeyConstraint(columns: ids.map { $0.column }))
             } else {
-                let columnName = mapping.id.columns[0]
+                let id = ids[0]
+                let columnName = id.column
                 let column = Table.Column(
                     name: columnName,
-                    type: mapping.id.type.name(for: connection.driver),
+                    type: id.type.name(for: connection.driver),
                     constraints: [
                         PrimaryKeyConstraint(column: columnName)
                     ]
@@ -70,12 +72,14 @@ extension TuproqORM {
                     columnConstraints.append(NotNullConstraint())
                 }
 
-                let column = Table.Column(
-                    name: parent.column,
-                    type: parent.parent.id.type.name(for: connection.driver),
-                    constraints: columnConstraints
-                )
-                columns.append(column)
+                for parentID in parent.parent.ids {
+                    let column = Table.Column(
+                        name: parent.column,
+                        type: parentID.type.name(for: connection.driver),
+                        constraints: columnConstraints
+                    )
+                    columns.append(column)
+                }
             }
 
             let query = queryBuilder.create(table: mapping.table, columns: columns, constraints: constraints).getQuery()

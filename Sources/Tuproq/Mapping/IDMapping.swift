@@ -1,25 +1,19 @@
 public struct IDMapping: Hashable {
-    public let names: [String]
+    public let name: String
     public let type: FieldType
-    public let columns: [String]
+    public let column: String
 
-    public init(name: String, type: FieldType = .id(), column: String = "") {
-        self.names = [name]
+    public init(name: String, type: FieldType = .id(), column: String? = nil) {
+        self.name = name
         self.type = type
-        self.columns = column.isEmpty ? names : [column]
-    }
-
-    public init(names: [String], type: FieldType = .id(), columns: [String] = .init()) {
-        self.names = names
-        self.type = type
-        self.columns = columns.isEmpty ? names : columns
+        self.column = column ?? name
     }
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.names == rhs.names
+        lhs.name == rhs.name
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(names)
+        hasher.combine(name)
     }
 }

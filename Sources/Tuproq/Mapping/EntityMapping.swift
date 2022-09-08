@@ -4,14 +4,14 @@ public protocol EntityMapping {
     var strategy: MappingStrategy { get }
     var entity: E.Type { get }
     var table: String { get }
-    var id: IDMapping { get }
+    var ids: Set<IDMapping> { get }
     var fields: Set<FieldMapping> { get }
     var parents: Set<ParentMapping> { get }
 }
 
 public extension EntityMapping {
     var strategy: MappingStrategy { .same }
-    var id: IDMapping { .init(name: "id") }
+    var ids: Set<IDMapping> { [.init(name: "id")] }
     var parents: Set<ParentMapping> { .init() }
 
     var table: String {

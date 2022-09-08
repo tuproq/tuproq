@@ -20,10 +20,13 @@ final class CreateTableSQLExpression: SQLExpression {
                 var constraintDefinition = ", "
 
                 if let primaryKey = constraint as? PrimaryKeyConstraint {
-                    constraintDefinition += "\(primaryKey.name) (\(primaryKey.columns.joined(separator: ", ")))"
+                    constraintDefinition += """
+                    CONSTRAINT PK_\(table.name)_\(primaryKey.columns.joined(separator: "_")) \(primaryKey.name) \
+                    (\(primaryKey.columns.joined(separator: ", ")))
+                    """
                 } else if let foreignKey = constraint as? ForeignKeyConstraint {
                     constraintDefinition += """
-                    \(foreignKey.name) (\(foreignKey.columns.joined(separator: ", "))) \
+                    CONSTRAINT FK_\(table.name)_\(foreignKey.columns.joined(separator: "_"))_\(foreignKey.relationTable)_\(foreignKey.relationColumns.joined(separator: "_")) \(foreignKey.name) (\(foreignKey.columns.joined(separator: ", "))) \
                     REFERENCES \(foreignKey.relationTable)(\(foreignKey.relationColumns.joined(separator: ", ")))
                     """
                 }
