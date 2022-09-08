@@ -1,6 +1,6 @@
 struct PrimaryKeyConstraint: Constraint {
     let name = "PRIMARY KEY"
-    var columns: [String]
+    let columns: [String]
 
     init(column: String) {
         self.columns = [column]
