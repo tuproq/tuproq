@@ -17,15 +17,18 @@ final class CreateTableSQLExpression: SQLExpression {
                 return columnDefinition
             }.joined(separator: ", ")
             raw += table.constraints.map { constraint in
-                var columnDefinition = ", "
+                var constraintDefinition = ", "
 
-                if let primaryKeyConstraint = constraint as? PrimaryKeyConstraint {
-                    columnDefinition += "\(primaryKeyConstraint.name) (\(primaryKeyConstraint.columns.joined(separator: ", ")))"
-                } else if let foreignKeyConstraint = constraint as? ForeignKeyConstraint {
-                    columnDefinition += "\(foreignKeyConstraint.name) (\(foreignKeyConstraint.column)) REFERENCES \(foreignKeyConstraint.relationTable)(\(foreignKeyConstraint.relationColumn))"
+                if let primaryKey = constraint as? PrimaryKeyConstraint {
+                    constraintDefinition += "\(primaryKey.name) (\(primaryKey.columns.joined(separator: ", ")))"
+                } else if let foreignKey = constraint as? ForeignKeyConstraint {
+                    constraintDefinition += """
+                    "\(foreignKey.name) (\(foreignKey.column)) \
+                    REFERENCES \(foreignKey.relationTable)(\(foreignKey.relationColumn))
+                    """
                 }
 
-                return columnDefinition
+                return constraintDefinition
             }.joined(separator: ", ")
             raw += ")"
         }
