@@ -12,6 +12,7 @@ public protocol EntityMapping {
 public extension EntityMapping {
     var strategy: MappingStrategy { .same }
     var ids: Set<IDMapping> { [.init(name: "id")] }
+    var fields: Set<FieldMapping> { .init() }
     var parents: Set<ParentMapping> { .init() }
 
     var table: String {
