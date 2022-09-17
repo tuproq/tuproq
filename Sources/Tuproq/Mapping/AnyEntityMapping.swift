@@ -6,6 +6,7 @@ struct AnyEntityMapping {
     let ids: Set<IDMapping>
     let fields: Set<FieldMapping>
     let parents: Set<ParentMapping>
+    let children: Set<ChildMapping>
 
     init<M: EntityMapping>(_ mapping: M) {
         entity = mapping.entity
@@ -13,5 +14,6 @@ struct AnyEntityMapping {
         ids = mapping.ids
         fields = mapping.fields
         parents = mapping.parents
+        children = mapping.children
     }
 }
