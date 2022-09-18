@@ -8,6 +8,7 @@ public protocol EntityMapping {
     var fields: Set<FieldMapping> { get }
     var parents: Set<ParentMapping> { get }
     var children: Set<ChildMapping> { get }
+    var siblings: Set<SiblingMapping> { get }
 }
 
 public extension EntityMapping {
@@ -16,6 +17,7 @@ public extension EntityMapping {
     var fields: Set<FieldMapping> { .init() }
     var parents: Set<ParentMapping> { .init() }
     var children: Set<ChildMapping> { .init() }
+    var siblings: Set<SiblingMapping> { .init() }
 
     var table: String {
         switch strategy {
