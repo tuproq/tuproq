@@ -1,12 +1,12 @@
 public struct SiblingMapping: Hashable {
     public let name: String
     public let column: String
-    let mapping: AnyEntityMapping
+    let sibling: AnyEntityMapping
     public let joinTable: String
 
-    public init<M: EntityMapping>(name: String, mapping: M, column: String? = nil, through joinTable: String) {
+    public init<M: EntityMapping>(name: String, sibling: M, column: String? = nil, through joinTable: String) {
         self.name = name
-        self.mapping = AnyEntityMapping(mapping)
+        self.sibling = AnyEntityMapping(sibling)
         self.column = column ?? name
         self.joinTable = joinTable
     }

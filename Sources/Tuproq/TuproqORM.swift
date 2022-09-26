@@ -142,7 +142,7 @@ extension TuproqORM {
                 joinTable = tables[index]
             } else {
                 joinTable = Table(name: joinTableName)
-                ids(mapping: sibling.mapping, table: &joinTable)
+                ids(mapping: sibling.sibling, table: &joinTable)
             }
 
             joinTable.columns.append(
@@ -152,7 +152,7 @@ extension TuproqORM {
                     constraints: [
                         ForeignKeyConstraint(
                             column: sibling.column,
-                            relationTable: sibling.mapping.table,
+                            relationTable: sibling.sibling.table,
                             relationColumn: "id"
                         )
                     ]
@@ -165,7 +165,7 @@ extension TuproqORM {
                 tables.append(joinTable)
             }
 
-            siblings(mapping: sibling.mapping, tables: &tables)
+            siblings(mapping: sibling.sibling, tables: &tables)
         }
     }
 }
