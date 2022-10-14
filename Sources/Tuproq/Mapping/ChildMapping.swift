@@ -1,25 +1,19 @@
 public struct ChildMapping: Hashable {
-    public let name: String
-    let child: AnyEntityMapping
-    let isMany: Bool
+    public let field: String
+    let entity: Any
+    public let isUnique: Bool
 
-    public init<M: EntityMapping>(name: String, child: M) {
-        self.name = name
-        self.child = AnyEntityMapping(child)
-        isMany = false
-    }
-
-    public init<M: EntityMapping>(name: String, children: M) {
-        self.name = name
-        child = AnyEntityMapping(children)
-        isMany = true
+    public init<E: Entity>(field: String, entity: E.Type, isUnique: Bool = false) {
+        self.field = field
+        self.entity = entity
+        self.isUnique = isUnique
     }
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.name == rhs.name
+        lhs.field == rhs.field
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(name)
+        hasher.combine(field)
     }
 }
