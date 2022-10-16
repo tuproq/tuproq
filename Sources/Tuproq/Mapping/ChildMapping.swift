@@ -1,4 +1,4 @@
-public struct ChildMapping: Hashable {
+public struct ChildMapping: AssociationMapping {
     public let field: String
     let entity: Any
     public let isUnique: Bool

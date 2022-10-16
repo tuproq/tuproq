@@ -1,22 +1,16 @@
-public struct ParentMapping: Hashable {
+public struct ParentMapping: AssociationMapping {
     public let field: String
     let entity: Any
-    public let column: String
-    public let isUnique: Bool
-    public let isNullable: Bool
+    public let column: JoinTable.Column
 
     public init<E: Entity>(
         field: String,
         entity: E.Type,
-        column: String? = nil,
-        isUnique: Bool = false,
-        isNullable: Bool = false
+        column: JoinTable.Column? = nil
     ) {
         self.field = field
         self.entity = entity
-        self.column = column ?? field
-        self.isUnique = isUnique
-        self.isNullable = isNullable
+        self.column = column ?? .init(name: field)
     }
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
