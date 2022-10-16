@@ -13,8 +13,13 @@ let package = Package(
     products: [
         .library(name: "Tuproq", targets: ["Tuproq"])
     ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0"))
+    ],
     targets: [
-        .target(name: "Tuproq"),
+        .target(name: "Tuproq", dependencies: [
+            .product(name: "Collections", package: "swift-collections")
+        ]),
         .testTarget(name: "TuproqTests", dependencies: [
             .target(name: "Tuproq")
         ])
