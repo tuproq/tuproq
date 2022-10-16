@@ -10,7 +10,7 @@ public struct FieldMapping: Hashable {
         type: FieldType,
         column: String? = nil,
         isUnique: Bool = false,
-        isNullable: Bool = false
+        isNullable: Bool = true
     ) {
         self.name = name
         self.type = type
