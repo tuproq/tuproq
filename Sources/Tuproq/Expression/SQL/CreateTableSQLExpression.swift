@@ -16,8 +16,13 @@ final class CreateTableSQLExpression: SQLExpression {
 
                 return columnDefinition
             }.joined(separator: ", ")
+
+            if !table.constraints.isEmpty {
+                raw += ", "
+            }
+
             raw += table.constraints.map { constraint in
-                var constraintDefinition = ", "
+                var constraintDefinition = ""
 
                 if let primaryKey = constraint as? PrimaryKeyConstraint {
                     constraintDefinition += "\(primaryKey.name) (\(primaryKey.columns.joined(separator: ", ")))"
