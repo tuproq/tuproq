@@ -1,6 +1,8 @@
+import Collections
+
 public final class TuproqORM {
     public let connection: Connection
-    private var mappings = [AnyEntityMapping]()
+    private var mappings = OrderedDictionary<String, AnyEntityMapping>()
 
     public init(connection: Connection) {
         self.connection = connection
@@ -9,19 +11,27 @@ public final class TuproqORM {
 
 extension TuproqORM {
     public func addMapping<M: EntityMapping>(_ mapping: M) {
-        mappings.append(AnyEntityMapping(mapping))
+        mappings[String(describing: mapping.entity)] = AnyEntityMapping(mapping)
     }
 }
 
 extension TuproqORM {
     public func migrate() async throws {
+        let allQueries = "BEGIN;\(createSchema())COMMIT;"
+
+        if let result = try await connection.query(allQueries) {
+            print(result)
+        }
+    }
+
+    public func createSchema() -> String {
         var allQueries = ""
 
-        for mapping in mappings {
-            let queryBuilder = PostgreSQLQueryBuilder()
+        for mapping in mappings.values {
             let tables = createTables(from: mapping)
 
             for table in tables {
+                let queryBuilder = PostgreSQLQueryBuilder()
                 let query = queryBuilder.create(
                     table: table.name,
                     columns: table.columns,
@@ -31,28 +41,24 @@ extension TuproqORM {
             }
         }
 
-        allQueries = "BEGIN;\(allQueries)COMMIT;"
-
-        if let result = try await connection.query(allQueries) {
-            print(result)
-        }
+        return allQueries
     }
 
-    func createTable() -> [Table] {
+    private func createTable() -> [Table] {
         var tables = [Table]()
 
-        for mapping in mappings {
+        for mapping in mappings.values {
             tables.append(contentsOf: createTables(from: mapping))
         }
 
         return tables
     }
 
-    func createTables<M: EntityMapping>(from mapping: M) -> [Table] {
+    private func createTables<M: EntityMapping>(from mapping: M) -> [Table] {
         createTables(from: AnyEntityMapping(mapping))
     }
 
-    func createTables(from mapping: AnyEntityMapping) -> [Table] {
+    private func createTables(from mapping: AnyEntityMapping) -> [Table] {
         var tables = [Table]()
         var table = Table(name: mapping.table)
         ids(mapping: mapping, table: &table)
@@ -106,23 +112,29 @@ extension TuproqORM {
 
     private func parents(mapping: AnyEntityMapping, table: inout Table) {
         for parent in mapping.parents {
+            let parentMapping = mappings[String(describing: parent.entity)]!
+            let relationTable = parentMapping.table
             table.constraints.append(
-                ForeignKeyConstraint(column: parent.column, relationTable: parent.parent.table, relationColumn: "id")
+                ForeignKeyConstraint(
+                    column: parent.column.name,
+                    relationTable: relationTable,
+                    relationColumn: parent.column.referencedColumnName
+                )
             )
 
             var columnConstraints = [Constraint]()
 
-            if parent.isUnique {
-                columnConstraints.append(UniqueConstraint(column: parent.column))
+            if parent.column.isUnique {
+                columnConstraints.append(UniqueConstraint(column: parent.column.name))
             }
 
-            if !parent.isNullable {
+            if !parent.column.isNullable {
                 columnConstraints.append(NotNullConstraint())
             }
 
-            for parentID in parent.parent.ids {
+            for parentID in parentMapping.ids {
                 let column = Table.Column(
-                    name: parent.column,
+                    name: parent.column.name,
                     type: parentID.type.name(for: connection.driver),
                     constraints: columnConstraints
                 )
@@ -133,39 +145,56 @@ extension TuproqORM {
 
     private func siblings(mapping: AnyEntityMapping, tables: inout [Table]) {
         for sibling in mapping.siblings {
-            let joinTableName = sibling.joinTable
-            var joinTable: Table
-            var joinTableIndex: Int?
+            if let siblingJoinTable = sibling.joinTable {
+                let siblingMapping = mappings[String(describing: sibling.entity)]!
+                let joinTableName = siblingJoinTable.name
+                var joinTable: Table
+                var joinTableIndex: Int?
 
-            if let index = tables.firstIndex(where: { $0.name == joinTableName }) {
-                joinTableIndex = index
-                joinTable = tables[index]
-            } else {
-                joinTable = Table(name: joinTableName)
-                ids(mapping: sibling.sibling, table: &joinTable)
-            }
+                if let index = tables.firstIndex(where: { $0.name == joinTableName }) {
+                    joinTableIndex = index
+                    joinTable = tables[index]
+                } else {
+                    joinTable = Table(name: joinTableName)
+                    ids(mapping: siblingMapping, table: &joinTable)
+                }
 
-            joinTable.columns.append(
-                Table.Column(
-                    name: sibling.column,
-                    type: "BIGSERIAL",
-                    constraints: [
-                        ForeignKeyConstraint(
-                            column: sibling.column,
-                            relationTable: sibling.sibling.table,
-                            relationColumn: "id"
-                        )
-                    ]
+                joinTable.columns.append(
+                    Table.Column(
+                        name: siblingJoinTable.column.name,
+                        type: "BIGSERIAL",
+                        constraints: []
+                    )
                 )
-            )
+                joinTable.columns.append(
+                    Table.Column(
+                        name: siblingJoinTable.inverseColumn.name,
+                        type: "BIGSERIAL",
+                        constraints: []
+                    )
+                )
 
-            if let index = joinTableIndex {
-                tables[index] = joinTable
-            } else {
-                tables.append(joinTable)
+                joinTable.constraints.append(
+                    ForeignKeyConstraint(
+                        column: siblingJoinTable.column.name,
+                        relationTable: mapping.table,
+                        relationColumn: siblingJoinTable.column.referencedColumnName
+                    )
+                )
+                joinTable.constraints.append(
+                    ForeignKeyConstraint(
+                        column: siblingJoinTable.inverseColumn.name,
+                        relationTable: siblingMapping.table,
+                        relationColumn: siblingJoinTable.inverseColumn.referencedColumnName
+                    )
+                )
+
+                if let index = joinTableIndex {
+                    tables[index] = joinTable
+                } else {
+                    tables.append(joinTable)
+                }
             }
-
-            siblings(mapping: sibling.sibling, tables: &tables)
         }
     }
 }
