@@ -10,7 +10,7 @@ public struct ParentMapping: AssociationMapping {
     ) {
         self.field = field
         self.entity = entity
-        self.column = column ?? .init(name: field)
+        self.column = column ?? .init(name: TuproqORM.namingStrategy.joinColumn(field: field))
     }
 
     public static func == (lhs: Self, rhs: Self) -> Bool {

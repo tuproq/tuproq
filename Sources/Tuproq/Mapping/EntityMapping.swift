@@ -1,7 +1,6 @@
 public protocol EntityMapping {
     associatedtype E: Entity
 
-    static var namingStrategy: NamingStrategy { get }
     var entity: E.Type { get }
     var table: String { get }
     var ids: Set<IDMapping> { get }
@@ -12,9 +11,8 @@ public protocol EntityMapping {
 }
 
 public extension EntityMapping {
-    static var namingStrategy: NamingStrategy { SnakeCaseNamingStrategy() }
-    var table: String { Self.namingStrategy.table(entity: entity) }
-    var ids: Set<IDMapping> { [.init(name: Self.namingStrategy.referenceColumn)] }
+    var table: String { TuproqORM.namingStrategy.table(entity: entity) }
+    var ids: Set<IDMapping> { [.init(name: TuproqORM.namingStrategy.referenceColumn)] }
     var fields: Set<FieldMapping> { .init() }
     var parents: Set<ParentMapping> { .init() }
     var children: Set<ChildMapping> { .init() }

@@ -1,6 +1,8 @@
 import Collections
 
 public final class TuproqORM {
+    public static var namingStrategy: NamingStrategy = SnakeCaseNamingStrategy()
+
     public let connection: Connection
     private var mappings = OrderedDictionary<String, AnyEntityMapping>()
 
