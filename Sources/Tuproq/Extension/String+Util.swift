@@ -1,18 +1,29 @@
 import Foundation
 
+public extension String {
+    enum LetterCase {
+        case lower
+        case upper
+    }
+}
+
 extension String {
     var droppingLeadingSlash: String {
         first == "/" ? String(dropFirst()) : self
     }
 
-    var snakeCased: String {
+    func snakeCase(_ letterCase: LetterCase = .lower) -> String {
         let acronymPattern = "([A-Z]+)([A-Z][a-z]|[0-9])"
         let fullWordsPattern = "([a-z])([A-Z]|[0-9])"
         let digitsFirstPattern = "([0-9])([A-Z])"
-
-        return snakeCase(with: acronymPattern)?
+        let result = snakeCase(with: acronymPattern)?
             .snakeCase(with: fullWordsPattern)?
-            .snakeCase(with:digitsFirstPattern)?.lowercased() ?? lowercased()
+            .snakeCase(with:digitsFirstPattern)
+
+        switch letterCase {
+        case .lower: return result?.lowercased() ?? lowercased()
+        case .upper: return result?.uppercased() ?? uppercased()
+        }
     }
 
     private func snakeCase(with pattern: String) -> String? {
