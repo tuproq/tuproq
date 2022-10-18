@@ -8,12 +8,4 @@ public struct ChildMapping: AssociationMapping {
         self.entity = entity
         self.isUnique = isUnique
     }
-
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.field == rhs.field
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(field)
-    }
 }
