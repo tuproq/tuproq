@@ -1,7 +1,7 @@
 public protocol EntityMapping {
     associatedtype E: Entity
 
-    var namingStrategy: NamingStrategy { get }
+    static var namingStrategy: NamingStrategy { get }
     var entity: E.Type { get }
     var table: String { get }
     var ids: Set<IDMapping> { get }
@@ -12,9 +12,9 @@ public protocol EntityMapping {
 }
 
 public extension EntityMapping {
-    var namingStrategy: NamingStrategy { SnakeCaseNamingStrategy() }
-    var table: String { namingStrategy.tableName(entity: entity) }
-    var ids: Set<IDMapping> { [.init(name: namingStrategy.referenceColumnName)] }
+    static var namingStrategy: NamingStrategy { SnakeCaseNamingStrategy() }
+    var table: String { Self.namingStrategy.table(entity: entity) }
+    var ids: Set<IDMapping> { [.init(name: Self.namingStrategy.referenceColumn)] }
     var fields: Set<FieldMapping> { .init() }
     var parents: Set<ParentMapping> { .init() }
     var children: Set<ChildMapping> { .init() }

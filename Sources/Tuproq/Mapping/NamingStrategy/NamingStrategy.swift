@@ -1,39 +1,39 @@
 public protocol NamingStrategy {
-    var referenceColumnName: String { get }
+    var referenceColumn: String { get }
 
-    func columnName(fieldName: String, entityName: String?) -> String
-    func joinColumnName(fieldName: String) -> String
-    func joinKeyColumnName(entityName: String, referenceColumnName: String?) -> String
-    func joinTableName(sourceEntityName: String, targetEntityName: String, fieldName: String?) -> String
-    func tableName(entityName: String) -> String
+    func column(field: String, entity: String?) -> String
+    func joinColumn(field: String) -> String
+    func joinKeyColumn(entity: String, referenceColumn: String?) -> String
+    func joinTable(sourceEntity: String, targetEntity: String, field: String?) -> String
+    func table(entity: String) -> String
 }
 
 public extension NamingStrategy {
-    func columnName<E: Entity>(fieldName: String, entity: E.Type?) -> String {
+    func column<E: Entity>(field: String, entity: E.Type?) -> String {
         if let entity = entity {
-            return columnName(fieldName: fieldName, entityName: String(describing: entity))
+            return column(field: field, entity: String(describing: entity))
         }
 
-        return columnName(fieldName: fieldName, entityName: nil)
+        return column(field: field, entity: nil)
     }
 
-    func joinKeyColumnName<E: Entity>(entity: E.Type, referenceColumnName: String? = nil) -> String {
-        joinKeyColumnName(entityName: String(describing: entity), referenceColumnName: referenceColumnName)
+    func joinKeyColumn<E: Entity>(entity: E.Type, referenceColumn: String? = nil) -> String {
+        joinKeyColumn(entity: String(describing: entity), referenceColumn: referenceColumn)
     }
 
-    func joinTableName<SE: Entity, TE: Entity>(
+    func joinTable<SE: Entity, TE: Entity>(
         sourceEntity: SE.Type,
         targetEntity: TE.Type,
-        fieldName: String? = nil
+        field: String? = nil
     ) -> String {
-        joinTableName(
-            sourceEntityName: String(describing: sourceEntity),
-            targetEntityName: String(describing: targetEntity),
-            fieldName: fieldName
+        joinTable(
+            sourceEntity: String(describing: sourceEntity),
+            targetEntity: String(describing: targetEntity),
+            field: field
         )
     }
 
-    func tableName<E: Entity>(entity: E.Type) -> String {
-        tableName(entityName: String(describing: entity))
+    func table<E: Entity>(entity: E.Type) -> String {
+        table(entity: String(describing: entity))
     }
 }

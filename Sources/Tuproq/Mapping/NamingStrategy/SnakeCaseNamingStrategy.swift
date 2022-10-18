@@ -1,7 +1,7 @@
 public struct SnakeCaseNamingStrategy: NamingStrategy {
     public var letterCase: String.LetterCase
 
-    public var referenceColumnName: String {
+    public var referenceColumn: String {
         switch letterCase {
         case .lower: return "id"
         case .upper: return "ID"
@@ -12,30 +12,30 @@ public struct SnakeCaseNamingStrategy: NamingStrategy {
         self.letterCase = letterCase
     }
 
-    public func columnName(fieldName: String, entityName: String?) -> String {
-        fieldName.snakeCase(letterCase)
+    public func column(field: String, entity: String?) -> String {
+        field.snakeCase(letterCase)
     }
 
-    public func joinColumnName(fieldName: String) -> String {
-        "\(fieldName.snakeCase(letterCase))_\(referenceColumnName)"
+    public func joinColumn(field: String) -> String {
+        "\(field.snakeCase(letterCase))_\(referenceColumn)"
     }
 
-    public func joinKeyColumnName(entityName: String, referenceColumnName: String?) -> String {
-        "\(tableName(entityName: entityName))_\(referenceColumnName ?? self.referenceColumnName)"
+    public func joinKeyColumn(entity: String, referenceColumn: String?) -> String {
+        "\(table(entity: entity))_\(referenceColumn ?? self.referenceColumn)"
     }
 
-    public func joinTableName(sourceEntityName: String, targetEntityName: String, fieldName: String?) -> String {
-        "\(tableName(entityName: sourceEntityName))_\(tableName(entityName: targetEntityName))"
+    public func joinTable(sourceEntity: String, targetEntity: String, field: String?) -> String {
+        "\(table(entity: sourceEntity))_\(table(entity: targetEntity))"
     }
 
-    public func tableName(entityName: String) -> String {
+    public func table(entity: String) -> String {
         let dot = "."
-        var entityName = entityName
+        var entity = entity
 
-        if entityName.contains(dot) {
-            entityName = entityName.components(separatedBy: dot).last ?? ""
+        if entity.contains(dot) {
+            entity = entity.components(separatedBy: dot).last ?? ""
         }
 
-        return entityName.snakeCase(letterCase)
+        return entity.snakeCase(letterCase)
     }
 }
