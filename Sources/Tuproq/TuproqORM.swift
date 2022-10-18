@@ -13,6 +13,17 @@ extension TuproqORM {
     public func addMapping<M: EntityMapping>(_ mapping: M) {
         mappings[String(describing: mapping.entity)] = AnyEntityMapping(mapping)
     }
+
+    public func createEntityManager<EM: EntityManager>() -> EM {
+//        switch connection.driver {
+//        case .mysql: return AnyEntityManager(SQLEntityManager<MySQLQueryBuilder>(connection: connection))
+//        case .postgresql: return AnyEntityManager(SQLEntityManager<PostgreSQLQueryBuilder>(connection: connection))
+//        case .oracle: return AnyEntityManager(SQLEntityManager<OracleQueryBuilder>(connection: connection))
+//        case .sqlite: return AnyEntityManager(SQLEntityManager<SQLiteQueryBuilder>(connection: connection))
+//        case .sqlserver: return AnyEntityManager(SQLEntityManager<SQLServerQueryBuilder>(connection: connection))
+//        }
+        EM(connection: connection)
+    }
 }
 
 extension TuproqORM {
@@ -159,35 +170,39 @@ extension TuproqORM {
                     ids(mapping: siblingMapping, table: &joinTable)
                 }
 
-                joinTable.columns.append(
-                    Table.Column(
-                        name: siblingJoinTable.column.name,
-                        type: "BIGSERIAL",
-                        constraints: []
+                for column in siblingJoinTable.columns {
+                    joinTable.columns.append(
+                        Table.Column(
+                            name: column.name,
+                            type: "BIGSERIAL",
+                            constraints: []
+                        )
                     )
-                )
-                joinTable.columns.append(
-                    Table.Column(
-                        name: siblingJoinTable.inverseColumn.name,
-                        type: "BIGSERIAL",
-                        constraints: []
+                    joinTable.constraints.append(
+                        ForeignKeyConstraint(
+                            column: column.name,
+                            relationTable: mapping.table,
+                            relationColumn: column.referencedColumnName
+                        )
                     )
-                )
+                }
 
-                joinTable.constraints.append(
-                    ForeignKeyConstraint(
-                        column: siblingJoinTable.column.name,
-                        relationTable: mapping.table,
-                        relationColumn: siblingJoinTable.column.referencedColumnName
+                for column in siblingJoinTable.inverseColumns {
+                    joinTable.columns.append(
+                        Table.Column(
+                            name: column.name,
+                            type: "BIGSERIAL",
+                            constraints: []
+                        )
                     )
-                )
-                joinTable.constraints.append(
-                    ForeignKeyConstraint(
-                        column: siblingJoinTable.inverseColumn.name,
-                        relationTable: siblingMapping.table,
-                        relationColumn: siblingJoinTable.inverseColumn.referencedColumnName
+                    joinTable.constraints.append(
+                        ForeignKeyConstraint(
+                            column: column.name,
+                            relationTable: siblingMapping.table,
+                            relationColumn: column.referencedColumnName
+                        )
                     )
-                )
+                }
 
                 if let index = joinTableIndex {
                     tables[index] = joinTable

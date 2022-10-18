@@ -1,11 +1,11 @@
 public struct JoinTable {
     public let name: String
-    public let column: Column
-    public let inverseColumn: Column
+    public let columns: Set<Column>
+    public let inverseColumns: Set<Column>
 }
 
 extension JoinTable {
-    public struct Column: ExpressibleByStringLiteral {
+    public struct Column: ExpressibleByStringLiteral, Hashable {
         public let name: String
         public let referencedColumnName: String
         public let isUnique: Bool
@@ -28,6 +28,15 @@ extension JoinTable {
             referencedColumnName = "id"
             isUnique = false
             isNullable = true
+        }
+
+        public static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.name == rhs.name && lhs.referencedColumnName == rhs.referencedColumnName
+        }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(name)
+            hasher.combine(referencedColumnName)
         }
     }
 }
