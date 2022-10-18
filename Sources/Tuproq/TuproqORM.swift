@@ -15,17 +15,6 @@ extension TuproqORM {
     public func addMapping<M: EntityMapping>(_ mapping: M) {
         mappings[String(describing: mapping.entity)] = AnyEntityMapping(mapping)
     }
-
-    public func createEntityManager<EM: EntityManager>() -> EM {
-//        switch connection.driver {
-//        case .mysql: return AnyEntityManager(SQLEntityManager<MySQLQueryBuilder>(connection: connection))
-//        case .postgresql: return AnyEntityManager(SQLEntityManager<PostgreSQLQueryBuilder>(connection: connection))
-//        case .oracle: return AnyEntityManager(SQLEntityManager<OracleQueryBuilder>(connection: connection))
-//        case .sqlite: return AnyEntityManager(SQLEntityManager<SQLiteQueryBuilder>(connection: connection))
-//        case .sqlserver: return AnyEntityManager(SQLEntityManager<SQLServerQueryBuilder>(connection: connection))
-//        }
-        EM(connection: connection)
-    }
 }
 
 extension TuproqORM {
