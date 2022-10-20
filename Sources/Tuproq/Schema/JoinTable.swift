@@ -19,7 +19,7 @@ extension JoinTable {
 
         public init(
             name: String,
-            referenceColumn: String = TuproqORM.namingStrategy.referenceColumn,
+            referenceColumn: String = ORM.namingStrategy.referenceColumn,
             isUnique: Bool = false,
             isNullable: Bool = true
         ) {
@@ -31,7 +31,7 @@ extension JoinTable {
 
         public init(stringLiteral name: StringLiteralType) {
             self.name = name
-            referenceColumn = TuproqORM.namingStrategy.referenceColumn
+            referenceColumn = ORM.namingStrategy.referenceColumn
             isUnique = false
             isNullable = true
         }

@@ -1,6 +1,6 @@
 import Collections
 
-public final class TuproqORM {
+public final class ORM {
     public static var namingStrategy: NamingStrategy = SnakeCaseNamingStrategy()
 
     public let connection: Connection
@@ -11,13 +11,13 @@ public final class TuproqORM {
     }
 }
 
-extension TuproqORM {
+extension ORM {
     public func addMapping<M: EntityMapping>(_ mapping: M) {
         mappings[String(describing: mapping.entity)] = AnyEntityMapping(mapping)
     }
 }
 
-extension TuproqORM {
+extension ORM {
     public func migrate() async throws {
         let allQueries = "BEGIN;\(createSchema())COMMIT;"
 
