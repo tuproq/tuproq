@@ -1,12 +1,12 @@
-public struct IDMapping: Hashable {
-    public let name: String
+public struct IDMapping<Source: Entity>: Hashable {
+    public let name: PartialKeyPath<Source>
     public let type: FieldType
     public let column: String
 
-    public init(name: String, type: FieldType = .id(), column: String? = nil) {
+    public init(name: PartialKeyPath<Source> = \.id, type: FieldType = .id(), column: String) {
         self.name = name
         self.type = type
-        self.column = column ?? name
+        self.column = column
     }
 
     public static func == (lhs: Self, rhs: Self) -> Bool {

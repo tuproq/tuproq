@@ -1,15 +1,11 @@
-public struct ParentMapping: AssociationMapping {
-    public let field: String
-    let entity: Any
+public struct ParentMapping<Source: Entity>: AssociationMapping {
+    public let field: PartialKeyPath<Source>
+    let entity: AnyEntity.Type
     public let column: JoinTable.Column
 
-    public init<E: Entity>(
-        field: String,
-        entity: E.Type,
-        column: JoinTable.Column? = nil
-    ) {
+    public init<Target: Entity>(field: PartialKeyPath<Source>, entity: Target.Type, column: JoinTable.Column) {
         self.field = field
         self.entity = entity
-        self.column = column ?? .init(name: TuproqORM.namingStrategy.joinColumn(field: field))
+        self.column = column
     }
 }

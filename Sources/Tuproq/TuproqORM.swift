@@ -76,13 +76,13 @@ extension TuproqORM {
         let ids = Array(mapping.ids)
 
         if ids.count > 1 {
-            table.constraints.append(PrimaryKeyConstraint(columns: ids.map { $0.column }))
+            table.constraints.append(PrimaryKeyConstraint(columns: ids.map { $0.column! }))
         } else {
             let id = ids[0]
-            let columnName = id.column
+            guard let columnName = id.column, let idType = id.type else { return }
             let column = Table.Column(
                 name: columnName,
-                type: id.type.name(for: connection.driver),
+                type: idType.name(for: connection.driver),
                 constraints: [
                     PrimaryKeyConstraint(column: columnName)
                 ]
@@ -93,19 +93,23 @@ extension TuproqORM {
 
     private func fields(mapping: AnyEntityMapping, table: inout Table) {
         for field in mapping.fields {
+            guard let isNullable = field.isNullable,
+                  let isUnique = field.isUnique,
+                  let fieldColumn = field.column,
+                  let fieldType = field.type else { return }
             var columnConstraints = [Constraint]()
 
-            if !field.isNullable {
+            if !isNullable {
                 columnConstraints.append(NotNullConstraint())
             }
 
-            if field.isUnique {
-                columnConstraints.append(UniqueConstraint(column: field.column))
+            if isUnique {
+                columnConstraints.append(UniqueConstraint(column: fieldColumn))
             }
 
             let column = Table.Column(
-                name: field.column,
-                type: field.type.name(for: connection.driver),
+                name: fieldColumn,
+                type: fieldType.name(for: connection.driver),
                 constraints: columnConstraints
             )
             table.columns.append(column)
@@ -114,33 +118,36 @@ extension TuproqORM {
 
     private func parents(mapping: AnyEntityMapping, table: inout Table) {
         for parent in mapping.parents {
+            guard let parentColumn = parent.joinColumn else { return }
             let parentMapping = mappings[String(describing: parent.entity)]!
             let relationTable = parentMapping.table
             table.constraints.append(
                 ForeignKeyConstraint(
-                    column: parent.column.name,
+                    column: parentColumn.name,
                     relationTable: relationTable,
-                    relationColumn: parent.column.referencedColumnName
+                    relationColumn: parentColumn.referenceColumn
                 )
             )
 
             var columnConstraints = [Constraint]()
 
-            if parent.column.isUnique {
-                columnConstraints.append(UniqueConstraint(column: parent.column.name))
+            if parentColumn.isUnique {
+                columnConstraints.append(UniqueConstraint(column: parentColumn.name))
             }
 
-            if !parent.column.isNullable {
+            if !parentColumn.isNullable {
                 columnConstraints.append(NotNullConstraint())
             }
 
             for parentID in parentMapping.ids {
-                let column = Table.Column(
-                    name: parent.column.name,
-                    type: parentID.type.name(for: connection.driver),
-                    constraints: columnConstraints
-                )
-                table.columns.append(column)
+                if let parentIDType = parentID.type {
+                    let column = Table.Column(
+                        name: parentColumn.name,
+                        type: parentIDType.name(for: connection.driver),
+                        constraints: columnConstraints
+                    )
+                    table.columns.append(column)
+                }
             }
         }
     }
@@ -173,7 +180,7 @@ extension TuproqORM {
                         ForeignKeyConstraint(
                             column: column.name,
                             relationTable: mapping.table,
-                            relationColumn: column.referencedColumnName
+                            relationColumn: column.referenceColumn
                         )
                     )
                 }
@@ -190,7 +197,7 @@ extension TuproqORM {
                         ForeignKeyConstraint(
                             column: column.name,
                             relationTable: siblingMapping.table,
-                            relationColumn: column.referencedColumnName
+                            relationColumn: column.referenceColumn
                         )
                     )
                 }

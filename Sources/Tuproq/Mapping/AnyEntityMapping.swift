@@ -1,21 +1,19 @@
 struct AnyEntityMapping {
-    typealias Entity = AnyObject & Codable
-
-    let entity: Entity.Type
+    let entity: AnyEntity.Type
     let table: String
-    let ids: Set<IDMapping>
-    let fields: Set<FieldMapping>
-    let parents: Set<ParentMapping>
-    let children: Set<ChildMapping>
-    let siblings: Set<SiblingMapping>
+    let ids: Set<AnyMapping>
+    let fields: Set<AnyMapping>
+    let parents: Set<AnyMapping>
+    let children: Set<AnyMapping>
+    let siblings: Set<AnyMapping>
 
     init<M: EntityMapping>(_ mapping: M) {
         entity = mapping.entity
         table = mapping.table
-        ids = mapping.ids
-        fields = mapping.fields
-        parents = mapping.parents
-        children = mapping.children
-        siblings = mapping.siblings
+        ids = Set<AnyMapping>(mapping.ids.map { AnyMapping($0) })
+        fields = Set<AnyMapping>(mapping.fields.map { AnyMapping($0) })
+        parents = Set<AnyMapping>(mapping.parents.map { AnyMapping($0) })
+        children = Set<AnyMapping>(mapping.children.map { AnyMapping($0) })
+        siblings = Set<AnyMapping>(mapping.siblings.map { AnyMapping($0) })
     }
 }

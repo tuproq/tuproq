@@ -2,41 +2,47 @@ public struct JoinTable {
     public let name: String
     public let columns: Set<Column>
     public let inverseColumns: Set<Column>
+
+    public init(name: String, columns: Set<Column>, inverseColumns: Set<Column>) {
+        self.name = name
+        self.columns = columns
+        self.inverseColumns = inverseColumns
+    }
 }
 
 extension JoinTable {
     public struct Column: ExpressibleByStringLiteral, Hashable {
         public let name: String
-        public let referencedColumnName: String
+        public let referenceColumn: String
         public let isUnique: Bool
         public let isNullable: Bool
 
         public init(
             name: String,
-            referencedColumnName: String = "id",
+            referenceColumn: String = TuproqORM.namingStrategy.referenceColumn,
             isUnique: Bool = false,
             isNullable: Bool = true
         ) {
             self.name = name
-            self.referencedColumnName = referencedColumnName
+            self.referenceColumn = referenceColumn
             self.isUnique = isUnique
             self.isNullable = isNullable
         }
 
         public init(stringLiteral name: StringLiteralType) {
             self.name = name
-            referencedColumnName = "id"
+            referenceColumn = TuproqORM.namingStrategy.referenceColumn
             isUnique = false
             isNullable = true
         }
 
         public static func == (lhs: Self, rhs: Self) -> Bool {
-            lhs.name == rhs.name && lhs.referencedColumnName == rhs.referencedColumnName
+            lhs.name == rhs.name && lhs.referenceColumn == rhs.referenceColumn
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(name)
-            hasher.combine(referencedColumnName)
+            hasher.combine(referenceColumn)
         }
     }
 }

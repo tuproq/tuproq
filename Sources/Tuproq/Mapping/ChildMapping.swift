@@ -1,11 +1,9 @@
-public struct ChildMapping: AssociationMapping {
-    public let field: String
-    let entity: Any
-    public let isUnique: Bool
+public struct ChildMapping<Source: Entity>: AssociationMapping {
+    public let field: PartialKeyPath<Source>
+    let entity: AnyEntity.Type
 
-    public init<E: Entity>(field: String, entity: E.Type, isUnique: Bool = false) {
+    public init<Target: Entity>(field: PartialKeyPath<Source>, entity: Target.Type) {
         self.field = field
         self.entity = entity
-        self.isUnique = isUnique
     }
 }
