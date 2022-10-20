@@ -1,78 +1,78 @@
 struct AnyMapping: Hashable {
-    let field: AnyKeyPath
-    let entity: AnyEntity.Type
-    let isUnique: Bool?
-    let isNullable: Bool?
     let column: String?
+    let entity: AnyEntity.Type
+    let field: AnyKeyPath
+    let inversedBy: AnyKeyPath?
+    let isNullable: Bool?
+    let isUnique: Bool?
     let joinColumn: JoinTable.Column?
     let joinTable: JoinTable?
-    let type: FieldType?
     let mappedBy: AnyKeyPath?
-    let inversedBy: AnyKeyPath?
+    let type: FieldType?
 
     init<E: Entity>(_ mapping: IDMapping<E>) {
-        field = mapping.name
-        entity = E.self
-        isUnique = nil
-        isNullable = nil
-        type = mapping.type
         column = mapping.column
+        entity = E.self
+        field = mapping.name
+        inversedBy = nil
+        isNullable = nil
+        isUnique = nil
         joinColumn = nil
         joinTable = nil
         mappedBy = nil
-        inversedBy = nil
+        type = mapping.type
     }
 
     init<E: Entity>(_ mapping: FieldMapping<E>) {
-        field = mapping.name
-        entity = E.self
-        isUnique = mapping.column.isUnique
-        isNullable = mapping.column.isNullable
-        type = mapping.type
         column = mapping.column.name
+        entity = E.self
+        field = mapping.name
+        inversedBy = nil
+        isNullable = mapping.column.isNullable
+        isUnique = mapping.column.isUnique
         joinColumn = nil
         joinTable = nil
         mappedBy = nil
-        inversedBy = nil
+        type = mapping.type
     }
 
     init<E: Entity>(_ mapping: ParentMapping<E>) {
-        field = mapping.field
-        entity = mapping.entity
-        isUnique = nil
-        isNullable = nil
-        type = nil
         column = nil
+        entity = mapping.entity
+        field = mapping.field
+        inversedBy = mapping.inversedBy
+        isNullable = nil
+        isUnique = nil
         joinColumn = mapping.column
         joinTable = nil
         mappedBy = nil
-        inversedBy = mapping.inversedBy
+        type = nil
     }
 
     init<E: Entity>(_ mapping: ChildMapping<E>) {
-        field = mapping.field
-        entity = mapping.entity
-        isUnique = nil
-        isNullable = nil
-        type = nil
         column = nil
+        entity = mapping.entity
+        field = mapping.field
+        inversedBy = nil
+        isNullable = nil
+        isUnique = nil
         joinColumn = nil
         joinTable = nil
         mappedBy = mapping.mappedBy
-        inversedBy = nil
+        type = nil
     }
 
     init<E: Entity>(_ mapping: SiblingMapping<E>) {
-        field = mapping.field
-        entity = mapping.entity
-        isUnique = nil
-        isNullable = nil
-        type = nil
         column = nil
+        entity = mapping.entity
+        field = mapping.field
+        inversedBy = mapping.inversedBy
+        isNullable = nil
+        isUnique = nil
         joinColumn = nil
         joinTable = mapping.joinTable
         mappedBy = mapping.mappedBy
-        inversedBy = mapping.inversedBy
+        type = nil
     }
 
     static func == (lhs: Self, rhs: Self) -> Bool {
