@@ -4,10 +4,10 @@ public struct Table {
     public var constraints = [Constraint]()
 }
 
-public extension Table {
-    struct Column {
-        let name: String
-        let type: String
-        var constraints = [Constraint]()
+extension Table {
+    public struct Column {
+        public let name: String
+        public let type: String
+        public var constraints = [Constraint]()
     }
 }
