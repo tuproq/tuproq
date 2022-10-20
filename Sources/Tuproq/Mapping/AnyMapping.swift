@@ -7,6 +7,8 @@ struct AnyMapping: Hashable {
     let joinColumn: JoinTable.Column?
     let joinTable: JoinTable?
     let type: FieldType?
+    let mappedBy: AnyKeyPath?
+    let inversedBy: AnyKeyPath?
 
     init<E: Entity>(_ mapping: IDMapping<E>) {
         field = mapping.name
@@ -17,6 +19,8 @@ struct AnyMapping: Hashable {
         column = mapping.column
         joinColumn = nil
         joinTable = nil
+        mappedBy = nil
+        inversedBy = nil
     }
 
     init<E: Entity>(_ mapping: FieldMapping<E>) {
@@ -28,6 +32,8 @@ struct AnyMapping: Hashable {
         column = mapping.column.name
         joinColumn = nil
         joinTable = nil
+        mappedBy = nil
+        inversedBy = nil
     }
 
     init<E: Entity>(_ mapping: ParentMapping<E>) {
@@ -39,6 +45,8 @@ struct AnyMapping: Hashable {
         column = nil
         joinColumn = mapping.column
         joinTable = nil
+        mappedBy = nil
+        inversedBy = mapping.inversedBy
     }
 
     init<E: Entity>(_ mapping: ChildMapping<E>) {
@@ -50,6 +58,8 @@ struct AnyMapping: Hashable {
         column = nil
         joinColumn = nil
         joinTable = nil
+        mappedBy = mapping.mappedBy
+        inversedBy = nil
     }
 
     init<E: Entity>(_ mapping: SiblingMapping<E>) {
@@ -61,6 +71,8 @@ struct AnyMapping: Hashable {
         column = nil
         joinColumn = nil
         joinTable = mapping.joinTable
+        mappedBy = mapping.mappedBy
+        inversedBy = mapping.inversedBy
     }
 
     static func == (lhs: Self, rhs: Self) -> Bool {
