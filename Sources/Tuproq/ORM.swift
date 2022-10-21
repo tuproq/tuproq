@@ -169,11 +169,21 @@ extension ORM {
                 }
 
                 for column in siblingJoinTable.columns {
+                    var columnConstraints = [Constraint]()
+
+                    if column.isUnique {
+                        columnConstraints.append(UniqueConstraint(column: column.name))
+                    }
+
+                    if !column.isNullable {
+                        columnConstraints.append(NotNullConstraint())
+                    }
+
                     joinTable.columns.append(
                         Table.Column(
                             name: column.name,
                             type: "BIGSERIAL",
-                            constraints: []
+                            constraints: columnConstraints
                         )
                     )
                     joinTable.constraints.append(
@@ -186,11 +196,21 @@ extension ORM {
                 }
 
                 for column in siblingJoinTable.inverseColumns {
+                    var columnConstraints = [Constraint]()
+
+                    if column.isUnique {
+                        columnConstraints.append(UniqueConstraint(column: column.name))
+                    }
+
+                    if !column.isNullable {
+                        columnConstraints.append(NotNullConstraint())
+                    }
+
                     joinTable.columns.append(
                         Table.Column(
                             name: column.name,
                             type: "BIGSERIAL",
-                            constraints: []
+                            constraints: columnConstraints
                         )
                     )
                     joinTable.constraints.append(
