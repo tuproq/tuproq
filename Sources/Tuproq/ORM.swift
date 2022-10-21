@@ -131,12 +131,12 @@ extension ORM {
 
             var columnConstraints = [Constraint]()
 
-            if !parentColumn.isNullable {
-                columnConstraints.append(NotNullConstraint())
-            }
-
             if parentColumn.isUnique {
                 columnConstraints.append(UniqueConstraint(column: parentColumn.name))
+            }
+
+            if !parentColumn.isNullable {
+                columnConstraints.append(NotNullConstraint())
             }
 
             for parentID in parentMapping.ids {
@@ -171,12 +171,12 @@ extension ORM {
                 for column in siblingJoinTable.columns {
                     var columnConstraints = [Constraint]()
 
-                    if !column.isNullable {
-                        columnConstraints.append(NotNullConstraint())
-                    }
-
                     if column.isUnique {
                         columnConstraints.append(UniqueConstraint(column: column.name))
+                    }
+
+                    if !column.isNullable {
+                        columnConstraints.append(NotNullConstraint())
                     }
 
                     joinTable.columns.append(

@@ -14,26 +14,26 @@ extension JoinTable {
     public struct Column: ExpressibleByStringLiteral, Hashable {
         public let name: String
         public let referenceColumn: String
-        public let isNullable: Bool
         public let isUnique: Bool
+        public let isNullable: Bool
 
         public init(
             name: String,
             referenceColumn: String = ORM.namingStrategy.referenceColumn,
-            isNullable: Bool = true,
-            isUnique: Bool = false
+            isUnique: Bool = false,
+            isNullable: Bool = true
         ) {
             self.name = name
             self.referenceColumn = referenceColumn
-            self.isNullable = isNullable
             self.isUnique = isUnique
+            self.isNullable = isNullable
         }
 
         public init(stringLiteral name: StringLiteralType) {
             self.name = name
             referenceColumn = ORM.namingStrategy.referenceColumn
-            isNullable = true
             isUnique = false
+            isNullable = true
         }
 
         public static func == (lhs: Self, rhs: Self) -> Bool {

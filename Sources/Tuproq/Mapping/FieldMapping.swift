@@ -21,19 +21,19 @@ public struct FieldMapping<Source: Entity>: Hashable {
 extension FieldMapping {
     public struct Column: ExpressibleByStringLiteral, Hashable {
         public let name: String
-        public let isNullable: Bool
         public let isUnique: Bool
+        public let isNullable: Bool
 
-        public init(name: String, isNullable: Bool = true, isUnique: Bool = false) {
+        public init(name: String, isUnique: Bool = false, isNullable: Bool = true) {
             self.name = name
-            self.isNullable = isNullable
             self.isUnique = isUnique
+            self.isNullable = isNullable
         }
 
         public init(stringLiteral name: StringLiteralType) {
             self.name = name
-            isNullable = true
             isUnique = false
+            isNullable = true
         }
 
         public static func == (lhs: Self, rhs: Self) -> Bool {
