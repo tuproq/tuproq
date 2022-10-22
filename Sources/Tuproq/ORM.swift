@@ -5,6 +5,7 @@ public final class ORM {
 
     public let connection: Connection
     private var mappings = OrderedDictionary<String, AnyEntityMapping>()
+    private var joinColumnTypes = [String: String]()
 
     public init(connection: Connection) {
         self.connection = connection
@@ -28,48 +29,45 @@ extension ORM {
 
     public func createSchema() -> String {
         var allQueries = ""
+        var tables = [Table]()
 
         for mapping in mappings.values {
-            let tables = createTables(from: mapping)
+            let table = createTable(from: mapping)
+            tables.append(table)
+        }
 
-            for table in tables {
-                let queryBuilder = PostgreSQLQueryBuilder()
-                let query = queryBuilder.create(
-                    table: table.name,
-                    columns: table.columns,
-                    constraints: table.constraints
-                ).getQuery()
-                allQueries += "\(query);"
-            }
+        for mapping in mappings.values {
+            createJoinTable(from: mapping, tables: &tables)
+        }
+
+        for table in tables {
+            let queryBuilder = PostgreSQLQueryBuilder()
+            let query = queryBuilder.create(
+                table: table.name,
+                columns: table.columns,
+                constraints: table.constraints
+            ).getQuery()
+            allQueries += "\(query);"
         }
 
         return allQueries
     }
 
-    private func createTable() -> [Table] {
-        var tables = [Table]()
-
-        for mapping in mappings.values {
-            tables.append(contentsOf: createTables(from: mapping))
-        }
-
-        return tables
+    private func createTable<M: EntityMapping>(from mapping: M) -> Table {
+        createTable(from: AnyEntityMapping(mapping))
     }
 
-    private func createTables<M: EntityMapping>(from mapping: M) -> [Table] {
-        createTables(from: AnyEntityMapping(mapping))
-    }
-
-    private func createTables(from mapping: AnyEntityMapping) -> [Table] {
-        var tables = [Table]()
+    private func createTable(from mapping: AnyEntityMapping) -> Table {
         var table = Table(name: mapping.table)
         ids(mapping: mapping, table: &table)
         fields(mapping: mapping, table: &table)
         parents(mapping: mapping, table: &table)
-        siblings(mapping: mapping, tables: &tables)
-        tables.append(table)
 
-        return tables
+        return table
+    }
+
+    private func createJoinTable(from mapping: AnyEntityMapping, tables: inout [Table]) {
+        siblings(mapping: mapping, tables: &tables)
     }
 
     private func ids(mapping: AnyEntityMapping, table: inout Table) {
@@ -87,6 +85,7 @@ extension ORM {
                     PrimaryKeyConstraint(column: columnName)
                 ]
             )
+            joinColumnTypes["\(table.name)_\(columnName)"] = column.type
             table.columns.append(column)
         }
     }
@@ -182,7 +181,7 @@ extension ORM {
                     joinTable.columns.append(
                         Table.Column(
                             name: column.name,
-                            type: "BIGSERIAL",
+                            type: joinColumnTypes[column.name]!,
                             constraints: columnConstraints
                         )
                     )
@@ -209,7 +208,7 @@ extension ORM {
                     joinTable.columns.append(
                         Table.Column(
                             name: column.name,
-                            type: "BIGSERIAL",
+                            type: joinColumnTypes[column.name]!,
                             constraints: columnConstraints
                         )
                     )
