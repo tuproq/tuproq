@@ -36,11 +36,11 @@ public extension SQLQueryBuilder {
 }
 
 public extension SQLQueryBuilder {
-    func insert(into table: String, columns: String..., values: Codable?...) -> Self {
+    func insert(into table: String, columns: String..., values: Any?...) -> Self {
         insert(into: table, columns: columns, values: values)
     }
 
-    func insert(into table: String, columns: [String] = .init(), values: [Codable?]) -> Self {
+    func insert(into table: String, columns: [String] = .init(), values: [Any?]) -> Self {
         expressions.append(InsertIntoSQLExpression(table: table, columns: columns, values: values))
         return self
     }
