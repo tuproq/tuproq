@@ -117,19 +117,15 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         for (table, entityMap) in entityInsertions {
             for (id, dictionary) in entityMap {
                 var columns = [String]()
-                var values = [Codable?]()
+                var values = [Any?]()
 
                 for (key, value) in dictionary {
                     columns.append(key)
 
-                    if let value = value as? Codable {
-                        if let valueDictionary = value as? [String: Codable?] {
-                            values.append(valueDictionary["id"]!)
-                        } else {
-                            values.append(value)
-                        }
+                    if let valueDictionary = value as? [String: Codable?] {
+                        values.append(valueDictionary["id"]!)
                     } else {
-                        values.append("NULL") // TODO: it may not be necessary
+                        values.append(value)
                     }
                 }
 
