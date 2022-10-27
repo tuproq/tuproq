@@ -7,6 +7,35 @@ public final class Observed<V: Codable>: Codable {
     private var entityName: String?
     private var value: V
 
+    @available(*, unavailable, message: "@Observed can only be applied to classes.")
+    public var wrappedValue: V {
+        get { fatalError() }
+        set { fatalError() }
+    }
+
+    public init(wrappedValue: V) {
+        value = wrappedValue
+        addPropertyObserver()
+    }
+
+    public init(from decoder: Decoder) throws {
+        entityID = decoder.userInfo[CodingUserInfoKey(rawValue: "id")!] as? AnyHashable
+
+        if let name = decoder.codingPath.first?.stringValue, !name.isEmpty {
+            self.name = name
+        } else {
+            name = "" // TODO: throw error
+        }
+
+        let container = try decoder.singleValueContainer()
+        value = try container.decode(V.self)
+        addPropertyObserver()
+    }
+
+    deinit {
+        removePropertyObserver()
+    }
+
     public static subscript<E: Entity>(
         _enclosingInstance instance: E,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<E, V>,
@@ -35,35 +64,6 @@ public final class Observed<V: Codable>: Codable {
                 NotificationCenter.default.post(name: propertyValueChanged, object: dictionary)
             }
         }
-    }
-
-    @available(*, unavailable, message: "@Observed can only be applied to classes.")
-    public var wrappedValue: V {
-        get { fatalError() }
-        set { fatalError() }
-    }
-
-    public init(wrappedValue: V) {
-        value = wrappedValue
-        addPropertyObserver()
-    }
-
-    deinit {
-        removePropertyObserver()
-    }
-
-    public init(from decoder: Decoder) throws {
-        entityID = decoder.userInfo[CodingUserInfoKey(rawValue: "id")!] as? AnyHashable
-
-        if let name = decoder.codingPath.first?.stringValue, !name.isEmpty {
-            self.name = name
-        } else {
-            name = "" // TODO: throw error
-        }
-
-        let container = try decoder.singleValueContainer()
-        value = try container.decode(V.self)
-        addPropertyObserver()
     }
 
     public func encode(to encoder: Encoder) throws {
