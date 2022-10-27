@@ -1,7 +1,7 @@
 import Foundation
 
 @propertyWrapper
-public final class Persisted<V: Codable>: Codable {
+public final class Observed<V: Codable>: Codable {
     private var name: String?
     private var entityID: AnyHashable?
     private var entityName: String?
@@ -10,7 +10,7 @@ public final class Persisted<V: Codable>: Codable {
     public static subscript<E: Entity>(
         _enclosingInstance instance: E,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<E, V>,
-        storage storageKeyPath: ReferenceWritableKeyPath<E, Persisted>
+        storage storageKeyPath: ReferenceWritableKeyPath<E, Observed>
     ) -> V {
         get {
             instance[keyPath: storageKeyPath].value
@@ -37,7 +37,7 @@ public final class Persisted<V: Codable>: Codable {
         }
     }
 
-    @available(*, unavailable, message: "@Persisted can only be applied to classes.")
+    @available(*, unavailable, message: "@Observed can only be applied to classes.")
     public var wrappedValue: V {
         get { fatalError() }
         set { fatalError() }
