@@ -16,6 +16,10 @@ extension ORM {
     public func addMapping<M: EntityMapping>(_ mapping: M) {
         mappings[String(describing: mapping.entity)] = AnyEntityMapping(mapping)
     }
+
+    public func createEntityManager<EM: EntityManager>() -> EM {
+        EM(connection: connection)
+    }
 }
 
 extension ORM {

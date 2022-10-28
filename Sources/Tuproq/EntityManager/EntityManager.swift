@@ -1,6 +1,8 @@
 public protocol EntityManager: AnyObject {
     associatedtype Q: QueryBuilder
 
+    init(connection: Connection)
+
     func createQueryBuilder() -> Q
     func find<E: Entity, I: Hashable>(_ entityType: E.Type, id: I) async throws -> E?
     func flush() async throws
