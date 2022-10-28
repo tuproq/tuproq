@@ -1,11 +1,11 @@
 public protocol Repository {
     associatedtype E: Entity
 
-    var entityType: E.Type { get }
+    var entity: E.Type { get }
 
     init()
 }
 
-extension Repository {
-    public var entityType: E.Type { E.self }
+public extension Repository {
+    var entity: E.Type { E.self }
 }
