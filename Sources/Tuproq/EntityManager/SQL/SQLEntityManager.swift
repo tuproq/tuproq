@@ -58,9 +58,10 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     func find<E: Entity, I: Hashable>(_ entityType: E.Type, id: I) async throws -> E? {
+        guard let mapping = configuration.mappings[String(describing: E.self)] else { throw NSError() }
         let query = createQueryBuilder()
             .select()
-            .from(E.entity)
+            .from(mapping.table)
             .where("id = \"\(id)\"")
             .getQuery()
 
@@ -228,7 +229,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     func getRepository<R: Repository>(_ repositoryType: R.Type) -> R {
-        let entityName = repositoryType.E.entity
+        let entityName = String(describing: repositoryType.E.self)
 
         if let repository = repositories[entityName] {
             return repository.repository as! R
@@ -260,6 +261,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
         guard entities[id] == nil else { return }
         entities[id] = try! entity.asDictionary()
+        let entityName = String(describing: E.self)
 
         if let entityState = entityStates[id] {
             switch entityState {
@@ -269,7 +271,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                 insert(entity: entity, id: id)
                 addToIdentityMap(entity: entity)
             case .removed:
-                entityDeletions[E.entity]?.removeValue(forKey: id)
+                entityDeletions[entityName]?.removeValue(forKey: id)
                 addToIdentityMap(entity: entity)
                 entityStates[id] = .managed
             }
@@ -322,6 +324,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     private func remove<E: Entity>(_ entity: E, visited entities: inout [AnyHashable: EntityMap]) {
+        let entityName = String(describing: E.self)
         let id = entity.id
         guard entities[id] == nil else { return }
         entities[id] = try! entity.asDictionary()
@@ -332,7 +335,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
             remove(entity: entity, id: id)
             entityStates[id] = .removed
         case .new:
-            entityInsertions[E.entity]?.removeValue(forKey: id)
+            entityInsertions[entityName]?.removeValue(forKey: id)
             removeFromIdentityMap(entity: entity)
             entityStates.removeValue(forKey: id)
         default: break
@@ -340,10 +343,12 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     private func insert<E: Entity>(entity: E, id: AnyHashable) {
-        if entityInsertions[E.entity] == nil {
-            entityInsertions[E.entity] = [id: try! entity.asDictionary()]
+        let entityName = String(describing: E.self)
+
+        if entityInsertions[entityName] == nil {
+            entityInsertions[entityName] = [id: try! entity.asDictionary()]
         } else {
-            entityInsertions[E.entity]?[id] = try! entity.asDictionary()
+            entityInsertions[entityName]?[id] = try! entity.asDictionary()
         }
     }
 
@@ -364,15 +369,18 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     private func remove<E: Entity>(entity: E, id: AnyHashable) {
-        if entityDeletions[E.entity] == nil {
-            entityDeletions[E.entity] = [id: try! entity.asDictionary()]
+        let entityName = String(describing: E.self)
+
+        if entityDeletions[entityName] == nil {
+            entityDeletions[entityName] = [id: try! entity.asDictionary()]
         } else {
-            entityDeletions[E.entity]?[id] = try! entity.asDictionary()
+            entityDeletions[entityName]?[id] = try! entity.asDictionary()
         }
     }
 
     private func addToIdentityMap<E: Entity>(entity: E) {
-        addToIdentityMap(entityName: E.entity, entityMap: try! entity.asDictionary(), id: entity.id)
+        let entityName = String(describing: E.self)
+        addToIdentityMap(entityName: entityName, entityMap: try! entity.asDictionary(), id: entity.id)
     }
 
     private func addToIdentityMap(entityName: String, entityMap: EntityMap, id: AnyHashable) {
@@ -384,7 +392,8 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     private func removeFromIdentityMap<E: Entity>(entity: E) {
-        removeFromIdentityMap(entityName: E.entity, id: entity.id)
+        let entityName = String(describing: E.self)
+        removeFromIdentityMap(entityName: entityName, id: entity.id)
     }
 
     private func removeFromIdentityMap(entityName: String, id: AnyHashable) {

@@ -45,7 +45,8 @@ public final class Observed<V: Codable>: Codable {
             instance[keyPath: storageKeyPath].value
         }
         set {
-            instance[keyPath: storageKeyPath].entityName = E.entity
+            let entityName = String(describing: E.self)
+            instance[keyPath: storageKeyPath].entityName = entityName
             let oldValue = instance[keyPath: storageKeyPath].value
             instance[keyPath: storageKeyPath].value = newValue
 
@@ -57,7 +58,7 @@ public final class Observed<V: Codable>: Codable {
                     "newValue": instance[keyPath: storageKeyPath].value
                 ]
                 let dictionary: [String: Any?] = [
-                    "entity": E.entity,
+                    "entity": entityName,
                     "id": id,
                     "property": property
                 ]
