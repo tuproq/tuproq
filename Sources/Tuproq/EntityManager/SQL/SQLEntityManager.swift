@@ -5,6 +5,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private typealias EntityMap = [String: Any?]
 
     let connection: Connection
+    let configuration: Configuration
     private var allQueries = ""
 
     private var entityChangeSets = [String: [AnyHashable: ChangeSet]]()
@@ -17,8 +18,9 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private var identityMap = [String: [AnyHashable: EntityMap]]()
     private var repositories = [String: AnyRepository]()
 
-    init(connection: Connection) {
+    init(connection: Connection, configuration: Configuration) {
         self.connection = connection
+        self.configuration = configuration
 
         NotificationCenter.default.addObserver(
             forName: propertyValueChanged,

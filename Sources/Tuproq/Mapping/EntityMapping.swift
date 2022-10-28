@@ -12,8 +12,8 @@ public protocol EntityMapping {
 
 public extension EntityMapping {
     var entity: E.Type { E.self }
-    var table: String { ORM.namingStrategy.table(entity: entity) }
-    var ids: Set<IDMapping<E>> { [.init(column: ORM.namingStrategy.referenceColumn)] }
+    var table: String { Configuration.namingStrategy.table(entity: entity) }
+    var ids: Set<IDMapping<E>> { [.init(column: Configuration.namingStrategy.referenceColumn)] }
     var fields: Set<FieldMapping<E>> { .init() }
     var parents: Set<ParentMapping<E>> { .init() }
     var children: Set<ChildMapping<E>> { .init() }

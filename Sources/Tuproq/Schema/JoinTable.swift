@@ -19,7 +19,7 @@ extension JoinTable {
 
         public init(
             name: String,
-            referenceColumn: String = ORM.namingStrategy.referenceColumn,
+            referenceColumn: String = Configuration.namingStrategy.referenceColumn,
             isUnique: Bool = false,
             isNullable: Bool = true
         ) {
@@ -31,7 +31,7 @@ extension JoinTable {
 
         public init(stringLiteral name: StringLiteralType) {
             self.name = name
-            referenceColumn = ORM.namingStrategy.referenceColumn
+            referenceColumn = Configuration.namingStrategy.referenceColumn
             isUnique = false
             isNullable = true
         }

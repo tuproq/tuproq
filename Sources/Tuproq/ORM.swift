@@ -1,24 +1,20 @@
-import Collections
-
 public final class ORM {
-    public static var namingStrategy: NamingStrategy = SnakeCaseNamingStrategy()
-
     public let connection: Connection
-    private var mappings = OrderedDictionary<String, AnyEntityMapping>()
-    private var joinColumnTypes = [String: String]()
+    public private(set) var configuration: Configuration
 
-    public init(connection: Connection) {
+    public init(connection: Connection, configuration: Configuration = .init()) {
         self.connection = connection
+        self.configuration = configuration
     }
 }
 
 extension ORM {
     public func addMapping<M: EntityMapping>(_ mapping: M) {
-        mappings[String(describing: mapping.entity)] = AnyEntityMapping(mapping)
+        configuration.addMapping(mapping)
     }
 
     public func createEntityManager<EM: EntityManager>() -> EM {
-        EM(connection: connection)
+        EM(connection: connection, configuration: configuration)
     }
 }
 
@@ -35,12 +31,12 @@ extension ORM {
         var allQueries = ""
         var tables = [Table]()
 
-        for mapping in mappings.values {
+        for mapping in configuration.mappings.values {
             let table = createTable(from: mapping)
             tables.append(table)
         }
 
-        for mapping in mappings.values {
+        for mapping in configuration.mappings.values {
             createJoinTable(from: mapping, tables: &tables)
         }
 
@@ -89,7 +85,7 @@ extension ORM {
                     PrimaryKeyConstraint(column: columnName)
                 ]
             )
-            joinColumnTypes["\(table.name)_\(columnName)"] = column.type
+            configuration.joinColumnTypes["\(table.name)_\(columnName)"] = column.type
             table.columns.append(column)
         }
     }
@@ -122,7 +118,7 @@ extension ORM {
     private func parents(mapping: AnyEntityMapping, table: inout Table) {
         for parent in mapping.parents {
             guard let parentColumn = parent.joinColumn else { return }
-            let parentMapping = mappings[String(describing: parent.entity)]!
+            let parentMapping = configuration.mappings[String(describing: parent.entity)]!
             let relationTable = parentMapping.table
             table.constraints.append(
                 ForeignKeyConstraint(
@@ -158,7 +154,7 @@ extension ORM {
     private func siblings(mapping: AnyEntityMapping, tables: inout [Table]) {
         for sibling in mapping.siblings {
             if let siblingJoinTable = sibling.joinTable {
-                let siblingMapping = mappings[String(describing: sibling.entity)]!
+                let siblingMapping = configuration.mappings[String(describing: sibling.entity)]!
                 let joinTableName = siblingJoinTable.name
                 var joinTable: Table
                 var joinTableIndex: Int?
@@ -185,7 +181,7 @@ extension ORM {
                     joinTable.columns.append(
                         Table.Column(
                             name: column.name,
-                            type: joinColumnTypes[column.name]!,
+                            type: configuration.joinColumnTypes[column.name]!,
                             constraints: columnConstraints
                         )
                     )
@@ -212,7 +208,7 @@ extension ORM {
                     joinTable.columns.append(
                         Table.Column(
                             name: column.name,
-                            type: joinColumnTypes[column.name]!,
+                            type: configuration.joinColumnTypes[column.name]!,
                             constraints: columnConstraints
                         )
                     )
