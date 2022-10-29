@@ -58,7 +58,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     func find<E: Entity, I: Hashable>(_ entityType: E.Type, id: I) async throws -> E? {
-        guard let mapping = configuration.mapping(from: entityType) else { throw NSError() }
+        guard let mapping = configuration.mapping(from: entityType) else { return nil } // TODO: throw an error
         let query = createQueryBuilder()
             .select()
             .from(mapping.table)
