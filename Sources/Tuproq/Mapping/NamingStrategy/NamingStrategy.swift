@@ -11,14 +11,14 @@ public protocol NamingStrategy {
 public extension NamingStrategy {
     func column<E: Entity>(field: String, entity: E.Type?) -> String {
         if let entity = entity {
-            return column(field: field, entity: String(describing: entity))
+            return column(field: field, entity: Configuration.entityName(from: entity))
         }
 
         return column(field: field, entity: nil)
     }
 
     func joinKeyColumn<E: Entity>(entity: E.Type, referenceColumn: String? = nil) -> String {
-        joinKeyColumn(entity: String(describing: entity), referenceColumn: referenceColumn)
+        joinKeyColumn(entity:Configuration.entityName(from: entity), referenceColumn: referenceColumn)
     }
 
     func joinTable<SE: Entity, TE: Entity>(
@@ -27,13 +27,13 @@ public extension NamingStrategy {
         field: String? = nil
     ) -> String {
         joinTable(
-            sourceEntity: String(describing: sourceEntity),
-            targetEntity: String(describing: targetEntity),
+            sourceEntity: Configuration.entityName(from: sourceEntity),
+            targetEntity: Configuration.entityName(from: targetEntity),
             field: field
         )
     }
 
     func table<E: Entity>(entity: E.Type) -> String {
-        table(entity: String(describing: entity))
+        table(entity: Configuration.entityName(from: entity))
     }
 }
