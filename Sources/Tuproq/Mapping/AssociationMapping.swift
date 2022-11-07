@@ -1,6 +1,5 @@
 public protocol AssociationMapping: Hashable {
-    associatedtype E: Entity
-    var field: PartialKeyPath<E> { get }
+    var field: String { get }
 }
 
 public extension AssociationMapping {

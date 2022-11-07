@@ -40,4 +40,8 @@ public struct Configuration {
     func mapping(from entityType: AnyEntity.Type) -> AnyEntityMapping? {
         _mappings[Self.entityName(from: entityType)]
     }
+
+    func mapping(from entityName: String) -> AnyEntityMapping? {
+        _mappings[entityName]
+    }
 }

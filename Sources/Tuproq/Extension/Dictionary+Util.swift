@@ -18,6 +18,7 @@ extension Dictionary {
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .formatted(dateFormatter)
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
 
         if let dictionary = dictionary as? [String: Any?], let id = dictionary["id"] as? AnyHashable {
             decoder.userInfo = [CodingUserInfoKey(rawValue: "id")!: id]

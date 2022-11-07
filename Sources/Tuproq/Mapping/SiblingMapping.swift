@@ -1,12 +1,12 @@
-public struct SiblingMapping<Source: Entity>: AssociationMapping {
-    public let field: PartialKeyPath<Source>
+public struct SiblingMapping: AssociationMapping {
+    public let field: String
     let entity: AnyEntity.Type
     let mappedBy: AnyKeyPath?
     let inversedBy: AnyKeyPath?
     public let joinTable: JoinTable?
 
     public init<Target: Entity>(
-        field: PartialKeyPath<Source>,
+        field: String,
         entity: Target.Type,
         mappedBy: PartialKeyPath<Target>? = nil,
         inversedBy: PartialKeyPath<Target>? = nil,

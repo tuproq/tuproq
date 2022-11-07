@@ -74,10 +74,11 @@ extension ORM {
         let ids = Array(mapping.ids)
 
         if ids.count > 1 {
-            table.constraints.append(PrimaryKeyConstraint(columns: ids.map { $0.column! }))
+            table.constraints.append(PrimaryKeyConstraint(columns: ids.map { $0.column }))
         } else {
             let id = ids[0]
-            guard let columnName = id.column, let idType = id.type else { return }
+            let columnName = id.column
+            let idType = id.type
             let column = Table.Column(
                 name: columnName,
                 type: idType.name(for: connection.driver),
@@ -92,23 +93,19 @@ extension ORM {
 
     private func fields(mapping: AnyEntityMapping, table: inout Table) {
         for field in mapping.fields {
-            guard let isNullable = field.isNullable,
-                  let isUnique = field.isUnique,
-                  let fieldColumn = field.column,
-                  let fieldType = field.type else { return }
             var columnConstraints = [Constraint]()
 
-            if !isNullable {
+            if !field.column.isNullable {
                 columnConstraints.append(NotNullConstraint())
             }
 
-            if isUnique {
-                columnConstraints.append(UniqueConstraint(column: fieldColumn))
+            if field.column.isUnique {
+                columnConstraints.append(UniqueConstraint(column: field.column.name))
             }
 
             let column = Table.Column(
-                name: fieldColumn,
-                type: fieldType.name(for: connection.driver),
+                name: field.column.name,
+                type: field.type.name(for: connection.driver),
                 constraints: columnConstraints
             )
             table.columns.append(column)
@@ -117,36 +114,34 @@ extension ORM {
 
     private func parents(mapping: AnyEntityMapping, table: inout Table) {
         for parent in mapping.parents {
-            guard let parentColumn = parent.joinColumn else { return }
             let parentMapping = configuration.mapping(from: parent.entity)!
             let relationTable = parentMapping.table
             table.constraints.append(
                 ForeignKeyConstraint(
-                    column: parentColumn.name,
+                    column: parent.column.name,
                     relationTable: relationTable,
-                    relationColumn: parentColumn.referenceColumn
+                    relationColumn: parent.column.referenceColumn
                 )
             )
 
             var columnConstraints = [Constraint]()
 
-            if parentColumn.isUnique {
-                columnConstraints.append(UniqueConstraint(column: parentColumn.name))
+            if parent.column.isUnique {
+                columnConstraints.append(UniqueConstraint(column: parent.column.name))
             }
 
-            if !parentColumn.isNullable {
+            if !parent.column.isNullable {
                 columnConstraints.append(NotNullConstraint())
             }
 
             for parentID in parentMapping.ids {
-                if let parentIDType = parentID.type {
-                    let column = Table.Column(
-                        name: parentColumn.name,
-                        type: parentIDType.name(for: connection.driver),
-                        constraints: columnConstraints
-                    )
-                    table.columns.append(column)
-                }
+                let parentIDType = parentID.type
+                let column = Table.Column(
+                    name: parent.column.name,
+                    type: parentIDType.name(for: connection.driver),
+                    constraints: columnConstraints
+                )
+                table.columns.append(column)
             }
         }
     }

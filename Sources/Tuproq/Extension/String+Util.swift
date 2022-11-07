@@ -12,6 +12,10 @@ extension String {
         first == "/" ? String(dropFirst()) : self
     }
 
+    var droppingLeadingUnderscore: String {
+        first == "_" ? String(dropFirst()) : self
+    }
+
     func snakeCase(_ letterCase: LetterCase = .lower) -> String {
         let acronymPattern = "([A-Z]+)([A-Z][a-z]|[0-9])"
         let fullWordsPattern = "([a-z])([A-Z]|[0-9])"

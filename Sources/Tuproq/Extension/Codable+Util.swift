@@ -7,6 +7,7 @@ extension Encodable {
 
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .formatted(dateFormatter)
+        encoder.keyEncodingStrategy = .convertToSnakeCase
 
         let data = try encoder.encode(self)
         guard let dictionary = try JSONSerialization.jsonObject(

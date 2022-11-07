@@ -1,20 +1,20 @@
-public struct FieldMapping<Source: Entity>: Hashable {
-    public let name: PartialKeyPath<Source>
+public struct FieldMapping: Hashable {
+    public let field: String
     public let type: FieldType
     public let column: Column
 
-    public init(name: PartialKeyPath<Source>, type: FieldType, column: Column) {
-        self.name = name
+    public init(field: String, type: FieldType, column: Column) {
+        self.field = field
         self.type = type
         self.column = column
     }
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.name == rhs.name
+        lhs.field == rhs.field
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(name)
+        hasher.combine(field)
     }
 }
 

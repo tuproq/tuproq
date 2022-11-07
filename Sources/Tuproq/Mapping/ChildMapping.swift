@@ -1,10 +1,10 @@
-public struct ChildMapping<Source: Entity>: AssociationMapping {
-    public let field: PartialKeyPath<Source>
+public struct ChildMapping: AssociationMapping {
+    public let field: String
     let entity: AnyEntity.Type
     let mappedBy: AnyKeyPath?
 
     public init<Target: Entity>(
-        field: PartialKeyPath<Source>,
+        field: String,
         entity: Target.Type,
         mappedBy: PartialKeyPath<Target>? = nil
     ) {

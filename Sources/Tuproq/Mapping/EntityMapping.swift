@@ -3,19 +3,19 @@ public protocol EntityMapping {
 
     var entity: E.Type { get }
     var table: String { get }
-    var ids: Set<IDMapping<E>> { get }
-    var fields: Set<FieldMapping<E>> { get }
-    var parents: Set<ParentMapping<E>> { get }
-    var children: Set<ChildMapping<E>> { get }
-    var siblings: Set<SiblingMapping<E>> { get }
+    var ids: Set<IDMapping> { get }
+    var fields: Set<FieldMapping> { get }
+    var parents: Set<ParentMapping> { get }
+    var children: Set<ChildMapping> { get }
+    var siblings: Set<SiblingMapping> { get }
 }
 
 public extension EntityMapping {
     var entity: E.Type { E.self }
     var table: String { Configuration.namingStrategy.table(entity: entity) }
-    var ids: Set<IDMapping<E>> { [.init(column: Configuration.namingStrategy.referenceColumn)] }
-    var fields: Set<FieldMapping<E>> { .init() }
-    var parents: Set<ParentMapping<E>> { .init() }
-    var children: Set<ChildMapping<E>> { .init() }
-    var siblings: Set<SiblingMapping<E>> { .init() }
+    var ids: Set<IDMapping> { [.init(column: Configuration.namingStrategy.referenceColumn)] }
+    var fields: Set<FieldMapping> { .init() }
+    var parents: Set<ParentMapping> { .init() }
+    var children: Set<ChildMapping> { .init() }
+    var siblings: Set<SiblingMapping> { .init() }
 }

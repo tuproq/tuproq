@@ -1,9 +1,9 @@
-public struct IDMapping<Source: Entity>: Hashable {
-    public let name: PartialKeyPath<Source>
+public struct IDMapping: Hashable {
+    public let name: String
     public let type: FieldType
     public let column: String
 
-    public init(name: PartialKeyPath<Source> = \.id, type: FieldType = .id(), column: String) {
+    public init(name: String = "id", type: FieldType = .id(), column: String) {
         self.name = name
         self.type = type
         self.column = column

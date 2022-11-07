@@ -58,10 +58,10 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     func find<E: Entity, I: Hashable>(_ entityType: E.Type, id: I) async throws -> E? {
-        guard let mapping = configuration.mapping(from: entityType) else { return nil } // TODO: throw an error
+        let table = try table(from: entityType)
         let query = createQueryBuilder()
             .select()
-            .from(mapping.table)
+            .from(table)
             .where("id = \"\(id)\"")
             .getQuery()
 
@@ -86,8 +86,8 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     func flush() async throws {
         do {
             let insertedIDsMap = try prepareInserts()
-            prepareUpdates()
-            prepareDeletions()
+            try prepareUpdates()
+            try prepareDeletions()
 
             if !allQueries.isEmpty {
                 allQueries = "BEGIN;\(allQueries)COMMIT;"
@@ -106,7 +106,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                     }
                 }
 
-                postFlush(insertedIDsMap: insertedIDsMap, postInserts: postInserts)
+                try postFlush(insertedIDsMap: insertedIDsMap, postInserts: postInserts)
             }
         } catch {
             allQueries = ""
@@ -114,32 +114,58 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         }
     }
 
+    private func mapping(from entityName: String) throws -> AnyEntityMapping {
+        guard let mapping = configuration.mapping(from: entityName) else {
+            throw ORMError("Entity named \"\(entityName)\" is not registered.")
+        }
+        return mapping
+    }
+
+    private func table(from entityName: String) throws -> String {
+        guard let table = configuration.mapping(from: entityName)?.table else {
+            throw ORMError("Entity named \"\(entityName)\" is not registered.")
+        }
+        return table
+    }
+
+    private func table<E: Entity>(from entityType: E.Type) throws -> String {
+        guard let table = configuration.mapping(from: entityType)?.table else {
+            throw ORMError("Entity named \"\(entityType)\" is not registered.")
+        }
+        return table
+    }
+
     private func prepareInserts() throws -> [String: [AnyHashable]] {
         var idsMap = [String: [AnyHashable]]()
 
-        for (table, entityMap) in entityInsertions {
+        for (entityName, entityMap) in entityInsertions {
+            let mapping = try mapping(from: entityName)
+
             for (id, dictionary) in entityMap {
                 var columns = [String]()
                 var values = [Any?]()
 
                 for (key, value) in dictionary {
-                    columns.append(key)
+                    var column = key
 
-                    if let valueDictionary = value as? [String: Codable?] {
+                    if let valueDictionary = value as? [String: Any?] {
+                        column += "_id"
                         values.append(valueDictionary["id"]!)
                     } else {
                         values.append(value)
                     }
+
+                    columns.append(column)
                 }
 
-                if idsMap[table] == nil {
-                    idsMap[table] = [id]
+                if idsMap[entityName] == nil {
+                    idsMap[entityName] = [id]
                 } else {
-                    idsMap[table]?.append(id)
+                    idsMap[entityName]?.append(id)
                 }
 
                 let query = createQueryBuilder()
-                    .insert(into: table, columns: columns, values: values)
+                    .insert(into: mapping.table, columns: columns, values: values)
                     .returning()
                     .getQuery()
                 allQueries += "\(query);"
@@ -149,12 +175,15 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         return idsMap
     }
 
-    private func prepareUpdates() {
-        for (table, entityMap) in entityUpdates {
+    private func prepareUpdates() throws {
+        for (entityName, entityMap) in entityUpdates {
+            let mapping = try mapping(from: entityName)
+            let table = mapping.table
+
             for id in entityMap.keys {
                 var values = [(String, Codable?)]()
 
-                if let changeSet = entityChangeSets[table]?[id] {
+                if let changeSet = entityChangeSets[entityName]?[id] {
                     for (key, (_, newValue)) in changeSet {
                         if let value = newValue {
                             values.append((key, value))
@@ -164,7 +193,8 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                     }
 
                     let query = createQueryBuilder()
-                        .update(table: table, values: values).where("id = \"\(id)\"")
+                        .update(table: table, values: values)
+                        .where("id = \"\(id)\"")
                         .returning()
                         .getQuery()
                     allQueries += "\(query);"
@@ -173,12 +203,15 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         }
     }
 
-    private func prepareDeletions() {
-        for (table, entityMap) in entityDeletions {
+    private func prepareDeletions() throws {
+        for (entityName, entityMap) in entityDeletions {
+            let table = try table(from: entityName)
+
             for id in entityMap.keys {
                 let query = createQueryBuilder()
                     .delete()
-                    .from(table).where("id = \"\(id)\"")
+                    .from(table)
+                    .where("id = \"\(id)\"")
                     .returning()
                     .getQuery()
                 allQueries += "\(query);"
@@ -186,8 +219,10 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         }
     }
 
-    private func postFlush(insertedIDsMap: [String: [AnyHashable]], postInserts: [[String: Any?]]) {
-        for (table, insertedIDs) in insertedIDsMap {
+    private func postFlush(insertedIDsMap: [String: [AnyHashable]], postInserts: [[String: Any?]]) throws {
+        for (entityName, insertedIDs) in insertedIDsMap {
+            let table = try table(from: entityName)
+
             for (index, insertedID) in insertedIDs.enumerated() {
                 let postInsert = postInserts[index]
                 let postInsertID = postInsert["id"] as! AnyHashable
@@ -214,7 +249,9 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
             }
         }
 
-        for (table, entityMap) in entityDeletions {
+        for (entityName, entityMap) in entityDeletions {
+            let table = try table(from: entityName)
+
             for id in entityMap.keys {
                 entityStates.removeValue(forKey: id)
                 removeFromIdentityMap(entityName: table, id: id)
