@@ -178,7 +178,6 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private func prepareUpdates() throws {
         for (entityName, entityMap) in entityUpdates {
             let mapping = try mapping(from: entityName)
-            let table = mapping.table
 
             for id in entityMap.keys {
                 var values = [(String, Codable?)]()
@@ -193,7 +192,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                     }
 
                     let query = createQueryBuilder()
-                        .update(table: table, values: values)
+                        .update(table: mapping.table, values: values)
                         .where("id = \"\(id)\"")
                         .returning()
                         .getQuery()
@@ -221,8 +220,6 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
     private func postFlush(insertedIDsMap: [String: [AnyHashable]], postInserts: [[String: Any?]]) throws {
         for (entityName, insertedIDs) in insertedIDsMap {
-            let table = try table(from: entityName)
-
             for (index, insertedID) in insertedIDs.enumerated() {
                 let postInsert = postInserts[index]
                 let postInsertID = postInsert["id"] as! AnyHashable
@@ -233,7 +230,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                         "value": value
                     ]
                     let dictionary: [String: Any?] = [
-                        "entity": table,
+                        "entity": entityName,
                         "id": insertedID,
                         "property": property
                     ]
@@ -243,18 +240,16 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                 if insertedID != postInsertID {
                     entityStates.removeValue(forKey: insertedID)
                     entityStates[postInsertID] = .managed
-                    removeFromIdentityMap(entityName: table, id: insertedID)
-                    addToIdentityMap(entityName: table, entityMap: postInsert, id: postInsertID)
+                    removeFromIdentityMap(entityName: entityName, id: insertedID)
+                    addToIdentityMap(entityName: entityName, entityMap: postInsert, id: postInsertID)
                 }
             }
         }
 
         for (entityName, entityMap) in entityDeletions {
-            let table = try table(from: entityName)
-
             for id in entityMap.keys {
                 entityStates.removeValue(forKey: id)
-                removeFromIdentityMap(entityName: table, id: id)
+                removeFromIdentityMap(entityName: entityName, id: id)
             }
         }
 
