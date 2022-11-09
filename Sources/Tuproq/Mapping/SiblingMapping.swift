@@ -1,6 +1,6 @@
 public struct SiblingMapping: AssociationMapping {
     public let field: String
-    let entity: AnyEntity.Type
+    let entity: any Entity.Type
     let mappedBy: AnyKeyPath?
     let inversedBy: AnyKeyPath?
     public let joinTable: JoinTable?

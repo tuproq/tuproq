@@ -115,7 +115,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         }
     }
 
-    private func mapping(from entityName: String) throws -> AnyEntityMapping {
+    private func mapping(from entityName: String) throws -> any EntityMapping {
         guard let mapping = configuration.mapping(from: entityName) else {
             throw ORMError("Entity named \"\(entityName)\" is not registered.")
         }

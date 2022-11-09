@@ -1,6 +1,6 @@
 public struct ParentMapping: AssociationMapping {
     public let field: String
-    let entity: AnyEntity.Type
+    let entity: any Entity.Type
     let inversedBy: AnyKeyPath?
     public let column: JoinTable.Column
 

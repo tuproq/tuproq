@@ -2,15 +2,15 @@ import Collections
 
 public struct Configuration {
     public static var namingStrategy: NamingStrategy = SnakeCaseNamingStrategy()
-    var mappings: OrderedDictionary<String, AnyEntityMapping> { _mappings }
-    private var _mappings = OrderedDictionary<String, AnyEntityMapping>()
+    var mappings: OrderedDictionary<String, any EntityMapping> { _mappings }
+    private var _mappings = OrderedDictionary<String, any EntityMapping>()
     var joinColumnTypes = [String: String]()
 
     public init() {}
 
     public mutating func addMapping<M: EntityMapping>(_ mapping: M) {
         let entityName = Self.entityName(from: mapping)
-        _mappings[entityName] = AnyEntityMapping(mapping)
+        _mappings[entityName] = mapping
     }
 
     static func entityName<E: Entity>(from entity: E) -> String {
@@ -21,7 +21,7 @@ public struct Configuration {
         String(describing: entityType)
     }
 
-    static func entityName(from entityType: AnyEntity.Type) -> String {
+    static func entityName(from entityType: any Entity.Type) -> String {
         String(describing: entityType)
     }
 
@@ -29,19 +29,19 @@ public struct Configuration {
         String(describing: M.E.self)
     }
 
-    func mapping<E: Entity>(from entity: E) -> AnyEntityMapping? {
+    func mapping<E: Entity>(from entity: E) -> (any EntityMapping)? {
         _mappings[Self.entityName(from: entity)]
     }
 
-    func mapping<E: Entity>(from entityType: E.Type) -> AnyEntityMapping? {
+    func mapping<E: Entity>(from entityType: E.Type) -> (any EntityMapping)? {
         _mappings[Self.entityName(from: entityType)]
     }
 
-    func mapping(from entityType: AnyEntity.Type) -> AnyEntityMapping? {
+    func mapping(from entityType: any Entity.Type) -> (any EntityMapping)? {
         _mappings[Self.entityName(from: entityType)]
     }
 
-    func mapping(from entityName: String) -> AnyEntityMapping? {
+    func mapping(from entityName: String) -> (any EntityMapping)? {
         _mappings[entityName]
     }
 }

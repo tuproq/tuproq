@@ -1,6 +1,6 @@
 public struct ChildMapping: AssociationMapping {
     public let field: String
-    let entity: AnyEntity.Type
+    let entity: any Entity.Type
     let mappedBy: AnyKeyPath?
 
     public init<Target: Entity>(

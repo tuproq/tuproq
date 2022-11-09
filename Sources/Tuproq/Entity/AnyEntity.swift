@@ -1,1 +1,0 @@
-typealias AnyEntity = AnyObject & Codable
