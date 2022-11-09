@@ -1,6 +1,7 @@
 import Collections
 
 public struct Configuration {
+    public static var defaultIDField = "id"
     public static var namingStrategy: NamingStrategy = SnakeCaseNamingStrategy()
     var mappings: OrderedDictionary<String, any EntityMapping> { _mappings }
     private var _mappings = OrderedDictionary<String, any EntityMapping>()

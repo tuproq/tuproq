@@ -9,6 +9,10 @@ public protocol NamingStrategy {
 }
 
 public extension NamingStrategy {
+    func column(field: String) -> String {
+        column(field: field, entity: nil)
+    }
+
     func column<E: Entity>(field: String, entity: E.Type?) -> String {
         if let entity = entity {
             return column(field: field, entity: Configuration.entityName(from: entity))

@@ -13,7 +13,7 @@ public protocol EntityMapping {
 public extension EntityMapping {
     var entity: E.Type { E.self }
     var table: String { Configuration.namingStrategy.table(entity: entity) }
-    var ids: Set<IDMapping> { [.init(column: Configuration.namingStrategy.referenceColumn)] }
+    var ids: Set<IDMapping> { [.init()] }
     var fields: Set<FieldMapping> { .init() }
     var parents: Set<ParentMapping> { .init() }
     var children: Set<ChildMapping> { .init() }
