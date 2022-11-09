@@ -7,7 +7,7 @@ public protocol EntityManager: AnyObject {
     init(connection: Connection, configuration: Configuration)
 
     func createQueryBuilder() -> Q
-    func find<E: Entity, I: Hashable>(_ entityType: E.Type, id: I) async throws -> E?
+    func find<E: Entity>(_ entityType: E.Type, id: E.Identifiable) async throws -> E?
     func flush() async throws
     func getRepository<R: Repository>(_ repositoryType: R.Type) -> R
     func persist<E: Entity>(_ entity: inout E) throws

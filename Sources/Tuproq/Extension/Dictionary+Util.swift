@@ -1,7 +1,7 @@
 import Foundation
 
 extension Dictionary {
-    func decode<E: Entity>(to entityType: E.Type) throws -> E {
+    func decode<E: Entity>(to entityType: E.Type, entityID: AnyHashable) throws -> E {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
 
@@ -20,8 +20,12 @@ extension Dictionary {
         decoder.dateDecodingStrategy = .formatted(dateFormatter)
         decoder.keyDecodingStrategy = .convertFromSnakeCase
 
-        if let dictionary = dictionary as? [String: Any?], let id = dictionary["id"] as? AnyHashable {
-            decoder.userInfo = [CodingUserInfoKey(rawValue: "id")!: id]
+        if let dictionary = dictionary as? [String: Any?] {
+            let id = dictionary["id"] as? AnyHashable ?? entityID
+            decoder.userInfo = [
+                CodingUserInfoKey(rawValue: "entityName")!: String(describing: entityType),
+                CodingUserInfoKey(rawValue: "entityID")!: id
+            ]
         }
 
         return try decoder.decode(entityType, from: data)

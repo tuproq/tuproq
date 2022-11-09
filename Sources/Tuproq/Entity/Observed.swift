@@ -5,7 +5,7 @@ public final class Observed<V: Codable>: Codable {
     private var name: String?
     private var entityID: AnyHashable?
     private var entityName: String?
-    private var value: V
+    private var value: V?
 
     @available(*, unavailable, message: "@Observed can only be applied to classes.")
     public var wrappedValue: V {
@@ -15,11 +15,11 @@ public final class Observed<V: Codable>: Codable {
 
     public init(wrappedValue: V) {
         value = wrappedValue
-        addPropertyObserver()
     }
 
     public init(from decoder: Decoder) throws {
-        entityID = decoder.userInfo[CodingUserInfoKey(rawValue: "id")!] as? AnyHashable
+        entityName = decoder.userInfo[CodingUserInfoKey(rawValue: "entityName")!] as? String
+        entityID = decoder.userInfo[CodingUserInfoKey(rawValue: "entityID")!] as? AnyHashable
 
         if let name = decoder.codingPath.first?.stringValue, !name.isEmpty {
             self.name = name
@@ -28,7 +28,9 @@ public final class Observed<V: Codable>: Codable {
         }
 
         let container = try decoder.singleValueContainer()
-        value = try container.decode(V.self)
+        do {
+            value = try container.decode(V.self)
+        } catch {}
         addPropertyObserver()
     }
 
@@ -42,7 +44,7 @@ public final class Observed<V: Codable>: Codable {
         storage storageKeyPath: ReferenceWritableKeyPath<E, Observed>
     ) -> V {
         get {
-            instance[keyPath: storageKeyPath].value
+            instance[keyPath: storageKeyPath].value!
         }
         set {
             let entityName = Configuration.entityName(from: instance)
@@ -80,26 +82,29 @@ public final class Observed<V: Codable>: Codable {
         ) { [self] notification in
             let dictionary = notification.object as! [String: Any?]
             let entity = dictionary["entity"] as! String
-            var id = dictionary["id"] as! AnyHashable
+            let oldID = dictionary["oldID"] as! AnyHashable
+            var newID = dictionary["newID"] as! AnyHashable
             let property = dictionary["property"] as! [String: Any?]
             let propertyName = property["name"] as! String
             var propertyValue = property["value"]
 
-            if let uuid = id as? UUID { // TODO: check if the field type is UUID
-                id = AnyHashable(uuid.uuidString)
+            if let uuid = newID as? UUID { // TODO: check if the field type is UUID
+                newID = AnyHashable(uuid.uuidString)
             }
 
             if let uuid = propertyValue as? UUID { // TODO: check if the field type is UUID
                 propertyValue = uuid.uuidString
             }
 
-            if entity == entityName && id == entityID && propertyName == name {
+            if entity == entityName && oldID == entityID && propertyName == name {
                 if let propertyValue = propertyValue as? V { // TODO: check if Field is nullable or not.
                     value = propertyValue
                 }
 
+                entityID = newID
+
                 if name == "id" {
-                    entityID = propertyValue as? AnyHashable
+                    value = entityID as? V
                 }
             }
         }
