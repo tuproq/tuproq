@@ -1,4 +1,4 @@
-public struct FieldMapping: Hashable {
+public struct FieldMapping: AnyMapping {
     public let field: String
     public let type: FieldType
     public let column: Column
@@ -7,14 +7,6 @@ public struct FieldMapping: Hashable {
         self.field = field
         self.type = type
         self.column = column
-    }
-
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.field == rhs.field
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(field)
     }
 }
 
