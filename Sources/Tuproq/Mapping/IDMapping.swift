@@ -3,7 +3,11 @@ public struct IDMapping: AnyMapping {
     public let type: FieldType
     public let column: String
 
-    public init(field: String = Configuration.defaultIDField, type: FieldType = .id(), column: String? = nil) {
+    public init(field: String = Configuration.defaultIDField, type: FieldType = .id()) {
+        self.init(field: field, type: type, column: "")
+    }
+
+    public init(field: String = Configuration.defaultIDField, type: FieldType = .id(), column: String) {
         if field.isEmpty {
             self.field = Configuration.defaultIDField
         } else {
@@ -12,10 +16,10 @@ public struct IDMapping: AnyMapping {
 
         self.type = type
 
-        if let column = column, !column.isEmpty {
-            self.column = column
-        } else {
+        if column.isEmpty {
             self.column = Configuration.namingStrategy.column(field: self.field)
+        } else {
+            self.column = column
         }
     }
 }
