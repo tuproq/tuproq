@@ -3,6 +3,26 @@ public struct FieldMapping: AnyMapping {
     public let type: FieldType
     public let column: Column
 
+    public init(field: String, type: FieldType) {
+        self.init(
+            field: field,
+            type: type,
+            column: .init(stringLiteral: Configuration.namingStrategy.column(field: field))
+        )
+    }
+
+    public init(field: String, type: FieldType, isUnique: Bool = false, isNullable: Bool = true) {
+        self.init(
+            field: field,
+            type: type,
+            column: .init(
+                name: Configuration.namingStrategy.column(field: field),
+                isUnique: isUnique,
+                isNullable: isNullable
+            )
+        )
+    }
+
     public init(field: String, type: FieldType, column: Column) {
         self.field = field
         self.type = type
