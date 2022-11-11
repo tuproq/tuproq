@@ -9,7 +9,7 @@ final class ChildMappingTests: XCTestCase {
 
         // Arrange
         let field = "posts"
-        let entity: any Entity.Type = Author.self
+        let entity: any Entity.Type = Post.self
         let mappedBy = "author"
 
         // Act
