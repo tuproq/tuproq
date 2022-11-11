@@ -24,16 +24,19 @@ extension JoinTable {
             isNullable: Bool = true
         ) {
             self.name = name
-            self.referenceColumn = referenceColumn
+
+            if referenceColumn.isEmpty {
+                self.referenceColumn = Configuration.namingStrategy.referenceColumn
+            } else {
+                self.referenceColumn = referenceColumn
+            }
+
             self.isUnique = isUnique
             self.isNullable = isNullable
         }
 
         public init(stringLiteral name: StringLiteralType) {
-            self.name = name
-            referenceColumn = Configuration.namingStrategy.referenceColumn
-            isUnique = false
-            isNullable = true
+            self.init(name: name)
         }
 
         public static func == (lhs: Self, rhs: Self) -> Bool {
