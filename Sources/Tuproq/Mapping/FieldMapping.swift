@@ -4,29 +4,30 @@ public struct FieldMapping: AnyFieldMapping {
     public let column: Column
 
     public init(field: String, type: FieldType) {
-        self.init(
-            field: field,
-            type: type,
-            column: .init(stringLiteral: Configuration.namingStrategy.column(field: field))
-        )
+        self.init(field: field, type: type, column: "")
     }
 
     public init(field: String, type: FieldType, isUnique: Bool = false, isNullable: Bool = true) {
         self.init(
             field: field,
             type: type,
-            column: .init(
-                name: Configuration.namingStrategy.column(field: field),
-                isUnique: isUnique,
-                isNullable: isNullable
-            )
+            column: .init(name: "", isUnique: isUnique, isNullable: isNullable)
         )
     }
 
     public init(field: String, type: FieldType, column: Column) {
         self.field = field
         self.type = type
-        self.column = column
+
+        if column.name.isEmpty {
+            self.column = .init(
+                name: Configuration.namingStrategy.column(field: self.field),
+                isUnique: column.isUnique,
+                isNullable: column.isNullable
+            )
+        } else {
+            self.column = column
+        }
     }
 }
 
