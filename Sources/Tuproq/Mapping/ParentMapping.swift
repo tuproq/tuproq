@@ -5,14 +5,44 @@ public struct ParentMapping: AssociationMapping {
     public let column: JoinTable.Column
 
     public init<Target: Entity>(
-        field: String,
+        field: String = "",
+        entity: Target.Type,
+        inversedBy: String? = nil,
+        isUnique: Bool = false,
+        isNullable: Bool = true
+    ) {
+        self.init(
+            field: field,
+            entity: entity,
+            inversedBy: inversedBy,
+            column: .init(name: "", isUnique: isUnique, isNullable: isNullable)
+        )
+    }
+
+    public init<Target: Entity>(
+        field: String = "",
         entity: Target.Type,
         inversedBy: String? = nil,
         column: JoinTable.Column
     ) {
-        self.field = field
+        if field.isEmpty {
+            self.field = String(describing: entity).components(separatedBy: ".").last!.camelCased
+        } else {
+            self.field = field
+        }
+
         self.entity = entity
         self.inversedBy = inversedBy
-        self.column = column
+
+        if column.name.isEmpty {
+            self.column = .init(
+                name: Configuration.namingStrategy.joinColumn(field: self.field),
+                referenceColumn: column.referenceColumn,
+                isUnique: column.isUnique,
+                isNullable: column.isNullable
+            )
+        } else {
+            self.column = column
+        }
     }
 }
