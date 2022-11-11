@@ -22,8 +22,7 @@ jobs:
         args: "--module Tuproq --theme fullwidth --root-url https://tuproq.dev/tuproq --source-host github --source-host-url https://github.com/tuproq/tuproq"
   ubuntu-bionic:
     runs-on: ubuntu-latest
-    container:
-      image: swift:5.6-bionic
+    container: swift:5.7-jammy
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -39,14 +38,3 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         flags: base64,unittests
         file: coverage.lcov
-  ubuntu-xenial:
-    runs-on: ubuntu-latest
-    container:
-      image: swift:5.6-xenial
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Build
-      run: swift build -v
-    - name: Run tests
-      run: swift test --enable-code-coverage --enable-test-discovery --sanitize=thread
