@@ -1,4 +1,4 @@
-public struct JoinTable {
+public struct JoinTable: Hashable {
     public let name: String
     public let columns: Set<Column>
     public let inverseColumns: Set<Column>
@@ -7,6 +7,14 @@ public struct JoinTable {
         self.name = name
         self.columns = columns
         self.inverseColumns = inverseColumns
+    }
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.name == rhs.name
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
     }
 }
 
