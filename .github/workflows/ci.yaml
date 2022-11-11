@@ -20,7 +20,7 @@ jobs:
       with:
         personal_access_token: ${{ secrets.ACCESS_TOKEN }}
         args: "--module Tuproq --theme fullwidth --root-url https://tuproq.dev/tuproq --source-host github --source-host-url https://github.com/tuproq/tuproq"
-  ubuntu-bionic:
+  ubuntu:
     runs-on: ubuntu-latest
     container: swift:5.7-jammy
     steps:
