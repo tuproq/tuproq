@@ -1,8 +1,8 @@
-public protocol AnyMapping: Hashable {
+public protocol AnyFieldMapping: Hashable {
     var field: String { get }
 }
 
-public extension AnyMapping {
+public extension AnyFieldMapping {
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.field == rhs.field
     }

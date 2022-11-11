@@ -1,4 +1,4 @@
-public struct FieldMapping: AnyMapping {
+public struct FieldMapping: AnyFieldMapping {
     public let field: String
     public let type: FieldType
     public let column: Column
