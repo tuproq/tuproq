@@ -1,4 +1,4 @@
-public struct SiblingMapping: AssociationMapping {
+public struct SiblingMapping<Source: Entity>: AssociationMapping {
     public let field: String
     public let entity: any Entity.Type
     public let mappedBy: String?

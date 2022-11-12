@@ -1,19 +1,33 @@
 @testable import Tuproq
 import XCTest
 
+final class User: Entity {
+    @Observed private(set) var id: Int?
+    @Observed var groups: [Group]
+
+    init(groups: [Group] = .init()) {
+        self.groups = groups
+    }
+}
+
+final class Group: Entity {
+    @Observed private(set) var id: Int?
+    @Observed var users: [User]
+
+    init(users: [User] = .init()) {
+        self.users = users
+    }
+}
+
 final class SiblingMappingTests: XCTestCase {
     func testInitWithMappedBy() {
-        final class User: Entity {
-            @Observed var id: Int?
-        }
-
         // Arrange
         let field = "users"
         let entity: any Entity.Type = User.self
         let mappedBy = "groups"
 
         // Act
-        let mapping = SiblingMapping(field: field, entity: entity, mappedBy: mappedBy)
+        let mapping = SiblingMapping<Group>(field: field, entity: entity, mappedBy: mappedBy)
 
         // Assert
         XCTAssertEqual(mapping.field, field)
@@ -24,10 +38,6 @@ final class SiblingMappingTests: XCTestCase {
     }
 
     func testInitWithInversedBy() {
-        final class Group: Entity {
-            @Observed var id: Int?
-        }
-
         // Arrange
         let field = "groups"
         let entity: any Entity.Type = Group.self
@@ -35,7 +45,7 @@ final class SiblingMappingTests: XCTestCase {
         let joinTable = JoinTable(name: "user_group", columns: .init(), inverseColumns: .init())
 
         // Act
-        let mapping = SiblingMapping(field: field, entity: entity, inversedBy: inversedBy, joinTable: joinTable)
+        let mapping = SiblingMapping<User>(field: field, entity: entity, inversedBy: inversedBy, joinTable: joinTable)
 
         // Assert
         XCTAssertEqual(mapping.field, field)

@@ -112,7 +112,7 @@ extension ORM {
         }
     }
 
-    private func parents(mapping: any EntityMapping, table: inout Table) {
+    private func parents(mapping: some EntityMapping, table: inout Table) {
         for parent in mapping.parents {
             let parentMapping = configuration.mapping(from: parent.entity)!
             let relationTable = parentMapping.table
@@ -146,7 +146,7 @@ extension ORM {
         }
     }
 
-    private func siblings(mapping: any EntityMapping, tables: inout [Table]) {
+    private func siblings(mapping: some EntityMapping, tables: inout [Table]) {
         for sibling in mapping.siblings {
             if let siblingJoinTable = sibling.joinTable {
                 let siblingMapping = configuration.mapping(from: sibling.entity)!

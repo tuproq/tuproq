@@ -4,7 +4,21 @@ import XCTest
 final class ParentMappingTests: XCTestCase {
     func testInit() {
         final class Author: Entity {
-            @Observed var id: Int?
+            @Observed private(set) var id: Int?
+            @Observed var posts: [Post]
+
+            init(posts: [Post] = .init()) {
+                self.posts = posts
+            }
+        }
+
+        final class Post: Entity {
+            @Observed private(set) var id: Int?
+            @Observed var author: Author
+
+            init(author: Author) {
+                self.author = author
+            }
         }
 
         // Arrange
@@ -16,7 +30,7 @@ final class ParentMappingTests: XCTestCase {
         let column = JoinTable.Column(name: "author_id", isUnique: isUnique, isNullable: isNullable)
 
         // Act
-        var mapping = ParentMapping(entity: entity)
+        var mapping = ParentMapping<Post>(entity: entity)
 
         // Assert
         XCTAssertEqual(mapping.field, field)
@@ -25,7 +39,7 @@ final class ParentMappingTests: XCTestCase {
         XCTAssertEqual(mapping.column, .init(stringLiteral: Configuration.namingStrategy.joinColumn(field: field)))
 
         // Act
-        mapping = ParentMapping(field: field, entity: entity, inversedBy: inversedBy, column: column)
+        mapping = ParentMapping<Post>(field: field, entity: entity, inversedBy: inversedBy, column: column)
 
         // Assert
         XCTAssertEqual(mapping.field, field)

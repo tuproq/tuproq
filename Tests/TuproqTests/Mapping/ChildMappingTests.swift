@@ -3,8 +3,22 @@ import XCTest
 
 final class ChildMappingTests: XCTestCase {
     func testInit() {
+        final class Author: Entity {
+            @Observed private(set) var id: Int?
+            @Observed var posts: [Post]
+
+            init(posts: [Post] = .init()) {
+                self.posts = posts
+            }
+        }
+
         final class Post: Entity {
-            @Observed var id: Int?
+            @Observed private(set) var id: Int?
+            @Observed var author: Author
+
+            init(author: Author) {
+                self.author = author
+            }
         }
 
         // Arrange
@@ -13,15 +27,15 @@ final class ChildMappingTests: XCTestCase {
         let mappedBy = "author"
 
         // Act
-        var mapping = ChildMapping(field: field, entity: entity)
+        var mapping = ChildMapping<Author>(field: field, entity: entity)
 
         // Assert
         XCTAssertEqual(mapping.field, field)
         XCTAssertTrue(mapping.entity == entity)
-        XCTAssertNil(mapping.mappedBy)
+        XCTAssertEqual(mapping.mappedBy, mappedBy)
 
         // Act
-        mapping = ChildMapping(field: field, entity: entity, mappedBy: mappedBy)
+        mapping = ChildMapping<Author>(field: field, entity: entity, mappedBy: mappedBy)
 
         // Assert
         XCTAssertEqual(mapping.field, field)

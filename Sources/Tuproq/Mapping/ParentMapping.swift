@@ -1,4 +1,4 @@
-public struct ParentMapping: AssociationMapping {
+public struct ParentMapping<Source: Entity>: AssociationMapping {
     public let field: String
     public let entity: any Entity.Type
     public let inversedBy: String?
