@@ -21,10 +21,7 @@ extension ORM {
 extension ORM {
     public func migrate() async throws {
         let allQueries = "BEGIN;\(createSchema())COMMIT;"
-
-        if let result = try await connection.query(allQueries) {
-            print(result)
-        }
+        _ = try await connection.query(allQueries)
     }
 
     public func createSchema() -> String {

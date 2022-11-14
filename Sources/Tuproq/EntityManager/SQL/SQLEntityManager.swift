@@ -67,7 +67,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
             .where("id = \"\(id)\"")
             .getQuery()
 
-        if let result = try await connection.query(query.raw), let row = result.rows.first {
+        if let result = try await connection.query(query.raw).first, let row = result.rows.first {
             var dictionary = [String: Any?]()
 
             for (index, value) in row.enumerated() {
@@ -95,8 +95,9 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
             if !allQueries.isEmpty {
                 allQueries = "BEGIN;\(allQueries)COMMIT;"
                 var postInserts = [[String: Any?]]()
+                let results = try await connection.query(allQueries)
 
-                if let result = try await connection.query(allQueries) {
+                for result in results {
                     for row in result.rows {
                         var dictionary = [String: Any?]()
 
