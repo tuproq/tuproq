@@ -27,6 +27,7 @@ final class ChildMappingTests: XCTestCase {
         let field = "posts"
         let entity: any Entity.Type = Post.self
         let mappedBy = "author"
+        let isUnique = true
 
         // Act
         var mapping = ChildMapping<Author>(field: field, entity: entity)
@@ -35,13 +36,15 @@ final class ChildMappingTests: XCTestCase {
         XCTAssertEqual(mapping.field, field)
         XCTAssertTrue(mapping.entity == entity)
         XCTAssertEqual(mapping.mappedBy, mappedBy)
+        XCTAssertFalse(mapping.isUnique)
 
         // Act
-        mapping = ChildMapping<Author>(field: field, entity: entity, mappedBy: mappedBy)
+        mapping = ChildMapping<Author>(field: field, entity: entity, mappedBy: mappedBy, isUnique: isUnique)
 
         // Assert
         XCTAssertEqual(mapping.field, field)
         XCTAssertTrue(mapping.entity == entity)
         XCTAssertEqual(mapping.mappedBy, mappedBy)
+        XCTAssertEqual(mapping.isUnique, isUnique)
     }
 }
