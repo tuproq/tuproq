@@ -1,26 +1,28 @@
 @testable import Tuproq
 import XCTest
 
+private extension ChildMappingTests {
+    final class Author: Entity {
+        @Observed private(set) var id: Int?
+        @Observed var posts: [Post]
+
+        init(posts: [Post] = .init()) {
+            self.posts = posts
+        }
+    }
+
+    final class Post: Entity {
+        @Observed private(set) var id: Int?
+        @Observed var author: Author
+
+        init(author: Author) {
+            self.author = author
+        }
+    }
+}
+
 final class ChildMappingTests: XCTestCase {
     func testInit() {
-        final class Author: Entity {
-            @Observed private(set) var id: Int?
-            @Observed var posts: [Post]
-
-            init(posts: [Post] = .init()) {
-                self.posts = posts
-            }
-        }
-
-        final class Post: Entity {
-            @Observed private(set) var id: Int?
-            @Observed var author: Author
-
-            init(author: Author) {
-                self.author = author
-            }
-        }
-
         // Arrange
         let field = "posts"
         let entity: any Entity.Type = Post.self

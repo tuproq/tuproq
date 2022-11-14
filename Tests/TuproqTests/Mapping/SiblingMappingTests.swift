@@ -1,21 +1,23 @@
 @testable import Tuproq
 import XCTest
 
-final class User: Entity {
-    @Observed private(set) var id: Int?
-    @Observed var groups: [Group]
+private extension SiblingMappingTests {
+    final class User: Entity {
+        @Observed private(set) var id: Int?
+        @Observed var groups: [Group]
 
-    init(groups: [Group] = .init()) {
-        self.groups = groups
+        init(groups: [Group] = .init()) {
+            self.groups = groups
+        }
     }
-}
 
-final class Group: Entity {
-    @Observed private(set) var id: Int?
-    @Observed var users: [User]
+    final class Group: Entity {
+        @Observed private(set) var id: Int?
+        @Observed var users: [User]
 
-    init(users: [User] = .init()) {
-        self.users = users
+        init(users: [User] = .init()) {
+            self.users = users
+        }
     }
 }
 
