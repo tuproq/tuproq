@@ -5,7 +5,21 @@ public struct ParentMapping<Source: Entity>: AssociationMapping {
     public let column: JoinTable.Column
 
     public init<Target: Entity>(
-        field: String = "",
+        entity: Target.Type,
+        inversedBy: String? = nil,
+        isUnique: Bool = false,
+        isNullable: Bool = true
+    ) {
+        self.init(
+            field: "",
+            entity: entity,
+            inversedBy: inversedBy,
+            column: .init(name: "", isUnique: isUnique, isNullable: isNullable)
+        )
+    }
+
+    public init<Target: Entity>(
+        field: String,
         entity: Target.Type,
         inversedBy: String? = nil,
         isUnique: Bool = false,
@@ -20,7 +34,20 @@ public struct ParentMapping<Source: Entity>: AssociationMapping {
     }
 
     public init<Target: Entity>(
-        field: String = "",
+        entity: Target.Type,
+        inversedBy: String? = nil,
+        column: JoinTable.Column
+    ) {
+        self.init(
+            field: "",
+            entity: entity,
+            inversedBy: inversedBy,
+            column: column
+        )
+    }
+
+    public init<Target: Entity>(
+        field: String,
         entity: Target.Type,
         inversedBy: String? = nil,
         column: JoinTable.Column

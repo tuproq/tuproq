@@ -3,11 +3,19 @@ public struct IDMapping: AnyFieldMapping {
     public let type: FieldType
     public let column: String
 
-    public init(field: String = "", type: FieldType = .id()) {
+    public init(type: FieldType = .id()) {
+        self.init(field: "", type: type, column: "")
+    }
+
+    public init(field: String, type: FieldType = .id()) {
         self.init(field: field, type: type, column: "")
     }
 
-    public init(field: String = "", type: FieldType = .id(), column: String) {
+    public init(type: FieldType = .id(), column: String) {
+        self.init(field: "", type: type, column: column)
+    }
+
+    public init(field: String, type: FieldType = .id(), column: String) {
         if field.isEmpty {
             self.field = Configuration.defaultIDField
         } else {
