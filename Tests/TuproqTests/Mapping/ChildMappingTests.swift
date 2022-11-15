@@ -25,7 +25,7 @@ final class ChildMappingTests: XCTestCase {
     func testInit() {
         // Arrange
         let field = "posts"
-        let entity: any Entity.Type = Post.self
+        let entity = Post.self
         let mappedBy = "author"
         let isUnique = true
 

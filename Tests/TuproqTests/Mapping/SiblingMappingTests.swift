@@ -25,7 +25,7 @@ final class SiblingMappingTests: XCTestCase {
     func testInitWithMappedBy() {
         // Arrange
         let field = "users"
-        let entity: any Entity.Type = User.self
+        let entity = User.self
         let mappedBy = "groups"
 
         // Act
@@ -42,7 +42,7 @@ final class SiblingMappingTests: XCTestCase {
     func testInitWithInversedBy() {
         // Arrange
         let field = "groups"
-        let entity: any Entity.Type = Group.self
+        let entity = Group.self
         let inversedBy = "users"
         let joinTable = JoinTable(name: "user_group", columns: .init(), inverseColumns: .init())
 

@@ -25,7 +25,7 @@ final class ParentMappingTests: XCTestCase {
     func testInit() {
         // Arrange
         let field = "author"
-        let entity: any Entity.Type = Author.self
+        let entity = Author.self
         let inversedBy = "posts"
         let isUnique = true
         let isNullable = false
