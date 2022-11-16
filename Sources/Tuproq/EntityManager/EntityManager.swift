@@ -2,7 +2,7 @@ public protocol EntityManager: AnyObject {
     associatedtype Q: QueryBuilder
 
     var connection: Connection { get }
-    var configuration: Configuration { get }
+    var configuration: Configuration { set get }
 
     init(connection: Connection, configuration: Configuration)
 
@@ -13,4 +13,10 @@ public protocol EntityManager: AnyObject {
     func persist<E: Entity>(_ entity: inout E) throws
     func refresh<E: Entity>(_ entity: inout E) throws
     func remove<E: Entity>(_ entity: E)
+}
+
+public extension EntityManager {
+    func getRepository<R: EntityRepository>(_ entityType: R.E.Type) -> R {
+        configuration.getRepository(entityType)
+    }
 }

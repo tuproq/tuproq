@@ -5,7 +5,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private typealias EntityMap = [String: Any?]
 
     let connection: Connection
-    let configuration: Configuration
+    var configuration: Configuration
     private var allQueries = ""
 
     private var entityChangeSets = [String: [AnyHashable: ChangeSet]]()
@@ -16,7 +16,6 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
     private var entityStates = [AnyHashable: EntityState]()
     private var identityMap = [String: [AnyHashable: EntityMap]]()
-    private var repositories = [String: any EntityRepository]()
 
     init(connection: Connection, configuration: Configuration) {
         self.connection = connection
@@ -267,19 +266,6 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         entityChangeSets.removeAll()
         entityDeletions.removeAll()
         allQueries = ""
-    }
-
-    func getRepository<R: EntityRepository>(_ entityType: R.E.Type) -> R {
-        let entityName = Configuration.entityName(from: entityType)
-
-        if let repository = repositories[entityName] {
-            return repository as! R
-        }
-
-        let repository = R()
-        repositories[entityName] = repository
-
-        return repository
     }
 
     func persist<E: Entity>(_ entity: inout E) throws {
