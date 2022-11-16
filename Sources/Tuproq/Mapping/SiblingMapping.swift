@@ -13,6 +13,19 @@ public struct SiblingMapping<Source: Entity>: AssociationMapping {
         joinTable = nil
     }
 
+    public init<Target: Entity>(field: String, entity: Target.Type, inversedBy: String) {
+        self.field = field
+        self.entity = entity
+        mappedBy = nil
+        self.inversedBy = inversedBy
+        let namingStrategy = Configuration.namingStrategy
+        joinTable = JoinTable(
+            name: namingStrategy.joinTable(sourceEntity: Source.self, targetEntity: Target.self),
+            columns: [.init(stringLiteral: namingStrategy.joinColumn(entity: Source.self))],
+            inverseColumns: [.init(stringLiteral: namingStrategy.joinColumn(entity: Target.self))]
+        )
+    }
+
     public init<Target: Entity>(field: String, entity: Target.Type, inversedBy: String, joinTable: JoinTable) {
         self.field = field
         self.entity = entity

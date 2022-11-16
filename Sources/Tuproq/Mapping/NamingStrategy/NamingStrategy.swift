@@ -37,6 +37,11 @@ public extension NamingStrategy {
         )
     }
 
+    func joinColumn<E: Entity>(entity: E.Type) -> String {
+        let field = Configuration.entityName(from: entity).components(separatedBy: ".").last!
+        return joinColumn(field: field)
+    }
+
     func table<E: Entity>(entity: E.Type) -> String {
         table(entity: Configuration.entityName(from: entity))
     }
