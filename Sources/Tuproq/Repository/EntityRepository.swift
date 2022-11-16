@@ -1,4 +1,4 @@
-public protocol Repository {
+public protocol EntityRepository {
     associatedtype E: Entity
 
     var entity: E.Type { get }
@@ -6,6 +6,6 @@ public protocol Repository {
     init()
 }
 
-public extension Repository {
+public extension EntityRepository {
     var entity: E.Type { E.self }
 }

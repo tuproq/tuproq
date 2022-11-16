@@ -16,7 +16,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
     private var entityStates = [AnyHashable: EntityState]()
     private var identityMap = [String: [AnyHashable: EntityMap]]()
-    private var repositories = [String: AnyRepository]()
+    private var repositories = [String: any EntityRepository]()
 
     init(connection: Connection, configuration: Configuration) {
         self.connection = connection
@@ -269,15 +269,15 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         allQueries = ""
     }
 
-    func getRepository<R: Repository>(_ repositoryType: R.Type) -> R {
-        let entityName = Configuration.entityName(from: repositoryType.E)
+    func getRepository<R: EntityRepository>(_ entityType: R.E.Type) -> R {
+        let entityName = Configuration.entityName(from: entityType)
 
         if let repository = repositories[entityName] {
-            return repository.repository as! R
+            return repository as! R
         }
 
         let repository = R()
-        repositories[entityName] = AnyRepository(repository)
+        repositories[entityName] = repository
 
         return repository
     }
