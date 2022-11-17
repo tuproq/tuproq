@@ -21,6 +21,11 @@ public extension NamingStrategy {
         return column(field: field, entity: nil)
     }
 
+    func joinColumn<E: Entity>(entity: E.Type) -> String {
+        let field = Configuration.entityName(from: entity).components(separatedBy: ".").last!
+        return joinColumn(field: field)
+    }
+
     func joinKeyColumn<E: Entity>(entity: E.Type, referenceColumn: String? = nil) -> String {
         joinKeyColumn(entity:Configuration.entityName(from: entity), referenceColumn: referenceColumn)
     }
@@ -35,11 +40,6 @@ public extension NamingStrategy {
             targetEntity: Configuration.entityName(from: targetEntity),
             field: field
         )
-    }
-
-    func joinColumn<E: Entity>(entity: E.Type) -> String {
-        let field = Configuration.entityName(from: entity).components(separatedBy: ".").last!
-        return joinColumn(field: field)
     }
 
     func table<E: Entity>(entity: E.Type) -> String {
