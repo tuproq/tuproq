@@ -194,7 +194,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                         if let value = newValue {
                             values.append((key, value))
                         } else {
-                            values.append((key, "NULL"))
+                            values.append((key, "\(SQLExpression.Kind.null)"))
                         }
                     }
 

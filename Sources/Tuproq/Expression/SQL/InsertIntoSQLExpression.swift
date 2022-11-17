@@ -23,7 +23,7 @@ final class InsertIntoSQLExpression: SQLExpression {
                     return "\(value)"
                 }
 
-                return "NULL"
+                return "\(Kind.null)"
             }.joined(separator: ", ")
             raw += " \(Kind.values) (\(values))"
         }

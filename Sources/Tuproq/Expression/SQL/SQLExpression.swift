@@ -65,6 +65,7 @@ extension SQLExpression {
         case limit = "LIMIT"
         case not = "NOT"
         case notNull = "NOT NULL"
+        case null = "NULL"
         case on = "ON"
         case or = "OR"
         case orderBy = "ORDER BY"
