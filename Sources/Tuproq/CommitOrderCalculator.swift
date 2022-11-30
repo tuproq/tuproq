@@ -18,13 +18,11 @@ final class CommitOrderCalculator {
 
     func sort() -> [String] {
         for node in nodes.values {
-            var node = node
-
             if node.state != .notVisited {
                 continue
             }
 
-            visit(node: &node)
+            visit(node: node)
         }
 
         let sortedNodes = sortedNodes
@@ -34,21 +32,21 @@ final class CommitOrderCalculator {
         return sortedNodes.reversed()
     }
 
-    func visit(node: inout Node) {
+    func visit(node: Node) {
         node.state = .inProgress
 
         for dependency in node.dependencies.values {
-            if var adjacentNode = nodes[dependency.to] {
+            if let adjacentNode = nodes[dependency.to] {
                 switch adjacentNode.state {
-                case .notVisited: visit(node: &adjacentNode)
+                case .notVisited: visit(node: adjacentNode)
                 case .visited: break
                 case .inProgress:
                     if let adjacentDependency = adjacentNode.dependencies[node.value],
                        adjacentDependency.weight < dependency.weight {
                         for adjacentDependency in adjacentNode.dependencies.values {
-                            if var adjacentDependencyNode = nodes[adjacentDependency.to],
+                            if let adjacentDependencyNode = nodes[adjacentDependency.to],
                                adjacentDependencyNode.state == .notVisited {
-                                visit(node: &adjacentDependencyNode)
+                                visit(node: adjacentDependencyNode)
                             }
 
                             adjacentNode.state = .visited
@@ -67,21 +65,33 @@ final class CommitOrderCalculator {
 }
 
 extension CommitOrderCalculator {
-    struct Node {
-        var state: State = .notVisited
+    final class Node {
+        var state: State
         var value: String
-        var dependencies = [String: Dependency]()
+        var dependencies: [String: Dependency]
 
         enum State {
             case notVisited
             case inProgress
             case visited
         }
+
+        init(state: State = .notVisited, value: String, dependencies: [String: Dependency] = .init()) {
+            self.state = state
+            self.value = value
+            self.dependencies = dependencies
+        }
     }
 
-    struct Dependency {
+    final class Dependency {
         var from: String
         var to: String
         var weight: Int
+
+        init(from: String, to: String, weight: Int) {
+            self.from = from
+            self.to = to
+            self.weight = weight
+        }
     }
 }
