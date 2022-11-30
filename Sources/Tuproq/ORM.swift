@@ -51,10 +51,6 @@ extension ORM {
     }
 
     private func createTable<M: EntityMapping>(from mapping: M) -> Table {
-        createTable(from: mapping)
-    }
-
-    private func createTable(from mapping: any EntityMapping) -> Table {
         var table = Table(name: mapping.table)
         ids(mapping: mapping, table: &table)
         fields(mapping: mapping, table: &table)
@@ -63,11 +59,11 @@ extension ORM {
         return table
     }
 
-    private func createJoinTable(from mapping: any EntityMapping, tables: inout [Table]) {
+    private func createJoinTable(from mapping: some EntityMapping, tables: inout [Table]) {
         siblings(mapping: mapping, tables: &tables)
     }
 
-    private func ids(mapping: any EntityMapping, table: inout Table) {
+    private func ids(mapping: some EntityMapping, table: inout Table) {
         let ids = Array(mapping.ids)
 
         if ids.count > 1 {
@@ -88,7 +84,7 @@ extension ORM {
         }
     }
 
-    private func fields(mapping: any EntityMapping, table: inout Table) {
+    private func fields(mapping: some EntityMapping, table: inout Table) {
         for field in mapping.fields {
             var columnConstraints = [Constraint]()
 
