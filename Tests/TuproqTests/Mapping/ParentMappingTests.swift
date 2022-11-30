@@ -32,7 +32,7 @@ final class ParentMappingTests: XCTestCase {
         let column = JoinTable.Column(name: "author_id", isUnique: isUnique, isNullable: isNullable)
 
         // Act
-        var mapping = ParentMapping<Post>(entity: entity)
+        var mapping = ParentMapping(entity: entity)
 
         // Assert
         XCTAssertEqual(mapping.field, field)
@@ -41,7 +41,7 @@ final class ParentMappingTests: XCTestCase {
         XCTAssertEqual(mapping.column, .init(stringLiteral: Configuration.namingStrategy.joinColumn(field: field)))
 
         // Act
-        mapping = ParentMapping<Post>(field: field, entity: entity, inversedBy: inversedBy, column: column)
+        mapping = ParentMapping(field: field, entity: entity, inversedBy: inversedBy, column: column)
 
         // Assert
         XCTAssertEqual(mapping.field, field)

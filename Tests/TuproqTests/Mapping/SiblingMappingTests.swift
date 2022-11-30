@@ -29,7 +29,7 @@ final class SiblingMappingTests: XCTestCase {
         let mappedBy = "groups"
 
         // Act
-        let mapping = SiblingMapping<Group>(field: field, entity: entity, mappedBy: mappedBy)
+        let mapping = SiblingMapping(field: field, entity: entity, mappedBy: mappedBy)
 
         // Assert
         XCTAssertEqual(mapping.field, field)
@@ -44,10 +44,10 @@ final class SiblingMappingTests: XCTestCase {
         let field = "groups"
         let entity = Group.self
         let inversedBy = "users"
-        let joinTable = JoinTable(name: "user_group", columns: .init(), inverseColumns: .init())
+        let joinTable = JoinTable(name: "user_group", columns: ["user_id"], inverseColumns: ["group_id"])
 
         // Act
-        let mapping = SiblingMapping<User>(field: field, entity: entity, inversedBy: inversedBy, joinTable: joinTable)
+        let mapping = SiblingMapping(field: field, entity: entity, inversedBy: inversedBy, joinTable: joinTable)
 
         // Assert
         XCTAssertEqual(mapping.field, field)

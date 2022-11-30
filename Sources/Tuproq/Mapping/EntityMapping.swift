@@ -11,9 +11,9 @@ public protocol EntityMapping {
     var table: String { get }
     var ids: Set<ID> { get }
     var fields: Set<Field> { get }
-    var parents: Set<Parent<E>> { get }
-    var children: Set<Child<E>> { get }
-    var siblings: Set<Sibling<E>> { get }
+    var parents: Set<Parent> { get }
+    var children: Set<Child> { get }
+    var siblings: Set<Sibling> { get }
 }
 
 public extension EntityMapping {
@@ -21,7 +21,7 @@ public extension EntityMapping {
     var table: String { Configuration.namingStrategy.table(entity: entity) }
     var ids: Set<ID> { [.init()] }
     var fields: Set<Field> { .init() }
-    var parents: Set<Parent<E>> { .init() }
-    var children: Set<Child<E>> { .init() }
-    var siblings: Set<Sibling<E>> { .init() }
+    var parents: Set<Parent> { .init() }
+    var children: Set<Child> { .init() }
+    var siblings: Set<Sibling> { .init() }
 }

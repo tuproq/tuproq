@@ -1,4 +1,4 @@
-public struct SiblingMapping<Source: Entity>: AssociationMapping {
+public struct SiblingMapping: AssociationMapping {
     public let field: String
     public let entity: any Entity.Type
     public let mappedBy: String?
@@ -11,19 +11,6 @@ public struct SiblingMapping<Source: Entity>: AssociationMapping {
         self.mappedBy = mappedBy
         inversedBy = nil
         joinTable = nil
-    }
-
-    public init<Target: Entity>(field: String, entity: Target.Type, inversedBy: String) {
-        self.field = field
-        self.entity = entity
-        mappedBy = nil
-        self.inversedBy = inversedBy
-        let namingStrategy = Configuration.namingStrategy
-        joinTable = JoinTable(
-            name: namingStrategy.joinTable(sourceEntity: Source.self, targetEntity: Target.self),
-            columns: [.init(stringLiteral: namingStrategy.joinColumn(entity: Source.self))],
-            inverseColumns: [.init(stringLiteral: namingStrategy.joinColumn(entity: Target.self))]
-        )
     }
 
     public init<Target: Entity>(field: String, entity: Target.Type, inversedBy: String, joinTable: JoinTable) {
