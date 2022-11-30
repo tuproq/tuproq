@@ -3,6 +3,7 @@ import Foundation
 final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private typealias ChangeSet = [String: (Codable?, Codable?)] // [property: (oldValue, newValue)]
     private typealias EntityMap = [String: Any?]
+    private typealias EntityChanges = [String: [AnyHashable: EntityMap]]
 
     let connection: Connection
     var configuration: Configuration
@@ -10,12 +11,12 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
     private var entityChangeSets = [String: [AnyHashable: ChangeSet]]()
 
-    private var entityDeletions = [String: [AnyHashable: EntityMap]]()
-    private var entityInsertions = [String: [AnyHashable: EntityMap]]()
-    private var entityUpdates = [String: [AnyHashable: EntityMap]]()
+    private var entityDeletions = EntityChanges()
+    private var entityInsertions = EntityChanges()
+    private var entityUpdates = EntityChanges()
 
     private var entityStates = [AnyHashable: EntityState]()
-    private var identityMap = [String: [AnyHashable: EntityMap]]()
+    private var identityMap = EntityChanges()
 
     init(connection: Connection, configuration: Configuration) {
         self.connection = connection
@@ -87,9 +88,20 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
     func flush() async throws {
         do {
-            let insertedIDsMap = try prepareInserts()
-            try prepareUpdates()
-            try prepareDeletions()
+            let commitOrder = try getCommitOrder()
+            var insertedIDsMap = [String: [AnyHashable]]()
+
+            for entityName in commitOrder {
+                insertedIDsMap[entityName] = try prepareInserts(entityName: entityName)
+            }
+
+            for entityName in commitOrder {
+                try prepareUpdates(entityName: entityName)
+            }
+
+            for entityName in commitOrder {
+                try prepareDeletions(entityName: entityName)
+            }
 
             if !allQueries.isEmpty {
                 allQueries = "BEGIN;\(allQueries)COMMIT;"
@@ -117,6 +129,50 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         }
     }
 
+    private func getCommitOrder() throws -> [String] {
+        let calculator = CommitOrderCalculator()
+        var entityNames = [String]()
+
+        func processEntityChanges(_ entityChanges: EntityChanges) {
+            for entityName in entityChanges.keys {
+                let node = CommitOrderCalculator.Node(value: entityName)
+
+                if !calculator.hasNode(node) {
+                    calculator.addNode(node)
+                    entityNames.append(entityName)
+                }
+            }
+        }
+
+        processEntityChanges(entityInsertions)
+        processEntityChanges(entityUpdates)
+        processEntityChanges(entityDeletions)
+
+        while !entityNames.isEmpty {
+            let entityName = entityNames.removeFirst()
+            let mapping = try mapping(from: entityName)
+
+            for parentMapping in mapping.parents {
+                let parentEntityName = Configuration.entityName(from: parentMapping.entity)
+                let node = CommitOrderCalculator.Node(value: parentEntityName)
+
+                if !calculator.hasNode(node) {
+                    calculator.addNode(node)
+                    entityNames.append(parentEntityName)
+                }
+
+                let dependency = CommitOrderCalculator.Dependency(
+                    from: parentEntityName,
+                    to: entityName,
+                    weight: parentMapping.column.isNullable ? 0 : 1
+                )
+                calculator.addDependency(dependency)
+            }
+        }
+
+        return calculator.sort()
+    }
+
     private func mapping(from entityName: String) throws -> any EntityMapping {
         guard let mapping = configuration.mapping(from: entityName) else {
             throw ORMError("Entity named \"\(entityName)\" is not registered.")
@@ -138,10 +194,10 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         return table
     }
 
-    private func prepareInserts() throws -> [String: [AnyHashable]] {
-        var idsMap = [String: [AnyHashable]]()
+    private func prepareInserts(entityName: String) throws -> [AnyHashable] {
+        var ids = [AnyHashable]()
 
-        for (entityName, entityMap) in entityInsertions {
+        if let entityMap = entityInsertions[entityName] {
             let mapping = try mapping(from: entityName)
 
             for (id, dictionary) in entityMap {
@@ -164,12 +220,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                         columns.append(column)
                     }
                 }
-
-                if idsMap[entityName] == nil {
-                    idsMap[entityName] = [id]
-                } else {
-                    idsMap[entityName]?.append(id)
-                }
+                ids.append(id)
 
                 let query = createQueryBuilder()
                     .insert(into: mapping.table, columns: columns, values: values)
@@ -179,11 +230,11 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
             }
         }
 
-        return idsMap
+        return ids
     }
 
-    private func prepareUpdates() throws {
-        for (entityName, entityMap) in entityUpdates {
+    private func prepareUpdates(entityName: String) throws {
+        if let entityMap = entityUpdates[entityName] {
             let mapping = try mapping(from: entityName)
 
             for id in entityMap.keys {
@@ -209,8 +260,8 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         }
     }
 
-    private func prepareDeletions() throws {
-        for (entityName, entityMap) in entityDeletions {
+    private func prepareDeletions(entityName: String) throws {
+        if let entityMap = entityDeletions[entityName] {
             let table = try table(from: entityName)
 
             for id in entityMap.keys {
