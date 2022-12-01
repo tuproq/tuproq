@@ -6,7 +6,7 @@ public indirect enum FieldType: Hashable {
     case decimal(precision: UInt, scale: UInt, isUnsigned: Bool = false)
     case double(isUnsigned: Bool = false)
     case float(isUnsigned: Bool = false)
-    case id(strategy: IDGeneratorStrategy = .auto)
+    case id(_ strategy: IDGeneratorStrategy = .auto)
     case int8
     case int16
     case int32
