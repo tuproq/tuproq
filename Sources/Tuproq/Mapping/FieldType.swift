@@ -83,7 +83,7 @@ public indirect enum FieldType: Hashable {
                 case .oracle, .sqlserver: return "IDENTITY"
                 case .sqlite: return "INTEGER"
                 }
-            case .concrete(let type): return type.name(for: driver)
+            case .custom(let type): return type.name(for: driver)
             }
         case .int8, .int16, .uint8, .uint16:
             switch driver {
