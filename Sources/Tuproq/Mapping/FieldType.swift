@@ -16,6 +16,7 @@ public indirect enum FieldType: Hashable {
     case uint16
     case uint32
     case uint64
+    case url
     case uuid
 
     public func name(for driver: DatabaseDriver) -> String {
@@ -134,6 +135,12 @@ public indirect enum FieldType: Hashable {
                 case .oracle, .postgresql, .sqlite: return "TEXT"
                 case .sqlserver: return "VARCHAR(MAX)"
                 }
+            }
+        case .url:
+            switch driver {
+            case .mysql: return "LONGTEXT"
+            case .oracle, .postgresql, .sqlite: return "TEXT"
+            case .sqlserver: return "VARCHAR(MAX)"
             }
         case .uuid:
             switch driver {
