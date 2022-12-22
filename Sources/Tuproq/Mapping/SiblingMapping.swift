@@ -13,7 +13,7 @@ public struct SiblingMapping: AssociationMapping {
         joinTable = nil
     }
 
-    public init<Target: Entity>(field: String, entity: Target.Type, inversedBy: String, joinTable: JoinTable) {
+    public init<Target: Entity>(field: String, entity: Target.Type, inversedBy: String? = nil, joinTable: JoinTable) {
         self.field = field
         self.entity = entity
         mappedBy = nil
