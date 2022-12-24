@@ -18,3 +18,7 @@ public extension Entity {
         }
     }
 }
+
+public protocol SoftDeletableEntity: Entity, SoftDeletable {}
+public protocol TimestampableEntity: Entity, Timestampable {}
+public protocol SoftDeletableTimestampableEntity: SoftDeletableEntity, TimestampableEntity {}
