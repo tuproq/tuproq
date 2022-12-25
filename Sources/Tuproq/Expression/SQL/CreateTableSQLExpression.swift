@@ -31,6 +31,10 @@ final class CreateTableSQLExpression: SQLExpression {
                     \(foreignKey.name) (\(foreignKey.columns.joined(separator: ", "))) \
                     REFERENCES \(foreignKey.relationTable)(\(foreignKey.relationColumns.joined(separator: ", ")))
                     """
+                } else if let unique = constraint as? UniqueSQLConstraint {
+                    constraintDefinition += """
+                    CONSTRAINT \(unique.index) \(unique.name) (\(unique.columns.joined(separator: ", ")))
+                    """
                 }
 
                 return constraintDefinition
