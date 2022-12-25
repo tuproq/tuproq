@@ -67,7 +67,7 @@ extension ORM {
         let ids = Array(mapping.ids)
 
         if ids.count > 1 {
-            table.constraints.append(PrimaryKeyConstraint(columns: ids.map { $0.column }))
+            table.constraints.append(PrimaryKeySQLConstraint(columns: ids.map { $0.column }))
         } else {
             let id = ids[0]
             let columnName = id.column
@@ -76,7 +76,7 @@ extension ORM {
                 name: columnName,
                 type: idType.name(for: connection.driver),
                 constraints: [
-                    PrimaryKeyConstraint(column: columnName)
+                    PrimaryKeySQLConstraint(column: columnName)
                 ]
             )
             configuration.joinColumnTypes["\(table.name)_\(columnName)"] = column.type
@@ -89,11 +89,11 @@ extension ORM {
             var columnConstraints = [Constraint]()
 
             if !field.column.isNullable {
-                columnConstraints.append(NotNullConstraint())
+                columnConstraints.append(NotNullSQLConstraint())
             }
 
             if field.column.isUnique {
-                columnConstraints.append(UniqueConstraint(column: field.column.name))
+                columnConstraints.append(UniqueSQLConstraint(column: field.column.name))
             }
 
             let column = Table.Column(
@@ -110,7 +110,7 @@ extension ORM {
             let parentMapping = configuration.mapping(from: parent.entity)!
             let relationTable = parentMapping.table
             table.constraints.append(
-                ForeignKeyConstraint(
+                ForeignKeySQLConstraint(
                     column: parent.column.name,
                     relationTable: relationTable,
                     relationColumn: parent.column.referenceColumn
@@ -120,11 +120,11 @@ extension ORM {
             var columnConstraints = [Constraint]()
 
             if parent.column.isUnique {
-                columnConstraints.append(UniqueConstraint(column: parent.column.name))
+                columnConstraints.append(UniqueSQLConstraint(column: parent.column.name))
             }
 
             if !parent.column.isNullable {
-                columnConstraints.append(NotNullConstraint())
+                columnConstraints.append(NotNullSQLConstraint())
             }
 
             for parentID in parentMapping.ids {
@@ -159,11 +159,11 @@ extension ORM {
                     var columnConstraints = [Constraint]()
 
                     if column.isUnique {
-                        columnConstraints.append(UniqueConstraint(column: column.name))
+                        columnConstraints.append(UniqueSQLConstraint(column: column.name))
                     }
 
                     if !column.isNullable {
-                        columnConstraints.append(NotNullConstraint())
+                        columnConstraints.append(NotNullSQLConstraint())
                     }
 
                     joinTable.columns.append(
@@ -174,7 +174,7 @@ extension ORM {
                         )
                     )
                     joinTable.constraints.append(
-                        ForeignKeyConstraint(
+                        ForeignKeySQLConstraint(
                             column: column.name,
                             relationTable: mapping.table,
                             relationColumn: column.referenceColumn
@@ -186,11 +186,11 @@ extension ORM {
                     var columnConstraints = [Constraint]()
 
                     if column.isUnique {
-                        columnConstraints.append(UniqueConstraint(column: column.name))
+                        columnConstraints.append(UniqueSQLConstraint(column: column.name))
                     }
 
                     if !column.isNullable {
-                        columnConstraints.append(NotNullConstraint())
+                        columnConstraints.append(NotNullSQLConstraint())
                     }
 
                     joinTable.columns.append(
@@ -201,7 +201,7 @@ extension ORM {
                         )
                     )
                     joinTable.constraints.append(
-                        ForeignKeyConstraint(
+                        ForeignKeySQLConstraint(
                             column: column.name,
                             relationTable: siblingMapping.table,
                             relationColumn: column.referenceColumn

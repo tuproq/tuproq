@@ -24,9 +24,9 @@ final class CreateTableSQLExpression: SQLExpression {
             raw += table.constraints.map { constraint in
                 var constraintDefinition = ""
 
-                if let primaryKey = constraint as? PrimaryKeyConstraint {
+                if let primaryKey = constraint as? PrimaryKeySQLConstraint {
                     constraintDefinition += "\(primaryKey.name) (\(primaryKey.columns.joined(separator: ", ")))"
-                } else if let foreignKey = constraint as? ForeignKeyConstraint {
+                } else if let foreignKey = constraint as? ForeignKeySQLConstraint {
                     constraintDefinition += """
                     \(foreignKey.name) (\(foreignKey.columns.joined(separator: ", "))) \
                     REFERENCES \(foreignKey.relationTable)(\(foreignKey.relationColumns.joined(separator: ", ")))
