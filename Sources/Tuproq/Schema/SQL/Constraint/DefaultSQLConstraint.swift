@@ -1,4 +1,4 @@
-struct DefaultSQLConstraint: Constraint {
+struct DefaultSQLConstraint: SQLConstraint {
     let name = "DEFAULT"
     var value: String
 }

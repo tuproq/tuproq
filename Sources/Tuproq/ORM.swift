@@ -86,7 +86,7 @@ extension ORM {
 
     private func fields(mapping: some EntityMapping, table: inout Table) {
         for field in mapping.fields {
-            var columnConstraints = [Constraint]()
+            var columnConstraints = [SQLConstraint]()
 
             if !field.column.isNullable {
                 columnConstraints.append(NotNullSQLConstraint())
@@ -117,7 +117,7 @@ extension ORM {
                 )
             )
 
-            var columnConstraints = [Constraint]()
+            var columnConstraints = [SQLConstraint]()
 
             if parent.column.isUnique {
                 columnConstraints.append(UniqueSQLConstraint(column: parent.column.name))
@@ -156,7 +156,7 @@ extension ORM {
                 }
 
                 for column in siblingJoinTable.columns {
-                    var columnConstraints = [Constraint]()
+                    var columnConstraints = [SQLConstraint]()
 
                     if column.isUnique {
                         columnConstraints.append(UniqueSQLConstraint(column: column.name))
@@ -183,7 +183,7 @@ extension ORM {
                 }
 
                 for column in siblingJoinTable.inverseColumns {
-                    var columnConstraints = [Constraint]()
+                    var columnConstraints = [SQLConstraint]()
 
                     if column.isUnique {
                         columnConstraints.append(UniqueSQLConstraint(column: column.name))

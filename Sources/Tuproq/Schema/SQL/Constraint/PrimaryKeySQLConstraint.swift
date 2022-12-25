@@ -1,4 +1,4 @@
-struct PrimaryKeySQLConstraint: Constraint {
+struct PrimaryKeySQLConstraint: SQLConstraint {
     let name = "PRIMARY KEY"
     let columns: [String]
 

@@ -1,4 +1,4 @@
-struct CheckSQLConstraint: Constraint {
+struct CheckSQLConstraint: SQLConstraint {
     let name = "CHECK"
     var condition: String
 }

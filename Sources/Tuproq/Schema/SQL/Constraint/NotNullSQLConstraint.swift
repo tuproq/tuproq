@@ -1,3 +1,3 @@
-struct NotNullSQLConstraint: Constraint {
+struct NotNullSQLConstraint: SQLConstraint {
     let name = "NOT NULL"
 }

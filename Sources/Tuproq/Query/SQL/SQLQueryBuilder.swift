@@ -23,11 +23,11 @@ public extension SQLQueryBuilder {
 }
 
 public extension SQLQueryBuilder {
-    func create(table: String, columns: Table.Column..., constraints: Constraint...) -> Self {
+    func create(table: String, columns: Table.Column..., constraints: SQLConstraint...) -> Self {
         create(table: table, columns: columns, constraints: constraints)
     }
 
-    func create(table: String, columns: [Table.Column] = .init(), constraints: [Constraint] = .init()) -> Self {
+    func create(table: String, columns: [Table.Column] = .init(), constraints: [SQLConstraint] = .init()) -> Self {
         expressions.append(
             CreateTableSQLExpression(table: Table(name: table, columns: columns, constraints: constraints))
         )
