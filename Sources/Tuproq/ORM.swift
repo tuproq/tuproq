@@ -55,6 +55,7 @@ extension ORM {
         ids(mapping: mapping, table: &table)
         fields(mapping: mapping, table: &table)
         parents(mapping: mapping, table: &table)
+        constraints(mapping: mapping, table: &table)
 
         return table
     }
@@ -214,6 +215,15 @@ extension ORM {
                 } else {
                     tables.append(joinTable)
                 }
+            }
+        }
+    }
+
+    private func constraints(mapping: some EntityMapping, table: inout Table) {
+        for constraint in mapping.constraints {
+            switch constraint {
+            case .unique(let columns, let index):
+                table.constraints.append(UniqueSQLConstraint(columns: columns, index: index))
             }
         }
     }
