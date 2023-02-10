@@ -3,6 +3,10 @@ public struct JoinTable: Hashable {
     public let columns: Set<Column>
     public let inverseColumns: Set<Column>
 
+    public init(name: String, column: Column, inverseColumn: Column) {
+        self.init(name: name, columns: [column], inverseColumns: [inverseColumn])
+    }
+
     public init(name: String, columns: Set<Column>, inverseColumns: Set<Column>) {
         self.name = name
         self.columns = columns
