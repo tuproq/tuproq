@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ORMError: LocalizedError {
+public struct TuproqError: LocalizedError {
     let message: String
     public var errorDescription: String? { message }
 
@@ -33,6 +33,6 @@ enum ErrorType: CustomStringConvertible {
     }
 }
 
-func error(_ errorType: ErrorType) -> ORMError {
-    ORMError(errorType)
+func error(_ errorType: ErrorType) -> TuproqError {
+    TuproqError(errorType)
 }

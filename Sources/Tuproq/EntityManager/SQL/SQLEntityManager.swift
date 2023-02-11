@@ -159,21 +159,21 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
     private func mapping(from entityName: String) throws -> any EntityMapping {
         guard let mapping = configuration.mapping(from: entityName) else {
-            throw ORMError("Entity named \"\(entityName)\" is not registered.")
+            throw TuproqError("Entity named \"\(entityName)\" is not registered.")
         }
         return mapping
     }
 
     private func table(from entityName: String) throws -> String {
         guard let table = configuration.mapping(from: entityName)?.table else {
-            throw ORMError("Entity named \"\(entityName)\" is not registered.")
+            throw TuproqError("Entity named \"\(entityName)\" is not registered.")
         }
         return table
     }
 
     private func table<E: Entity>(from entityType: E.Type) throws -> String {
         guard let table = configuration.mapping(from: entityType)?.table else {
-            throw ORMError("Entity named \"\(entityType)\" is not registered.")
+            throw TuproqError("Entity named \"\(entityType)\" is not registered.")
         }
         return table
     }
