@@ -4,5 +4,5 @@ public protocol Connection {
     @discardableResult
     func open() async throws -> Self
     func close() async throws
-    func query(_ string: String) async throws -> [Result]
+    func query(_ string: String) async throws -> [[String: Decodable?]]
 }
