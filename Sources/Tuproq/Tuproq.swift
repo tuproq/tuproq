@@ -32,8 +32,8 @@ extension Tuproq {
         try await connection.query("COMMIT;")
     }
 
-    public func createSchema() -> String {
-        var allQueries = ""
+    public func createTables() -> [String] {
+        var queries = [String]()
         var tables = [Table]()
 
         for mapping in configuration.mappings.values {
@@ -53,10 +53,14 @@ extension Tuproq {
                 columns: table.columns,
                 constraints: table.constraints
             ).getQuery()
-            allQueries += "\(query);"
+            queries.append("\(query);")
         }
 
-        return allQueries
+        return queries
+    }
+
+    public func createSchema() -> String {
+        createTables().joined()
     }
 
     private func createTable<M: EntityMapping>(from mapping: M) -> Table {
