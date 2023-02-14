@@ -21,7 +21,15 @@ extension Tuproq {
 extension Tuproq {
     public func migrate() async throws {
         let allQueries = "BEGIN;\(createSchema())COMMIT;"
-        _ = try await connection.query(allQueries)
+        try await connection.query(allQueries)
+    }
+
+    public func beginTransaction() async throws {
+        try await connection.query("BEGIN;")
+    }
+
+    public func commitTransaction() async throws {
+        try await connection.query("COMMIT;")
     }
 
     public func createSchema() -> String {
