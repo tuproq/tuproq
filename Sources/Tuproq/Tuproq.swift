@@ -41,6 +41,7 @@ extension Tuproq {
             let queryBuilder = PostgreSQLQueryBuilder()
             let query = queryBuilder.create(
                 table: table.name,
+                ifNotExists: true,
                 columns: table.columns,
                 constraints: table.constraints
             ).getQuery()

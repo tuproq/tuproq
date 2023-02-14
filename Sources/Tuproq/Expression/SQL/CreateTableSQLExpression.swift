@@ -1,9 +1,15 @@
 final class CreateTableSQLExpression: SQLExpression {
     let table: Table
 
-    init(table: Table) {
+    init(table: Table, ifNotExists: Bool = false) {
         self.table = table
-        var raw = "\(Kind.createTable) \(table.name)"
+        var raw = "\(Kind.createTable)"
+
+        if ifNotExists {
+            raw += " IF NOT EXISTS"
+        }
+
+        raw += " \(table.name)"
 
         if !table.columns.isEmpty {
             raw += "("
