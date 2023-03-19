@@ -1,5 +1,3 @@
-public final class OracleQueryBuilder: SQLQueryBuilder {
-    public var expressions = [SQLExpression]()
-
-    public init() {}
+final class OracleQueryBuilder: SQLQueryBuilder {
+    var expressions = [SQLExpression]()
 }

@@ -13,8 +13,14 @@ extension Tuproq {
         configuration.addMapping(mapping)
     }
 
-    public func createEntityManager<EM: EntityManager>() -> EM {
-        EM(connection: connection, configuration: configuration)
+    public func createEntityManager() -> any EntityManager {
+        switch connection.driver {
+        case .mysql: return SQLEntityManager<MySQLQueryBuilder>(connection: connection, configuration: configuration)
+        case .oracle: return SQLEntityManager<OracleQueryBuilder>(connection: connection, configuration: configuration)
+        case .postgresql: return SQLEntityManager<PostgreSQLQueryBuilder>(connection: connection, configuration: configuration)
+        case .sqlite: return SQLEntityManager<SQLiteQueryBuilder>(connection: connection, configuration: configuration)
+        case .sqlserver: return SQLEntityManager<SQLServerQueryBuilder>(connection: connection, configuration: configuration)
+        }
     }
 }
 

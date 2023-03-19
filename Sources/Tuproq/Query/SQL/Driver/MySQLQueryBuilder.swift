@@ -1,5 +1,3 @@
-public final class MySQLQueryBuilder: SQLQueryBuilder {
-    public var expressions = [SQLExpression]()
-
-    public init() {}
+final class MySQLQueryBuilder: SQLQueryBuilder {
+    var expressions = [SQLExpression]()
 }

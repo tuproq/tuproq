@@ -1,5 +1,3 @@
-public final class PostgreSQLQueryBuilder: SQLQueryBuilder {
-    public var expressions = [SQLExpression]()
-
-    public init() {}
+final class PostgreSQLQueryBuilder: SQLQueryBuilder {
+    var expressions = [SQLExpression]()
 }
