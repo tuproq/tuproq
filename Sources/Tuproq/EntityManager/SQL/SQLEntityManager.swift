@@ -261,6 +261,8 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     private func postFlush(insertedIDsMap: [String: [AnyHashable]], postInserts: [[String: Any?]]) throws {
+        guard !postInserts.isEmpty else { return }
+
         for (entityName, insertedIDs) in insertedIDsMap {
             for (index, insertedID) in insertedIDs.enumerated() {
                 let postInsert = postInserts[index]
