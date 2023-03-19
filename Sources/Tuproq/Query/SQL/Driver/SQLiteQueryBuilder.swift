@@ -1,3 +1,5 @@
-final class SQLiteQueryBuilder: SQLQueryBuilder {
-    var expressions = [SQLExpression]()
+public final class SQLiteQueryBuilder: SQLQueryBuilder {
+    public var expressions = [SQLExpression]()
+
+    public init() {}
 }
