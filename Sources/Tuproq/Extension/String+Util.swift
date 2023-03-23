@@ -46,6 +46,6 @@ extension String {
 
 extension String {
     init<T>(describingNestedType: T) {
-        self = String(reflecting: T.self).split(separator: ".").dropFirst().joined(separator: ".")
+        self = String(reflecting: T.self).components(separatedBy: ".").dropFirst().joined()
     }
 }
