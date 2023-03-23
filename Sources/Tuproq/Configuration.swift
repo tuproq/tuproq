@@ -29,19 +29,19 @@ public struct Configuration {
     }
 
     static func entityName<E: Entity>(from entity: E) -> String {
-        String(describing: E.self)
+        String(describingNestedType: E.self)
     }
 
     static func entityName<E: Entity>(from entityType: E.Type) -> String {
-        String(describing: entityType)
+        String(describingNestedType: entityType)
     }
 
     static func entityName(from entityType: any Entity.Type) -> String {
-        String(describing: entityType)
+        String(describingNestedType: entityType)
     }
 
     static func entityName<M: EntityMapping>(from mapping: M) -> String {
-        String(describing: M.E.self)
+        String(describingNestedType: M.E.self)
     }
 
     func mapping<E: Entity>(from entity: E) -> (any EntityMapping)? {

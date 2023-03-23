@@ -22,12 +22,12 @@ public extension NamingStrategy {
     }
 
     func joinColumn<E: Entity>(entity: E.Type) -> String {
-        let field = Configuration.entityName(from: entity).components(separatedBy: ".").last!
+        let field = Configuration.entityName(from: entity).camelCased
         return joinColumn(field: field)
     }
 
     func joinKeyColumn<E: Entity>(entity: E.Type, referenceColumn: String? = nil) -> String {
-        joinKeyColumn(entity:Configuration.entityName(from: entity), referenceColumn: referenceColumn)
+        joinKeyColumn(entity: Configuration.entityName(from: entity), referenceColumn: referenceColumn)
     }
 
     func joinTable<SE: Entity, TE: Entity>(

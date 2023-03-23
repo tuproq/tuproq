@@ -23,7 +23,7 @@ extension Dictionary {
         if let dictionary = dictionary as? [String: Any?] {
             let id = dictionary["id"] as? AnyHashable ?? entityID
             decoder.userInfo = [
-                CodingUserInfoKey(rawValue: "entityName")!: String(describing: entityType),
+                CodingUserInfoKey(rawValue: "entityName")!: String(describingNestedType: entityType),
                 CodingUserInfoKey(rawValue: "entityID")!: id
             ]
         }

@@ -28,8 +28,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
             queue: nil
         ) { [self] notification in
             if let dictionary = notification.object as? [String: Any?] {
-                var entity = dictionary["entity"] as! String
-                entity = entity.components(separatedBy: ".").last!
+                let entity = dictionary["entity"] as! String
                 var id = dictionary["id"] as! AnyHashable
 
                 if let uuid = UUID(uuidString: String(describing: id)) { // TODO: check if the field type is UUID

@@ -43,3 +43,9 @@ extension String {
         return ([first] + rest).joined()
     }
 }
+
+extension String {
+    init<T>(describingNestedType: T) {
+        self = String(reflecting: T.self).split(separator: ".").dropFirst().joined(separator: ".")
+    }
+}
