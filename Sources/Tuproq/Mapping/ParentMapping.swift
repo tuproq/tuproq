@@ -53,7 +53,7 @@ public struct ParentMapping: AssociationMapping {
         column: JoinTable.Column
     ) {
         if field.isEmpty {
-            self.field = String(describingNestedType: entity).camelCased
+            self.field = String(describingNestedType: entity).components(separatedBy: ".").last!.camelCased
         } else {
             self.field = field
         }

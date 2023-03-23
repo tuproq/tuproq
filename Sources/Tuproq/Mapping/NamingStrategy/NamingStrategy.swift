@@ -22,7 +22,7 @@ public extension NamingStrategy {
     }
 
     func joinColumn<E: Entity>(entity: E.Type) -> String {
-        let field = Configuration.entityName(from: entity).camelCased
+        let field = Configuration.entityName(from: entity).components(separatedBy: ".").last!.camelCased
         return joinColumn(field: field)
     }
 
