@@ -191,6 +191,11 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                 var values = [Any?]()
 
                 for (key, value) in dictionary {
+                    if mapping.children.contains(where: { $0.field == key }) ||
+                        mapping.siblings.contains(where: { $0.field == key }) {
+                        continue
+                    }
+
                     var column = key
 
                     if let valueDictionary = value as? [String: Any?] {
@@ -206,6 +211,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                         columns.append(column)
                     }
                 }
+
                 ids.append(id)
 
                 let query = createQueryBuilder()
