@@ -7,7 +7,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
     let connection: Connection
     var configuration: Configuration
-    private var allQueries = ""
+    private var allQueries = [any Query]()
 
     private var entityChangeSets = [String: [AnyHashable: ChangeSet]]()
 
@@ -97,18 +97,20 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
             }
 
             if !allQueries.isEmpty {
-                allQueries = "BEGIN;\(allQueries)COMMIT;"
                 var postInserts = [[String: Any?]]()
-                let result = try await connection.query(allQueries)
+                try await connection.query("BEGIN;")
 
-                for dictionary in result {
-                    postInserts.append(dictionary)
+                for query in allQueries {
+                    if let dictionary = try await connection.query(query.raw).first {
+                        postInserts.append(dictionary)
+                    }
                 }
 
+                try await connection.query("COMMIT;")
                 try postFlush(insertedIDsMap: insertedIDsMap, postInserts: postInserts)
             }
         } catch {
-            allQueries = ""
+            allQueries.removeAll()
             throw error
         }
     }
@@ -210,7 +212,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                     .insert(into: mapping.table, columns: columns, values: values)
                     .returning()
                     .getQuery()
-                allQueries += "\(query);"
+                allQueries.append(query)
             }
         }
 
@@ -238,7 +240,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                         .where("id = \"\(id)\"")
                         .returning()
                         .getQuery()
-                    allQueries += "\(query);"
+                    allQueries.append(query)
                 }
             }
         }
@@ -255,7 +257,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                     .where("id = \"\(id)\"")
                     .returning()
                     .getQuery()
-                allQueries += "\(query);"
+                allQueries.append(query)
             }
         }
     }
@@ -302,7 +304,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         entityUpdates.removeAll()
         entityChangeSets.removeAll()
         entityDeletions.removeAll()
-        allQueries = ""
+        allQueries.removeAll()
     }
 
     func persist<E: Entity>(_ entity: inout E) throws {
