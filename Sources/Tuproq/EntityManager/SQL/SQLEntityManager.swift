@@ -203,6 +203,8 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                         if let value = value {
                             let valueDictionary = value as! [String: Any?]
                             values.append(valueDictionary["id"]!)
+                        } else {
+                            values.append(nil)
                         }
                     } else {
                         let column = Configuration.namingStrategy.column(field: field)
