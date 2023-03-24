@@ -199,8 +199,11 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                     if mapping.parents.contains(where: { $0.field == field }) {
                         let column = Configuration.namingStrategy.joinColumn(field: field)
                         columns.append(column)
-                        let valueDictionary = value as! [String: Any?]
-                        values.append(valueDictionary["id"]!)
+
+                        if let value = value {
+                            let valueDictionary = value as! [String: Any?]
+                            values.append(valueDictionary["id"]!)
+                        }
                     } else {
                         let column = Configuration.namingStrategy.column(field: field)
                         columns.append(column)
