@@ -190,25 +190,21 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                 var columns = [String]()
                 var values = [Any?]()
 
-                for (key, value) in dictionary {
-                    if mapping.children.contains(where: { $0.field == key }) ||
-                        mapping.siblings.contains(where: { $0.field == key }) {
+                for (field, value) in dictionary {
+                    if mapping.children.contains(where: { $0.field == field }) ||
+                        mapping.siblings.contains(where: { $0.field == field }) {
                         continue
                     }
 
-                    var column = key
-
-                    if let valueDictionary = value as? [String: Any?] {
-                        column += "_id"
+                    if mapping.parents.contains(where: { $0.field == field }) {
+                        let column = Configuration.namingStrategy.joinColumn(field: field)
+                        columns.append(column)
+                        let valueDictionary = value as! [String: Any?]
                         values.append(valueDictionary["id"]!)
                     } else {
-                        if column != "id" || value != nil {
-                            values.append(value)
-                        }
-                    }
-
-                    if column != "id" || value != nil {
+                        let column = Configuration.namingStrategy.column(field: field)
                         columns.append(column)
+                        values.append(value)
                     }
                 }
 
