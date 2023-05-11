@@ -22,7 +22,7 @@ jobs:
         args: "--module Tuproq --theme fullwidth --root-url https://tuproq.dev/tuproq --source-host github --source-host-url https://github.com/tuproq/tuproq"
   ubuntu:
     runs-on: ubuntu-latest
-    container: swift:5.7-jammy
+    container: swift:5.8-jammy
     steps:
     - name: Checkout
       uses: actions/checkout@v2
