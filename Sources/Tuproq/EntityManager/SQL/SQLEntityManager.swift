@@ -98,6 +98,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
             if !allQueries.isEmpty {
                 var postInserts = [[String: Any?]]()
+                try await connection.open()
                 try await connection.query("BEGIN;")
 
                 for query in allQueries {
@@ -108,6 +109,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
                 try await connection.query("COMMIT;")
                 try postFlush(insertedIDsMap: insertedIDsMap, postInserts: postInserts)
+                try await connection.close()
             }
         } catch {
             allQueries.removeAll()
