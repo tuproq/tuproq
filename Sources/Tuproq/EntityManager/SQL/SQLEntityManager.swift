@@ -99,7 +99,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
             if !allQueries.isEmpty {
                 var postInserts = [[String: Any?]]()
                 try await connection.open()
-                try await connection.query("BEGIN;")
+//                try await connection.query("BEGIN;") // TODO: not working
 
                 for query in allQueries {
                     if let dictionary = try await connection.query(query.raw).first {
@@ -107,7 +107,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                     }
                 }
 
-                try await connection.query("COMMIT;")
+//                try await connection.query("COMMIT;") // TODO: not working
                 try postFlush(insertedIDsMap: insertedIDsMap, postInserts: postInserts)
                 try await connection.close()
             }
