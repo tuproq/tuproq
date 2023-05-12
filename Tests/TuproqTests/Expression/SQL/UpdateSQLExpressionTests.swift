@@ -23,7 +23,7 @@ final class UpdateSQLExpressionTests: XCTestCase {
             expression.raw,
             """
             \(SQLExpression.Kind.update) \(table) \
-            \(SQLExpression.Kind.set) column1 = 1, column2 = "value2", column3 = NULL
+            \(SQLExpression.Kind.set) column1 = 1, column2 = 'value2', column3 = NULL
             """
         )
         XCTAssertEqual(expression.raw, expression.description)

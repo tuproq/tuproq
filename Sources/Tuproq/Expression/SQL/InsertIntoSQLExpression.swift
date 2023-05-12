@@ -17,7 +17,7 @@ final class InsertIntoSQLExpression: SQLExpression {
             let values = values.map { value in
                 if let value = value {
                     if let string = value as? String {
-                        return "\"\(string)\""
+                        return "'\(string)'"
                     }
 
                     return "\(value)"

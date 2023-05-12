@@ -16,8 +16,6 @@ public extension SQLQueryBuilder {
             }
         }
 
-        raw = raw.replacingOccurrences(of: "\"", with: "'")
-
         return .init(raw)
     }
 }

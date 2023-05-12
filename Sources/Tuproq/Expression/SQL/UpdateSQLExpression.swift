@@ -15,7 +15,7 @@ final class UpdateSQLExpression: SQLExpression {
 
                 if let value = value.1 {
                     if let string = value as? String {
-                        raw += " = \"\(string)\""
+                        raw += " = '\(string)'"
                     } else {
                         raw += " = \(value)"
                     }

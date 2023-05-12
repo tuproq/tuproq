@@ -21,7 +21,7 @@ final class InsertIntoSQLExpressionTests: XCTestCase {
         XCTAssertEqual(
             expression.raw,
             """
-            INSERT INTO table (column1, column2, column3) VALUES (1, "value2", NULL)
+            INSERT INTO table (column1, column2, column3) VALUES (1, 'value2', NULL)
             """
         )
         XCTAssertEqual(expression.raw, expression.description)

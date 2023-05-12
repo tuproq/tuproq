@@ -64,7 +64,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         let query = createQueryBuilder()
             .select()
             .from(table)
-            .where("id = \"\(id)\"")
+            .where("id = '\(id)'")
             .getQuery()
 
         if let dictionary = try await connection.query(query.raw).first {
@@ -246,7 +246,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
                     let query = createQueryBuilder()
                         .update(table: mapping.table, values: values)
-                        .where("id = \"\(id)\"")
+                        .where("id = '\(id)'")
                         .returning()
                         .getQuery()
                     allQueries.append(query)
@@ -263,7 +263,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                 let query = createQueryBuilder()
                     .delete()
                     .from(table)
-                    .where("id = \"\(id)\"")
+                    .where("id = '\(id)'")
                     .returning()
                     .getQuery()
                 allQueries.append(query)
