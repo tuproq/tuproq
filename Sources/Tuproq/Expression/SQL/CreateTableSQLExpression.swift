@@ -9,7 +9,7 @@ final class CreateTableSQLExpression: SQLExpression {
             raw += " IF NOT EXISTS"
         }
 
-        raw += " \(table.name)"
+        raw += " \"\(table.name)\""
 
         if !table.columns.isEmpty {
             raw += "("
