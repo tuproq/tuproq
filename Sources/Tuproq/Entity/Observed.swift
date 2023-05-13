@@ -5,7 +5,7 @@ public final class Observed<V: Codable>: Codable {
     private var name: String?
     private var entityID: AnyHashable?
     private var entityName: String?
-    private var value: V?
+    private var value: V
 
     @available(*, unavailable, message: "@Observed can only be applied to classes.")
     public var wrappedValue: V {
@@ -28,9 +28,7 @@ public final class Observed<V: Codable>: Codable {
         }
 
         let container = try decoder.singleValueContainer()
-        do {
-            value = try container.decode(V.self)
-        } catch {}
+        value = try container.decode(V.self)
         addPropertyObserver()
     }
 
@@ -44,7 +42,7 @@ public final class Observed<V: Codable>: Codable {
         storage storageKeyPath: ReferenceWritableKeyPath<E, Observed>
     ) -> V {
         get {
-            instance[keyPath: storageKeyPath].value!
+            instance[keyPath: storageKeyPath].value
         }
         set {
             let entityName = Configuration.entityName(from: instance)
@@ -104,7 +102,7 @@ public final class Observed<V: Codable>: Codable {
                 entityID = newID
 
                 if name == "id" {
-                    value = entityID as? V
+                    value = entityID as! V
                 }
             }
         }
