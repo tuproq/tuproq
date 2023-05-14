@@ -67,8 +67,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
             .where("id = '\(id)'")
             .getQuery()
 
-        if let data = try await connection.query(query.raw) {
-            let dictionary = try data.asDictionary()
+        if let dictionary = try await connection.query(query.raw).first {
             let entity = try dictionary.decode(to: E.self, entityID: id)
             entityStates[entity.id] = .managed
             let entityName = Configuration.entityName(from: entityType)
@@ -103,8 +102,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 //                try await connection.query("BEGIN;") // TODO: not working
 
                 for query in allQueries {
-                    if let data = try await connection.query(query.raw) {
-                        let dictionary = try data.asDictionary()
+                    if let dictionary = try await connection.query(query.raw).first {
                         postInserts.append(dictionary)
                     }
                 }
