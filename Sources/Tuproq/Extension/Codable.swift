@@ -2,9 +2,7 @@ import Foundation
 
 extension Encodable {
     func asDictionary() throws -> [String: Any?] {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-
+        let dateFormatter = DateFormatter.iso8601
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .formatted(dateFormatter)
 

@@ -2,8 +2,7 @@ import Foundation
 
 extension Dictionary {
     func decode<E: Entity>(to entityType: E.Type, entityID: AnyHashable) throws -> E {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateFormatter = DateFormatter.iso8601
 
         let dictionary: [Self.Key: Any?] = mapValues { value in
             if let date = value as? Date {
