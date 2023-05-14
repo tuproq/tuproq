@@ -237,10 +237,12 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
                 if let changeSet = entityChangeSets[entityName]?[id] {
                     for (key, (_, newValue)) in changeSet {
+                        let column = mapping.fields.first(where: { $0.field == key })!.column.name
+
                         if let value = newValue {
-                            values.append((key, value))
+                            values.append((column, value))
                         } else {
-                            values.append((key, "\(SQLExpression.Kind.null)"))
+                            values.append((column, "\(SQLExpression.Kind.null)"))
                         }
                     }
 
@@ -421,7 +423,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         if entityInsertions[entityName] == nil {
             entityInsertions[entityName] = [id: dictionary]
         } else {
-            entityInsertions[entityName]?[id] = dictionary
+            entityInsertions[entityName]![id] = dictionary
         }
     }
 
@@ -431,13 +433,15 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         if entityUpdates[entity] == nil {
             entityUpdates[entity] = [id: entityMap]
         } else {
-            entityUpdates[entity]?[id] = entityMap
+            entityUpdates[entity]![id] = entityMap
         }
 
         if entityChangeSets[entity] == nil {
             entityChangeSets[entity] = [id: changeSet]
         } else {
-            entityChangeSets[entity]?[id] = changeSet
+            var existingChangeSet = entityChangeSets[entity]![id]!
+            existingChangeSet.merge(changeSet) { (_, new) in new }
+            entityChangeSets[entity]![id] = existingChangeSet
         }
     }
 
@@ -447,7 +451,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         if entityDeletions[entityName] == nil {
             entityDeletions[entityName] = [id: try! entity.asDictionary()]
         } else {
-            entityDeletions[entityName]?[id] = try! entity.asDictionary()
+            entityDeletions[entityName]![id] = try! entity.asDictionary()
         }
     }
 
@@ -459,7 +463,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         if identityMap[entityName] == nil {
             identityMap[entityName] = [id: entityMap]
         } else {
-            identityMap[entityName]?[id] = entityMap
+            identityMap[entityName]![id] = entityMap
         }
     }
 
