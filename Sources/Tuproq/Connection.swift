@@ -7,5 +7,5 @@ public protocol Connection {
     func open() async throws -> Self
     func close() async throws
     @discardableResult
-    func query(_ string: String) async throws -> Data
+    func query(_ string: String) async throws -> Data?
 }
