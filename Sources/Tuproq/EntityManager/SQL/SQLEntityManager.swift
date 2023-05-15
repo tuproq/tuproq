@@ -240,7 +240,11 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                         let column = mapping.fields.first(where: { $0.field == key })!.column.name
 
                         if let value = newValue {
-                            values.append((column, value))
+                            if value as AnyObject is NSNull {
+                                values.append((column, "\(SQLExpression.Kind.null)"))
+                            } else {
+                                values.append((column, value))
+                            }
                         } else {
                             values.append((column, "\(SQLExpression.Kind.null)"))
                         }
