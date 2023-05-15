@@ -1,3 +1,5 @@
+import Foundation
+
 final class UpdateSQLExpression: SQLExpression {
     let table: String
     let values: [(String, Any?)]
@@ -16,6 +18,8 @@ final class UpdateSQLExpression: SQLExpression {
                 if let value = value.1 {
                     if let string = value as? String {
                         raw += " = '\(string)'"
+                    } else if let url = value as? URL {
+                        raw += " = '\(url.absoluteString)'"
                     } else {
                         raw += " = \(value)"
                     }

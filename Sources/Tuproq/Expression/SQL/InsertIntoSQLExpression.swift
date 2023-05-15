@@ -1,3 +1,5 @@
+import Foundation
+
 final class InsertIntoSQLExpression: SQLExpression {
     let table: String
     let columns: [String]
@@ -18,6 +20,8 @@ final class InsertIntoSQLExpression: SQLExpression {
                 if let value = value {
                     if let string = value as? String {
                         return "'\(string)'"
+                    } else if let url = value as? URL {
+                        return "'\(url.absoluteString)'"
                     }
 
                     return "\(value)"
