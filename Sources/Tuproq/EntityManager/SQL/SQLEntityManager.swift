@@ -238,16 +238,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                 if let changeSet = entityChangeSets[entityName]?[id] {
                     for (key, (_, newValue)) in changeSet {
                         let column = mapping.fields.first(where: { $0.field == key })!.column.name
-
-                        if let value = newValue {
-                            if value as AnyObject is NSNull {
-                                values.append((column, "\(SQLExpression.Kind.null)"))
-                            } else {
-                                values.append((column, value))
-                            }
-                        } else {
-                            values.append((column, "\(SQLExpression.Kind.null)"))
-                        }
+                        values.append((column, newValue))
                     }
 
                     let query = createQueryBuilder()

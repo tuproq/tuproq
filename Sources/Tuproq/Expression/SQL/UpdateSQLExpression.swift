@@ -16,7 +16,9 @@ final class UpdateSQLExpression: SQLExpression {
                 var raw = "\(value.0)"
 
                 if let value = value.1 {
-                    if let string = value as? String {
+                    if value as AnyObject is NSNull {
+                        raw += " = NULL"
+                    } else if let string = value as? String {
                         raw += " = '\(string)'"
                     } else if let url = value as? URL {
                         raw += " = '\(url.absoluteString)'"
