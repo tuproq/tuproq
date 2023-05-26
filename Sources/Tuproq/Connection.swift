@@ -1,8 +1,7 @@
 public protocol Connection {
     var driver: DatabaseDriver { get }
 
-    @discardableResult
-    func open() async throws -> Self
+    func open() async throws
     func close() async throws
     @discardableResult
     func query(_ string: String) async throws -> [[String: Codable?]]
