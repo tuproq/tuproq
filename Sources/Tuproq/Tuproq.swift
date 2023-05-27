@@ -31,11 +31,15 @@ extension Tuproq {
     }
 
     public func beginTransaction() async throws {
-        try await connection.query("BEGIN;")
+        try await connection.beginTransaction()
     }
 
     public func commitTransaction() async throws {
-        try await connection.query("COMMIT;")
+        try await connection.commitTransaction()
+    }
+
+    public func rollbackTransaction() async throws {
+        try await connection.rollbackTransaction()
     }
 
     public func createTables() -> [String] {
