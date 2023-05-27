@@ -9,7 +9,7 @@ public protocol Connection {
     func rollbackTransaction() async throws
 
     @discardableResult
-    func query(_ string: String, arguments parameters: [Codable]) async throws -> [[String: Codable?]]
+    func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Codable?]]
 }
 
 public extension Connection {
