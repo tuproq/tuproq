@@ -1,8 +1,8 @@
 import Foundation
 
 public protocol Entity: AnyObject, Codable, Hashable {
-    associatedtype Identifiable: Codable, Hashable
-    var id: Identifiable { get }
+    associatedtype ID: Codable, Hashable
+    var id: ID { get }
 }
 
 public extension Entity {

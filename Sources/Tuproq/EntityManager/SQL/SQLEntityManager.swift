@@ -57,7 +57,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         QB()
     }
 
-    func find<E: Entity>(_ entityType: E.Type, id: E.Identifiable) async throws -> E? {
+    func find<E: Entity>(_ entityType: E.Type, id: E.ID) async throws -> E? {
         guard !(id as AnyObject is NSNull) else { return nil }
         let id = id as AnyHashable
         let table = try table(from: entityType)
