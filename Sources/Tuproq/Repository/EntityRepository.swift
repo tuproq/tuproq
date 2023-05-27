@@ -3,7 +3,7 @@ public protocol EntityRepository {
 
     var entity: E.Type { get }
 
-    init()
+    init(entityManager: any EntityManager)
 }
 
 public extension EntityRepository {

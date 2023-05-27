@@ -17,6 +17,6 @@ public protocol EntityManager: AnyObject {
 
 public extension EntityManager {
     func getRepository<R: EntityRepository>(_ entityType: R.E.Type) -> R {
-        configuration.getRepository(entityType)
+        R(entityManager: self)
     }
 }
