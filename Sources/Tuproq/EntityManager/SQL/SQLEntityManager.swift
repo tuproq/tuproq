@@ -99,17 +99,23 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
             if !allQueries.isEmpty {
                 var postInserts = [[String: Any?]]()
                 try await connection.open()
-//                try await connection.query("BEGIN;") // TODO: not working
+                try await connection.beginTransaction()
 
-                for query in allQueries {
-                    if let dictionary = try await connection.query(query.raw).first {
-                        postInserts.append(dictionary)
+                do {
+                    for query in allQueries {
+                        if let dictionary = try await connection.query(query.raw).first {
+                            postInserts.append(dictionary)
+                        }
                     }
-                }
 
-//                try await connection.query("COMMIT;") // TODO: not working
-                try postFlush(insertedIDsMap: insertedIDsMap, postInserts: postInserts)
-                try await connection.close()
+                    try await connection.commitTransaction()
+                    try await connection.close()
+                    try postFlush(insertedIDsMap: insertedIDsMap, postInserts: postInserts)
+                } catch {
+                    try await connection.rollbackTransaction()
+                    try await connection.close()
+                    throw error
+                }
             }
         } catch {
             allQueries.removeAll()
