@@ -14,3 +14,10 @@ public protocol Connection {
     @discardableResult
     func query(_ string: String, arguments parameters: Codable?...) async throws -> [[String: Codable?]]
 }
+
+public extension Connection {
+    @discardableResult
+    func query(_ string: String, arguments parameters: Codable?...) async throws -> [[String: Codable?]] {
+        try await query(string, arguments: parameters)
+    }
+}
