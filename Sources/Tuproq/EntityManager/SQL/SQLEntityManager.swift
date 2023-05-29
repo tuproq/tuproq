@@ -429,7 +429,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     private func update(entity: String, id: AnyHashable, changeSet: ChangeSet) {
-        let entityMap = identityMap[entity]![id]!
+        guard let entityMaps = identityMap[entity], let entityMap = entityMaps[id] else { return }
 
         if entityUpdates[entity] == nil {
             entityUpdates[entity] = [id: entityMap]
