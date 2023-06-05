@@ -2,15 +2,18 @@ public struct JoinTable: Hashable {
     public let name: String
     public let columns: Set<Column>
     public let inverseColumns: Set<Column>
+    public let constraints: Set<ConstraintType>
 
-    public init(name: String, column: Column, inverseColumn: Column) {
-        self.init(name: name, columns: [column], inverseColumns: [inverseColumn])
-    }
-
-    public init(name: String, columns: Set<Column>, inverseColumns: Set<Column>) {
+    public init(
+        name: String,
+        columns: Set<Column>,
+        inverseColumns: Set<Column>,
+        constraints: Set<ConstraintType> = .init()
+    ) {
         self.name = name
         self.columns = columns
         self.inverseColumns = inverseColumns
+        self.constraints = constraints
     }
 
     public static func == (lhs: Self, rhs: Self) -> Bool {

@@ -233,6 +233,13 @@ extension Tuproq {
                     )
                 }
 
+                for constraint in siblingJoinTable.constraints {
+                    switch constraint {
+                    case .unique(let columns, let index):
+                        joinTable.constraints.append(UniqueSQLConstraint(columns: columns, index: index))
+                    }
+                }
+
                 if let index = joinTableIndex {
                     tables[index] = joinTable
                 } else {

@@ -44,7 +44,7 @@ final class SiblingMappingTests: XCTestCase {
         let field = "groups"
         let entity = Group.self
         let inversedBy = "users"
-        let joinTable = JoinTable(name: "user_group", column: "user_id", inverseColumn: "group_id")
+        let joinTable = JoinTable(name: "user_group", columns: ["user_id"], inverseColumns: ["group_id"])
 
         // Act
         let mapping = SiblingMapping(field: field, entity: entity, inversedBy: inversedBy, joinTable: joinTable)
