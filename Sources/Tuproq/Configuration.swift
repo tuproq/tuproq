@@ -9,11 +9,6 @@ public struct Configuration {
 
     public init() {}
 
-    public mutating func addMapping<M: EntityMapping>(_ mapping: M) {
-        let entityName = Self.entityName(from: mapping)
-        _mappings[entityName] = mapping
-    }
-
     static func entityName<E: Entity>(from entity: E) -> String {
         String(describingNestedType: E.self)
     }
@@ -28,6 +23,11 @@ public struct Configuration {
 
     static func entityName<M: EntityMapping>(from mapping: M) -> String {
         String(describingNestedType: M.E.self)
+    }
+
+    mutating func addMapping<M: EntityMapping>(_ mapping: M) {
+        let entityName = Self.entityName(from: mapping)
+        _mappings[entityName] = mapping
     }
 
     func mapping<E: Entity>(from entity: E) -> (any EntityMapping)? {
