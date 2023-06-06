@@ -13,6 +13,22 @@ extension Tuproq {
         configuration.addMapping(mapping)
     }
 
+    public func mapping<E: Entity>(from entity: E) -> (any EntityMapping)? {
+        configuration.mapping(from: entity)
+    }
+
+    public func mapping<E: Entity>(from entityType: E.Type) -> (any EntityMapping)? {
+        configuration.mapping(from: entityType)
+    }
+
+    public func mapping(from entityType: any Entity.Type) -> (any EntityMapping)? {
+        configuration.mapping(from: entityType)
+    }
+
+    public func mapping(from entityName: String) -> (any EntityMapping)? {
+        configuration.mapping(from: entityName)
+    }
+
     public func createEntityManager() -> any EntityManager {
         switch connection.driver {
         case .mysql: return SQLEntityManager<MySQLQueryBuilder>(connection: connection, configuration: configuration)
