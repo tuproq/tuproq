@@ -1,3 +1,5 @@
+import Foundation
+
 public final class Tuproq {
     public let connection: Connection
     public private(set) var configuration: Configuration
@@ -119,7 +121,8 @@ extension Tuproq {
                     PrimaryKeySQLConstraint(column: columnName)
                 ]
             )
-            configuration.joinColumnTypes["\(table.name)_\(columnName)"] = column.type
+            let tableName = table.name.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+            configuration.joinColumnTypes["\(tableName)_\(columnName)"] = column.type
             table.columns.append(column)
         }
     }
