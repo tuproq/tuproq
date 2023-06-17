@@ -1,4 +1,5 @@
 import Collections
+import Foundation
 
 public struct Configuration {
     public static var defaultIDField = "id"
@@ -47,6 +48,11 @@ public struct Configuration {
     }
 
     func mapping(tableName: String) -> (any EntityMapping)? {
-        _mappings.first(where: { $0.value.table == tableName })?.value
+        let quotes = CharacterSet(charactersIn: "\"")
+        return _mappings.first(where: {
+            $0.value.table.trimmingCharacters(in: quotes)
+            ==
+            tableName.trimmingCharacters(in: quotes)
+        })?.value
     }
 }
