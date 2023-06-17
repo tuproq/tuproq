@@ -27,8 +27,12 @@ extension Tuproq {
         configuration.mapping(from: entityType)
     }
 
-    public func mapping(from entityName: String) -> (any EntityMapping)? {
-        configuration.mapping(from: entityName)
+    public func mapping(entityName: String) -> (any EntityMapping)? {
+        configuration.mapping(entityName: entityName)
+    }
+
+    public func mapping(tableName: String) -> (any EntityMapping)? {
+        configuration.mapping(tableName: tableName)
     }
 
     public func createEntityManager() -> any EntityManager {

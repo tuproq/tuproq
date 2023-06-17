@@ -42,7 +42,11 @@ public struct Configuration {
         _mappings[Self.entityName(from: entityType)]
     }
 
-    func mapping(from entityName: String) -> (any EntityMapping)? {
+    func mapping(entityName: String) -> (any EntityMapping)? {
         _mappings[entityName]
+    }
+
+    func mapping(tableName: String) -> (any EntityMapping)? {
+        _mappings.first(where: { $0.value.table == tableName })?.value
     }
 }
