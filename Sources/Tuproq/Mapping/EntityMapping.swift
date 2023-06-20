@@ -22,7 +22,7 @@ public extension EntityMapping {
     var entity: E.Type { E.self }
     var table: String { Configuration.namingStrategy.table(entity: entity) }
     var constraints: Set<Constraint> { .init() }
-    var id: ID { .init(field: "id", type: .id(.auto), column: "id") }
+    var id: ID { .init() }
     var fields: Set<Field> { .init() }
     var parents: Set<Parent> { .init() }
     var children: Set<Child> { .init() }
