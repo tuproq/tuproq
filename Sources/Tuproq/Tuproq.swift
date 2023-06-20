@@ -110,25 +110,19 @@ extension Tuproq {
     }
 
     private func ids(mapping: some EntityMapping, table: inout Table) {
-        let ids = Array(mapping.ids)
-
-        if ids.count > 1 {
-            table.constraints.append(PrimaryKeySQLConstraint(columns: ids.map { $0.column }))
-        } else {
-            let id = ids[0]
-            let columnName = id.column
-            let idType = id.type
-            let column = Table.Column(
-                name: columnName,
-                type: idType.name(for: connection.driver),
-                constraints: [
-                    PrimaryKeySQLConstraint(column: columnName)
-                ]
-            )
-            let tableName = table.name.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
-            configuration.joinColumnTypes["\(tableName)_\(columnName)"] = column.type
-            table.columns.append(column)
-        }
+        let id = mapping.id
+        let columnName = id.column
+        let idType = id.type
+        let column = Table.Column(
+            name: columnName,
+            type: idType.name(for: connection.driver),
+            constraints: [
+                PrimaryKeySQLConstraint(column: columnName)
+            ]
+        )
+        let tableName = table.name.trimmingCharacters(in: .init(charactersIn: "\""))
+        configuration.joinColumnTypes["\(tableName)_\(columnName)"] = column.type
+        table.columns.append(column)
     }
 
     private func fields(mapping: some EntityMapping, table: inout Table) {
@@ -174,15 +168,13 @@ extension Tuproq {
                 columnConstraints.append(NotNullSQLConstraint())
             }
 
-            for parentID in parentMapping.ids {
-                let parentIDType = parentID.type
-                let column = Table.Column(
-                    name: parent.column.name,
-                    type: parentIDType.name(for: connection.driver),
-                    constraints: columnConstraints
-                )
-                table.columns.append(column)
-            }
+            let parentIDType = parentMapping.id.type
+            let column = Table.Column(
+                name: parent.column.name,
+                type: parentIDType.name(for: connection.driver),
+                constraints: columnConstraints
+            )
+            table.columns.append(column)
         }
     }
 
