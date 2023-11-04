@@ -112,6 +112,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                     try await connection.close()
                     try postFlush(insertedIDsMap: insertedIDsMap, postInserts: postInserts)
                 } catch {
+                    allQueries.removeAll()
                     try await connection.rollbackTransaction()
                     try await connection.close()
                     throw error
