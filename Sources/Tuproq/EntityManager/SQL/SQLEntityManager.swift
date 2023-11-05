@@ -497,6 +497,8 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     private func insert(entityName: String, id: AnyHashable, dictionary: [String: Any?]) {
+        let id = String(describing: id)
+
         if entityInsertions[entityName] == nil {
             entityInsertions[entityName] = [id: dictionary]
         } else {
@@ -505,6 +507,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     private func update(entity: String, id: AnyHashable, changeSet: ChangeSet) {
+        let id = String(describing: id)
         guard let entityMaps = identityMap[entity], let entityMap = entityMaps[id] else { return }
 
         if entityUpdates[entity] == nil {
@@ -523,6 +526,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     private func remove<E: Entity>(entity: E, id: AnyHashable) {
+        let id = String(describing: id)
         let entityName = Configuration.entityName(from: entity)
 
         if entityDeletions[entityName] == nil {
@@ -533,10 +537,13 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     private func addToIdentityMap(entityName: String, id: AnyHashable, dictionary: [String: Any?]) {
+        let id = String(describing: id)
         addToIdentityMap(entityName: entityName, entityMap: dictionary, id: id)
     }
 
     private func addToIdentityMap(entityName: String, entityMap: EntityMap, id: AnyHashable) {
+        let id = String(describing: id)
+
         if identityMap[entityName] == nil {
             identityMap[entityName] = [id: entityMap]
         } else {
@@ -551,6 +558,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     private func removeFromIdentityMap(entityName: String, id: AnyHashable) {
+        let id = String(describing: id)
         identityMap[entityName]?.removeValue(forKey: id)
     }
 }
