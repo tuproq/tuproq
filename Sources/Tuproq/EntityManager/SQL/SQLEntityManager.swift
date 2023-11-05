@@ -319,8 +319,11 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
                 if let changeSet = entityChangeSets[entityName]?[id] {
                     for (key, (_, newValue)) in changeSet {
-                        let column = mapping.fields.first(where: { $0.field == key })!.column.name
-                        values.append((column, newValue))
+                        if let column = mapping.fields.first(where: { $0.field == key })?.column.name {
+                            values.append((column, newValue))
+                        } else if let column = mapping.parents.first(where: { $0.field == key })?.column.name {
+                            values.append((column, newValue))
+                        }
                     }
 
                     let query = createQueryBuilder()
