@@ -83,8 +83,11 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private func fetchTables(tableIDs: Set<Int32>) async throws -> [Int32: String] {
         let string = "SELECT oid, relname FROM pg_class WHERE oid = ANY($1)"
         var dictionary = [Int32: String]()
+        try await connection.open()
+        let result = try await connection.query(string, arguments: [Array(tableIDs)])
+        try await connection.close()
 
-        if let result = try await connection.query(string, arguments: [Array(tableIDs)]) {
+        if let result {
             for row in result.rows {
                 if let oid = row[0] as? Int32, let table = row[1] as? String {
                     dictionary[oid] = table
