@@ -1,7 +1,7 @@
 import Foundation
 
 public extension Array {
-    func decode<E: Entity>() throws -> [E] {
+    func decoded<E: Entity>() throws -> [E] {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         let data = try JSONSerialization.data(withJSONObject: self)
