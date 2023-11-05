@@ -15,10 +15,10 @@ public protocol EntityManager: AnyObject {
     func remove<E: Entity>(_ entity: E)
 
     @discardableResult
-    func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Codable?]] // TODO: a temporary solution
+    func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Any?]] // TODO: a temporary solution
 
     @discardableResult
-    func query(_ string: String, arguments parameters: Codable?...) async throws -> [[String: Codable?]] // TODO: a temporary solution
+    func query(_ string: String, arguments parameters: Codable?...) async throws -> [[String: Any?]] // TODO: a temporary solution
 }
 
 public extension EntityManager {
@@ -28,7 +28,7 @@ public extension EntityManager {
 
     // TODO: a temporary solution
     @discardableResult
-    func query(_ string: String, arguments parameters: Codable?...) async throws -> [[String: Codable?]] {
+    func query(_ string: String, arguments parameters: Codable?...) async throws -> [[String: Any?]] {
         try await query(string, arguments: parameters)
     }
 }

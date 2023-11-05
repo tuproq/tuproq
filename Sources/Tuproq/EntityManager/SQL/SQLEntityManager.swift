@@ -57,7 +57,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         QB()
     }
 
-    func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Codable?]] {
+    func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Any?]] {
         try await connection.open()
         let result = try await connection.query(string, arguments: parameters)
         try await connection.close()
@@ -73,7 +73,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                 result: .init(columns: columns, rows: result.rows),
                 rootTable: rootTable,
                 tables: Set(tables.values)
-            ).hydrate() as! [[String: Codable?]]
+            ).hydrate()
         }
 
         return .init()
