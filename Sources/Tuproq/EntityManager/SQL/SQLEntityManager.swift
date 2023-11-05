@@ -57,6 +57,44 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         QB()
     }
 
+    func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Codable?]] {
+        try await connection.open()
+        let result = try await connection.query(string)
+        try await connection.close()
+
+        if let result {
+            let tableIDs = Set<Int32>(result.columns.map { $0.tableID })
+            let tables = try await fetchTables(tableIDs: tableIDs)
+            let columns = result.columns.map { ObjectHydration.Column(name: $0.name, table: tables[$0.tableID]!) }
+            let rootTable = columns.map { $0.table }.first! // TODO: fix identifying root table
+
+            return ObjectHydration(
+                entityManager: self,
+                result: .init(columns: columns, rows: result.rows),
+                rootTable: rootTable,
+                tables: Set(tables.values)
+            ).hydrate() as! [[String: Codable?]]
+        }
+
+        return .init()
+    }
+
+    // TODO: PostgreSQL specific
+    private func fetchTables(tableIDs: Set<Int32>) async throws -> [Int32: String] {
+        let string = "SELECT oid, relname FROM pg_class WHERE oid = ANY($1)"
+        var dictionary = [Int32: String]()
+
+        if let result = try await connection.query(string, arguments: [Array(tableIDs)]) {
+            for row in result.rows {
+                if let oid = row[0] as? Int32, let table = row[1] as? String {
+                    dictionary[oid] = table
+                }
+            }
+        }
+
+        return dictionary
+    }
+
     func find<E: Entity>(_ entityType: E.Type, id: E.ID) async throws -> E? {
         guard !(id as AnyObject is NSNull) else { return nil }
         let id = id as AnyHashable
@@ -64,10 +102,10 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         let query = createQueryBuilder()
             .select()
             .from(table)
-            .where("id = '\(id)'")
+            .where("id = '\(id)'") // TODO: provide the id as arguments to the query method
             .getQuery()
 
-        if let dictionary = try await connection.query(query.raw).first {
+        if let dictionary = try await self.query(query.raw).first {
             let entity = try dictionary.decode(to: E.self, entityID: id)
             entityStates[entity.id] = .managed
             let entityName = Configuration.entityName(from: entityType)
@@ -103,7 +141,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
                 do {
                     for query in allQueries {
-                        if let dictionary = try await connection.query(query.raw).first {
+                        if let dictionary = try await self.query(query.raw).first {
                             postInserts.append(dictionary)
                         }
                     }

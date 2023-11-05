@@ -13,10 +13,22 @@ public protocol EntityManager: AnyObject {
     func persist<E: Entity>(_ entity: inout E) throws
     func refresh<E: Entity>(_ entity: inout E) throws
     func remove<E: Entity>(_ entity: E)
+
+    @discardableResult
+    func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Codable?]] // TODO: a temporary solution
+
+    @discardableResult
+    func query(_ string: String, arguments parameters: Codable?...) async throws -> [[String: Codable?]] // TODO: a temporary solution
 }
 
 public extension EntityManager {
     func getRepository<R: EntityRepository>(_ entityType: R.E.Type) -> R {
         R(entityManager: self)
+    }
+
+    // TODO: a temporary solution
+    @discardableResult
+    func query(_ string: String, arguments parameters: Codable?...) async throws -> [[String: Codable?]] {
+        try await query(string, arguments: parameters)
     }
 }
