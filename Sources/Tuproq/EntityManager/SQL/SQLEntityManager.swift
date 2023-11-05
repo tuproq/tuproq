@@ -59,7 +59,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
     func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Codable?]] {
         try await connection.open()
-        let result = try await connection.query(string)
+        let result = try await connection.query(string, arguments: parameters)
         try await connection.close()
 
         if let result {
