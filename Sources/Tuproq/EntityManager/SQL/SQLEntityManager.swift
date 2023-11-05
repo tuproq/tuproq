@@ -85,12 +85,24 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
             let columns = result.columns.map { ObjectHydration.Column(name: $0.name, table: tables[$0.tableID]!) }
             let rootTable = columns.map { $0.table }.first! // TODO: fix identifying root table
 
-            return ObjectHydration(
+            let array = ObjectHydration(
                 entityManager: self,
                 result: .init(columns: columns, rows: result.rows),
                 rootTable: rootTable,
                 tables: Set(tables.values)
             ).hydrate()
+
+            if let mapping = configuration.mapping(tableName: rootTable) {
+                let entityName = Configuration.entityName(from: mapping.entity)
+
+                for dictionary in array {
+                    let id = dictionary["id"] as! AnyHashable
+                    entityStates[id] = .managed
+                    addToIdentityMap(entityName: entityName, id: id, dictionary: dictionary)
+                }
+            }
+
+            return array
         }
 
         return .init()
