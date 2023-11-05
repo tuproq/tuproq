@@ -49,9 +49,9 @@ public final class Observed<V: Codable>: Codable {
             instance[keyPath: storageKeyPath].entityName = entityName
             let oldValue = instance[keyPath: storageKeyPath].value
             instance[keyPath: storageKeyPath].value = newValue
+            let id = instance.id
 
-            if let id = instance[keyPath: storageKeyPath].entityID,
-               let name = instance[keyPath: storageKeyPath].name {
+            if let name = instance[keyPath: storageKeyPath].name {
                 let property: [String: Any?] = [
                     "name": name,
                     "oldValue": oldValue,
