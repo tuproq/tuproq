@@ -59,8 +59,14 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
     func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Any?]] {
         try await connection.open()
-        let result = try await connection.query(string, arguments: parameters)
+        let result = try await _query(string, arguments: parameters)
         try await connection.close()
+
+        return result
+    }
+
+    private func _query(_ string: String, arguments parameters: [Codable?] = .init()) async throws -> [[String: Any?]] {
+        let result = try await connection.query(string, arguments: parameters)
 
         if let result {
             let tableIDs = Set<Int32>(result.columns.map { $0.tableID })
@@ -112,9 +118,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private func fetchTables(tableIDs: Set<Int32>) async throws -> [Int32: String] {
         let string = "SELECT oid, relname FROM pg_class WHERE oid = ANY($1)"
         var dictionary = [Int32: String]()
-        try await connection.open()
         let result = try await connection.query(string, arguments: [Array(tableIDs)])
-        try await connection.close()
 
         if let result {
             for row in result.rows {
@@ -174,7 +178,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
                 do {
                     for query in allQueries {
-                        if let dictionary = try await self.query(query.raw).first {
+                        if let dictionary = try await _query(query.raw).first {
                             postInserts.append(dictionary)
                         }
                     }
