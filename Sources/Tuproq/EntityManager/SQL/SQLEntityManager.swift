@@ -65,6 +65,23 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         if let result {
             let tableIDs = Set<Int32>(result.columns.map { $0.tableID })
             let tables = try await fetchTables(tableIDs: tableIDs)
+
+            if tables.isEmpty {
+                var array = [[String: Any?]]()
+
+                for row in result.rows {
+                    var dictionary = [String: Any?]()
+
+                    for (index, column) in result.columns.enumerated() {
+                        dictionary[column.name] = row[index]
+                    }
+
+                    array.append(dictionary)
+                }
+
+                return array
+            }
+
             let columns = result.columns.map { ObjectHydration.Column(name: $0.name, table: tables[$0.tableID]!) }
             let rootTable = columns.map { $0.table }.first! // TODO: fix identifying root table
 
