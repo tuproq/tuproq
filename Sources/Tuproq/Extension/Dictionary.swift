@@ -29,12 +29,4 @@ extension Dictionary {
 
         return try decoder.decode(entityType, from: data)
     }
-
-    public func decode<E: Entity>() throws -> E {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        let data = try JSONSerialization.data(withJSONObject: self)
-
-        return try decoder.decode(E.self, from: data)
-    }
 }
