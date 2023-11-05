@@ -139,9 +139,10 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
         if let dictionary = try await self.query(query.raw).first {
             let entity = try dictionary.decode(to: E.self, entityID: id)
-            entityStates[entity.id] = .managed
+            let id = String(describing: entity.id)
+            entityStates[id] = .managed
             let entityName = Configuration.entityName(from: entityType)
-            addToIdentityMap(entityName: entityName, id: entity.id, dictionary: dictionary)
+            addToIdentityMap(entityName: entityName, id: id, dictionary: dictionary)
 
             return entity
         }
@@ -446,7 +447,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     private func refresh<E: Entity>(_ entity: inout E, visited entities: inout [AnyHashable: EntityMap]) throws {
-        let id = entity.id
+        let id = String(describing: entity.id)
         guard entities[id] == nil else { return }
         entities[id] = try! entity.asDictionary()
         let entityState = entityStates[id]
@@ -474,7 +475,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
     private func remove<E: Entity>(_ entity: E, visited entities: inout [AnyHashable: EntityMap]) {
         let entityName = Configuration.entityName(from: entity)
-        let id = entity.id
+        let id = String(describing: entity.id)
         guard entities[id] == nil else { return }
         entities[id] = try! entity.asDictionary()
         let entityState = entityStates[id]
@@ -541,7 +542,8 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
 
     private func removeFromIdentityMap<E: Entity>(entity: E) {
         let entityName = Configuration.entityName(from: entity)
-        removeFromIdentityMap(entityName: entityName, id: entity.id)
+        let id = String(describing: entity.id)
+        removeFromIdentityMap(entityName: entityName, id: id)
     }
 
     private func removeFromIdentityMap(entityName: String, id: AnyHashable) {
