@@ -18,8 +18,8 @@ public final class Observed<V: Codable>: Codable {
     }
 
     public init(from decoder: Decoder) throws {
-        entityName = decoder.userInfo[CodingUserInfoKey(rawValue: "entityName")!] as? String
-        entityID = decoder.userInfo[CodingUserInfoKey(rawValue: "entityID")!] as? AnyHashable
+        entityName = decoder.userInfo[.init(rawValue: "entityName")!] as? String
+        entityID = decoder.userInfo[.init(rawValue: "entityID")!] as? AnyHashable
 
         if let name = decoder.codingPath.last?.stringValue, !name.isEmpty {
             self.name = name
