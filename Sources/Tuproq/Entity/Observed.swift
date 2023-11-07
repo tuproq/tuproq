@@ -45,25 +45,22 @@ public final class Observed<V: Codable>: Codable {
             instance[keyPath: storageKeyPath].value
         }
         set {
+            guard let name = instance[keyPath: storageKeyPath].name else { return }
             let entityName = Configuration.entityName(from: instance)
             instance[keyPath: storageKeyPath].entityName = entityName
             let oldValue = instance[keyPath: storageKeyPath].value
             instance[keyPath: storageKeyPath].value = newValue
-            let id = instance.id
 
-            if let name = instance[keyPath: storageKeyPath].name {
-                let property: [String: Any?] = [
+            let dictionary: [String: Any?] = [
+                "entity": entityName,
+                "id": instance.id,
+                "property": [
                     "name": name,
                     "oldValue": oldValue,
-                    "newValue": instance[keyPath: storageKeyPath].value
+                    "newValue": newValue
                 ]
-                let dictionary: [String: Any?] = [
-                    "entity": entityName,
-                    "id": id,
-                    "property": property
-                ]
-                NotificationCenter.default.post(name: .propertyValueChanged, object: dictionary)
-            }
+            ]
+            NotificationCenter.default.post(name: .propertyValueChanged, object: dictionary)
         }
     }
 
