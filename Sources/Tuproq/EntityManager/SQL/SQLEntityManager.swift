@@ -23,7 +23,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         self.configuration = configuration
 
         NotificationCenter.default.addObserver(
-            forName: propertyValueChanged,
+            forName: .propertyValueChanged,
             object: nil,
             queue: nil
         ) { [self] notification in
@@ -50,7 +50,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     }
 
     deinit {
-        NotificationCenter.default.removeObserver(self, name: propertyValueChanged, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .propertyValueChanged, object: nil)
     }
 
     func createQueryBuilder() -> QB {
@@ -372,7 +372,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
                         "newID": postInsertID,
                         "property": property
                     ]
-                    NotificationCenter.default.post(name: propertyPostFlushValueChanged, object: dictionary)
+                    NotificationCenter.default.post(name: .propertyPostFlushValueChanged, object: dictionary)
                 }
 
                 if insertedID != postInsertID {

@@ -62,7 +62,7 @@ public final class Observed<V: Codable>: Codable {
                     "id": id,
                     "property": property
                 ]
-                NotificationCenter.default.post(name: propertyValueChanged, object: dictionary)
+                NotificationCenter.default.post(name: .propertyValueChanged, object: dictionary)
             }
         }
     }
@@ -74,7 +74,7 @@ public final class Observed<V: Codable>: Codable {
 
     private func addPropertyObserver() {
         NotificationCenter.default.addObserver(
-            forName: propertyPostFlushValueChanged,
+            forName: .propertyPostFlushValueChanged,
             object: nil,
             queue: nil
         ) { [self] notification in
@@ -109,6 +109,6 @@ public final class Observed<V: Codable>: Codable {
     }
 
     private func removePropertyObserver() {
-        NotificationCenter.default.removeObserver(self, name: propertyPostFlushValueChanged, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .propertyPostFlushValueChanged, object: nil)
     }
 }

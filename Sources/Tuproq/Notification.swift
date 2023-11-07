@@ -1,4 +1,6 @@
 import Foundation
 
-let propertyValueChanged = Notification.Name("propertyValueChanged")
-let propertyPostFlushValueChanged = Notification.Name("propertyPostFlushValueChanged")
+extension Notification.Name {
+    static let propertyValueChanged = Notification.Name("propertyValueChanged")
+    static let propertyPostFlushValueChanged = Notification.Name("propertyPostFlushValueChanged")
+}
