@@ -33,10 +33,9 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         QB()
     }
 
+    @discardableResult
     func query<E: Entity>(_ string: String, arguments parameters: [Codable?]) async throws -> [E] {
-        try await connection.open()
-        let result = try await _query(string, arguments: parameters)
-        try await connection.close()
+        let result = try await query(string, arguments: parameters)
         let data = try JSONSerialization.data(withJSONObject: result)
         let entities = try decoder.decode([E].self, from: data)
 
@@ -47,6 +46,15 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         }
 
         return entities
+    }
+
+    @discardableResult
+    func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Any?]] {
+        try await connection.open()
+        let result = try await _query(string, arguments: parameters)
+        try await connection.close()
+
+        return result
     }
 
     private func _query(_ string: String, arguments parameters: [Codable?] = .init()) async throws -> [[String: Any?]] {
