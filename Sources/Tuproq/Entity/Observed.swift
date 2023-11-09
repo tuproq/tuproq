@@ -2,9 +2,10 @@ import Foundation
 
 @propertyWrapper
 public final class Observed<V: Codable>: Codable {
-    private var name: String?
     private var entityID: AnyHashable?
     private var entityName: String?
+    private var entityManager: (any EntityManager)?
+    private var name: String?
     private var value: V
 
     @available(*, unavailable, message: "@Observed can only be applied to classes.")
@@ -18,17 +19,11 @@ public final class Observed<V: Codable>: Codable {
     }
 
     public init(from decoder: Decoder) throws {
-        entityName = decoder.userInfo[.init(rawValue: "entityName")!] as? String
-        entityID = decoder.userInfo[.init(rawValue: "entityID")!] as? AnyHashable
-
-        if let name = decoder.codingPath.last?.stringValue, !name.isEmpty {
-            self.name = name
-        } else {
-            name = "" // TODO: throw error
-        }
-
-        let container = try decoder.singleValueContainer()
-        value = try container.decode(V.self)
+        entityName = decoder.userInfo[.entityName] as? String
+        entityID = decoder.userInfo[.entityID] as? AnyHashable
+        entityManager = decoder.userInfo[.entityManager] as? (any EntityManager)
+        name = decoder.codingPath.last?.stringValue
+        value = try decoder.singleValueContainer().decode(V.self)
         addPropertyObserver()
     }
 
@@ -37,30 +32,24 @@ public final class Observed<V: Codable>: Codable {
     }
 
     public static subscript<E: Entity>(
-        _enclosingInstance instance: E,
+        _enclosingInstance entity: E,
         wrapped wrappedKeyPath: ReferenceWritableKeyPath<E, V>,
         storage storageKeyPath: ReferenceWritableKeyPath<E, Observed>
     ) -> V {
         get {
-            instance[keyPath: storageKeyPath].value
+            entity[keyPath: storageKeyPath].value
         }
         set {
-            guard let name = instance[keyPath: storageKeyPath].name else { return }
-            let entityName = Configuration.entityName(from: instance)
-            instance[keyPath: storageKeyPath].entityName = entityName
-            let oldValue = instance[keyPath: storageKeyPath].value
-            instance[keyPath: storageKeyPath].value = newValue
-
-            let dictionary: [String: Any?] = [
-                "entity": entityName,
-                "id": instance.id,
-                "property": [
-                    "name": name,
-                    "oldValue": oldValue,
-                    "newValue": newValue
-                ]
-            ]
-            NotificationCenter.default.post(name: .propertyValueChanged, object: dictionary)
+            guard let name = entity[keyPath: storageKeyPath].name else { return }
+            entity[keyPath: storageKeyPath].entityName = Configuration.entityName(from: entity)
+            let oldValue = entity[keyPath: storageKeyPath].value
+            entity[keyPath: storageKeyPath].value = newValue
+            entity[keyPath: storageKeyPath].entityManager?.propertyChanged(
+                entity: entity,
+                propertyName: name,
+                oldValue: oldValue,
+                newValue: newValue
+            )
         }
     }
 

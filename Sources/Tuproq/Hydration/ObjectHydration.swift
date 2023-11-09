@@ -89,11 +89,12 @@ final class ObjectHydration {
     ) {
         let table = entityMapping.table.trimmingQuotes
 
-        if let idIndex = tableIDColumnIndexes[table], let id = row[idIndex] as? UUID, !tablesInHydration.contains(table) { // TODO: support other types
+        if let idIndex = tableIDColumnIndexes[table], let id = row[idIndex], !tablesInHydration.contains(table) {
+            let id = String(describing: id)
             tablesInHydration.insert(table)
 
             if let dictionaryIndex = array.firstIndex(where: {
-                $0[entityMapping.id.field] as? String == id.uuidString // TODO: support other types
+                $0[entityMapping.id.field] as? String == id
             }) {
                 var dictionary = array[dictionaryIndex]
                 hydrateAll(for: row, with: entityMapping, in: &dictionary)
