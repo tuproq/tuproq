@@ -342,7 +342,7 @@ extension SQLEntityManager {
     }
 
     private func persistNew<E: Entity>(_ entity: inout E) throws {
-        entity = try entity.asDictionary().decode(to: E.self, entityManager: self)
+        entity = try entity.asDictionary().decode(to: E.self, decoder: decoder)
         addEntityToIdentityMap(entity)
         insertEntity(entity)
         setEntityState(.managed, for: entity)
