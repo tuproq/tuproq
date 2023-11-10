@@ -2,33 +2,22 @@ import Foundation
 
 @propertyWrapper
 public final class Observed<V: Codable>: Codable {
-    private var entityID: AnyHashable?
-    private var entityName: String?
-    private var entityManager: (any EntityManager)?
-    private var name: String?
-    private var value: V
-
-    @available(*, unavailable, message: "@Observed can only be applied to classes.")
-    public var wrappedValue: V {
-        get { fatalError() }
-        set { fatalError() }
-    }
+    private weak var entityManager: (any EntityManager)?
+    private let name: String?
+    private let originalValue: V
+    public var wrappedValue: V
 
     public init(wrappedValue: V) {
-        value = wrappedValue
+        name = nil
+        originalValue = wrappedValue
+        self.wrappedValue = originalValue
     }
 
     public init(from decoder: Decoder) throws {
-        entityName = decoder.userInfo[.entityName] as? String
-        entityID = decoder.userInfo[.entityID] as? AnyHashable
         entityManager = decoder.userInfo[.entityManager] as? (any EntityManager)
         name = decoder.codingPath.last?.stringValue
-        value = try decoder.singleValueContainer().decode(V.self)
-        addPropertyObserver()
-    }
-
-    deinit {
-        removePropertyObserver()
+        originalValue = try decoder.singleValueContainer().decode(V.self)
+        wrappedValue = originalValue
     }
 
     public static subscript<E: Entity>(
@@ -37,13 +26,12 @@ public final class Observed<V: Codable>: Codable {
         storage storageKeyPath: ReferenceWritableKeyPath<E, Observed>
     ) -> V {
         get {
-            entity[keyPath: storageKeyPath].value
+            entity[keyPath: storageKeyPath].wrappedValue
         }
         set {
             guard let name = entity[keyPath: storageKeyPath].name else { return }
-            entity[keyPath: storageKeyPath].entityName = Configuration.entityName(from: entity)
-            let oldValue = entity[keyPath: storageKeyPath].value
-            entity[keyPath: storageKeyPath].value = newValue
+            let oldValue = entity[keyPath: storageKeyPath].originalValue
+            entity[keyPath: storageKeyPath].wrappedValue = newValue
             entity[keyPath: storageKeyPath].entityManager?.propertyChanged(
                 entity: entity,
                 propertyName: name,
@@ -55,46 +43,6 @@ public final class Observed<V: Codable>: Codable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
-        try container.encode(value)
-    }
-
-    private func addPropertyObserver() {
-        NotificationCenter.default.addObserver(
-            forName: .propertyPostFlushValueChanged,
-            object: nil,
-            queue: nil
-        ) { [self] notification in
-            let dictionary = notification.object as! [String: Any?]
-            let entity = dictionary["entity"] as! String
-            let oldID = dictionary["oldID"] as! AnyHashable
-            var newID = dictionary["newID"] as! AnyHashable
-            let property = dictionary["property"] as! [String: Any?]
-            let propertyName = property["name"] as! String
-            var propertyValue = property["value"]
-
-            if let uuid = newID as? UUID { // TODO: check if the field type is UUID
-                newID = AnyHashable(uuid.uuidString)
-            }
-
-            if let uuid = propertyValue as? UUID { // TODO: check if the field type is UUID
-                propertyValue = uuid.uuidString
-            }
-
-            if entity == entityName && oldID == entityID && propertyName == name {
-                if let propertyValue = propertyValue as? V { // TODO: check if Field is nullable or not.
-                    value = propertyValue
-                }
-
-                entityID = newID
-
-                if name == "id" {
-                    value = entityID as! V
-                }
-            }
-        }
-    }
-
-    private func removePropertyObserver() {
-        NotificationCenter.default.removeObserver(self, name: .propertyPostFlushValueChanged, object: nil)
+        try container.encode(wrappedValue)
     }
 }

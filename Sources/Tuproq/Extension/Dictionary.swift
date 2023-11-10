@@ -1,7 +1,7 @@
 import Foundation
 
 extension Dictionary {
-    func decode<E: Entity>(to entityType: E.Type, entityID: AnyHashable, entityManager: any EntityManager) throws -> E {
+    func decode<E: Entity>(to entityType: E.Type, entityManager: any EntityManager) throws -> E {
         let dateFormatter = DateFormatter.iso8601
 
         let dictionary: [Self.Key: Any?] = mapValues { value in
@@ -17,15 +17,10 @@ extension Dictionary {
 
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .formatted(dateFormatter)
-
-        if let dictionary = dictionary as? [String: Any?] {
-            let id = dictionary["id"] as? AnyHashable ?? entityID
-            decoder.userInfo = [
-                .entityName: Configuration.entityName(from: entityType),
-                .entityID: id,
-                .entityManager: entityManager
-            ]
-        }
+        decoder.userInfo = [
+            .entityManager: entityManager,
+            .entityName: Configuration.entityName(from: entityType)
+        ]
 
         return try decoder.decode(entityType, from: data)
     }

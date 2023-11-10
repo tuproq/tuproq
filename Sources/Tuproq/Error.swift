@@ -21,6 +21,7 @@ public struct TuproqError: LocalizedError {
 
 enum ErrorType: CustomStringConvertible {
     case entityToDictionaryFailed
+    case detachedEntityCannotBePersisted(_ entity: any Entity)
     case unknown
 
     var description: String { message }
@@ -28,6 +29,8 @@ enum ErrorType: CustomStringConvertible {
     var message: String {
         switch self {
         case .entityToDictionaryFailed: return "Can't encode an entity to a dictionary."
+        case .detachedEntityCannotBePersisted(let entity):
+            return "A detached entity \"\(entity.id)\" can't be persisted."
         case .unknown: return "An unknown error."
         }
     }

@@ -2,7 +2,8 @@ import Foundation
 
 final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private typealias ChangeSet = [String: (Codable?, Codable?)] // [property: (oldValue, newValue)]
-    private typealias EntityChanges = [String: [AnyHashable: any Entity]]
+    private typealias EntityChanges = [String: EntityMap]
+    private typealias EntityMap = [AnyHashable: any Entity]
 
     let connection: Connection
     var configuration: Configuration
@@ -321,50 +322,40 @@ extension SQLEntityManager {
 
 extension SQLEntityManager {
     func persist<E: Entity>(_ entity: inout E) throws {
-        var entities = [AnyHashable: any Entity]()
+        var entities = EntityMap()
         try persist(&entity, visited: &entities)
     }
 
-    private func persist<E: Entity>(_ entity: inout E, visited entities: inout [AnyHashable: any Entity]) throws {
-        let dictionary = try entity.asDictionary()
-        let entityID: AnyHashable
+    private func persist<E: Entity>(_ entity: inout E, visited entities: inout EntityMap) throws {
+        let objectID = ObjectIdentifier(entity)
+        guard entities[objectID] == nil else { return }
+        entities[objectID] = entity
 
-        if let id = dictionary["id"] as? AnyHashable {
-            entityID = id
-        } else {
-            entityID = ObjectIdentifier(entity)
-        }
-
-        // Set entityID in Observed property wrappers
-        entity = try dictionary.decode(to: E.self, entityID: entityID, entityManager: self)
-
-        guard entities[entityID] == nil else { return }
-        entities[entityID] = entity
-
-        if let state = getEntityState(for: entity) {
-            switch state {
-            case .detached: break // TODO: implement
-            case .managed: break
-            case .new:
-                addEntityToIdentityMap(entity)
-                insertEntity(entity)
-            case .removed:
-                addEntityToIdentityMap(entity)
-                removeDeletedEntity(entity)
-                setEntityState(.managed, for: entity)
-            }
-        } else {
-            addEntityToIdentityMap(entity)
-            insertEntity(entity)
-            setEntityState(.new, for: entity)
+        switch getEntityState(for: entity) {
+        case .new: try persistNew(&entity)
+        case .removed: persistRemoved(entity)
+        case .managed: break
+        case .detached: throw error(.detachedEntityCannotBePersisted(entity))
         }
 
         try cascadePersist(&entity, visited: &entities)
     }
 
+    private func persistNew<E: Entity>(_ entity: inout E) throws {
+        entity = try entity.asDictionary().decode(to: E.self, entityManager: self)
+        addEntityToIdentityMap(entity)
+        insertEntity(entity)
+        setEntityState(.managed, for: entity)
+    }
+
+    private func persistRemoved<E: Entity>(_ entity: E) {
+        removeDeletedEntity(entity)
+        setEntityState(.managed, for: entity)
+    }
+
     private func cascadePersist<E: Entity>(
         _ entity: inout E,
-        visited entities: inout [AnyHashable: any Entity]
+        visited entities: inout EntityMap
     ) throws {
         // TODO: implement
     }
@@ -372,11 +363,11 @@ extension SQLEntityManager {
 
 extension SQLEntityManager {
     func remove<E: Entity>(_ entity: E) {
-        var entities = [AnyHashable: any Entity]()
+        var entities = EntityMap()
         remove(entity, visited: &entities)
     }
 
-    private func remove<E: Entity>(_ entity: E, visited entities: inout [AnyHashable: any Entity]) {
+    private func remove<E: Entity>(_ entity: E, visited entities: inout EntityMap) {
         let id = entity.id
         guard entities[id] == nil else { return }
         entities[id] = entity
@@ -408,11 +399,11 @@ extension SQLEntityManager {
 
 extension SQLEntityManager {
     func refresh<E: Entity>(_ entity: inout E) throws {
-        var entities = [AnyHashable: any Entity]()
+        var entities = EntityMap()
         try refresh(&entity, visited: &entities)
     }
 
-    private func refresh<E: Entity>(_ entity: inout E, visited entities: inout [AnyHashable: any Entity]) throws {
+    private func refresh<E: Entity>(_ entity: inout E, visited entities: inout EntityMap) throws {
         let id = entity.id
         guard entities[id] == nil else { return }
         entities[id] = entity
@@ -590,9 +581,9 @@ extension SQLEntityManager {
         }
     }
 
-    private func getEntityState<E: Entity>(for entity: E) -> EntityState? {
+    private func getEntityState<E: Entity>(for entity: E, default state: EntityState = .new) -> EntityState {
         let entityName = Configuration.entityName(from: entity)
-        return entityStates[entityName]?[entity.id]
+        return entityStates[entityName]?[entity.id] ?? state
     }
 
     private func removeEntityState<E: Entity>(for entity: E) {
