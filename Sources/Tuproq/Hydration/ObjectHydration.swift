@@ -1,11 +1,5 @@
 import Foundation
 
-extension String {
-    var trimmingQuotes: String {
-        trimmingCharacters(in: .init(charactersIn: "\""))
-    }
-}
-
 final class ObjectHydration {
     let entityManager: any EntityManager
     let result: Result

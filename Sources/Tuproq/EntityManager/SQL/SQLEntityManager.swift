@@ -8,6 +8,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     let connection: Connection
     var configuration: Configuration
 
+    private let encoder: JSONEncoder
     private let decoder: JSONDecoder
 
     private var allQueries = [any Query]()
@@ -21,6 +22,9 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     init(connection: Connection, configuration: Configuration) {
         self.connection = connection
         self.configuration = configuration
+
+        encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
 
         decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -342,7 +346,8 @@ extension SQLEntityManager {
     }
 
     private func persistNew<E: Entity>(_ entity: inout E) throws {
-        entity = try entity.asDictionary().decode(to: E.self, decoder: decoder)
+        let data = try JSONSerialization.data(withJSONObject: try encodeToDictionary(entity))
+        entity = try decoder.decode(E.self, from: data)
         addEntityToIdentityMap(entity)
         insertEntity(entity)
         setEntityState(.managed, for: entity)
@@ -437,7 +442,7 @@ extension SQLEntityManager {
                 var columns = [String]()
                 var values = [Any?]()
 
-                for (field, value) in try entity.asDictionary() {
+                for (field, value) in try encodeToDictionary(entity) {
                     if mapping.children.contains(where: { $0.field == field }) ||
                         mapping.siblings.contains(where: { $0.field == field }) {
                         continue
@@ -514,6 +519,18 @@ extension SQLEntityManager {
                 allQueries.append(query)
             }
         }
+    }
+
+    private func encodeToDictionary<E: Entity>(_ entity: E) throws -> [String: Any?] {
+        let data = try encoder.encode(entity)
+        guard let dictionary = try JSONSerialization.jsonObject(
+            with: data,
+            options: .fragmentsAllowed
+        ) as? [String: Any?] else {
+            throw error(.entityToDictionaryFailed)
+        }
+
+        return dictionary
     }
 }
 

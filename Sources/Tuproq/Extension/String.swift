@@ -49,3 +49,7 @@ extension String {
         self = .init(reflecting: describingNestedType).split(separator: ".").dropFirst().joined(separator: ".")
     }
 }
+
+extension String {
+    var trimmingQuotes: String { trimmingCharacters(in: .init(charactersIn: "\"")) }
+}
