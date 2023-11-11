@@ -24,10 +24,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         self.configuration = configuration
 
         encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-
         decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
         decoder.userInfo = [.entityManager: self]
     }
 }
@@ -376,9 +373,8 @@ extension SQLEntityManager {
         let id = entity.id
         guard entities[id] == nil else { return }
         entities[id] = entity
-        let state = getEntityState(for: entity)
 
-        switch state {
+        switch getEntityState(for: entity) {
         case .managed:
             doRemove(entity)
             setEntityState(.removed, for: entity)
@@ -412,9 +408,8 @@ extension SQLEntityManager {
         let id = entity.id
         guard entities[id] == nil else { return }
         entities[id] = entity
-        let state = getEntityState(for: entity)
 
-        switch state {
+        switch getEntityState(for: entity) {
         case .managed:
             // TODO: implement
             break

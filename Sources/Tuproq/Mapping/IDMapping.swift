@@ -4,18 +4,8 @@ public struct IDMapping: AnyFieldMapping {
     public let column: String
 
     public init(field: String = "", type: FieldType = .id(), column: String = "") {
-        if field.isEmpty {
-            self.field = Configuration.defaultIDField
-        } else {
-            self.field = field
-        }
-
+        self.field = field.isEmpty ? Configuration.defaultIDField : field
         self.type = type
-
-        if column.isEmpty {
-            self.column = Configuration.namingStrategy.column(field: self.field)
-        } else {
-            self.column = column
-        }
+        self.column = column.isEmpty ? Configuration.namingStrategy.column(field: self.field) : column
     }
 }
