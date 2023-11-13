@@ -3,7 +3,9 @@ import Foundation
 final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private typealias ChangeSet = [String: (Codable?, Codable?)] // [property: (oldValue, newValue)]
     private typealias EntityChanges = [String: EntityMap]
-    private typealias EntityMap = [AnyHashable: any Entity]
+    private typealias EntityChangeSets = [ObjectIdentifier: ChangeSet]
+    private typealias EntityMap = [ObjectIdentifier: any Entity]
+    private typealias EntityStates = [ObjectIdentifier: EntityState]
 
     let connection: Connection
     var configuration: Configuration
@@ -12,12 +14,14 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private let decoder: JSONDecoder
 
     private var allQueries = [any Query]()
-    private var entityDeletions = EntityChanges()
-    private var entityInsertions = EntityChanges()
-    private var entityUpdates = EntityChanges()
-    private var entityStates = [String: [AnyHashable: EntityState]]()
-    private var entityChangeSets = [String: [AnyHashable: ChangeSet]]()
+    private var entityInsertions = EntityMap()
+    private var entityUpdates = EntityMap()
+    private var entityDeletions = EntityMap()
+    private var entityStates = EntityStates()
+    private var entityChangeSets = EntityChangeSets()
     private var identityMap = EntityChanges()
+    private var entityIdentifiers = [ObjectIdentifier: AnyHashable]()
+    private var objectIdentifiers = [AnyHashable: ObjectIdentifier]()
 
     init(connection: Connection, configuration: Configuration) {
         self.connection = connection
@@ -33,10 +37,9 @@ extension SQLEntityManager {
     func flush() async throws {
         do {
             let commitOrder = try getCommitOrder()
-            var insertedIDsMap = [String: [AnyHashable]]()
 
             for entityName in commitOrder {
-                insertedIDsMap[entityName] = try prepareInserts(for: entityName)
+                try prepareInserts(for: entityName)
             }
 
             for entityName in commitOrder {
@@ -61,7 +64,8 @@ extension SQLEntityManager {
 
                     try await connection.commitTransaction()
                     try await connection.close()
-                    try postFlush(insertedIDsMap: insertedIDsMap, postInserts: postInserts)
+                    cleanUp()
+//                    try postFlush(insertedIDsMap: insertedIDsMap, postInserts: postInserts) // TODO: fix
                 } catch {
                     allQueries.removeAll()
                     try await connection.rollbackTransaction()
@@ -106,21 +110,18 @@ extension SQLEntityManager {
             }
         }
 
-        for entityMap in entityDeletions.values {
-            for entity in entityMap.values {
-                removeEntityFromIdentityMap(entity)
-                removeEntityState(for: entity)
-            }
-        }
-
         cleanUp()
     }
 
     private func cleanUp() {
+        for entity in entityDeletions.values {
+            removeEntityFromIdentityMap(entity)
+        }
+
         entityInsertions.removeAll()
         entityUpdates.removeAll()
-        entityChangeSets.removeAll()
         entityDeletions.removeAll()
+        entityChangeSets.removeAll()
         allQueries.removeAll()
     }
 }
@@ -130,8 +131,9 @@ extension SQLEntityManager {
         let calculator = CommitOrderCalculator()
         var entityNames = [String]()
 
-        func processEntityChanges(_ entityChanges: EntityChanges) {
-            for entityName in entityChanges.keys {
+        func processEntityMap(_ entityMap: EntityMap) {
+            for entity in entityMap.values {
+                let entityName = Configuration.entityName(from: entity)
                 let node = CommitOrderCalculator.Node(value: entityName)
 
                 if !calculator.hasNode(node) {
@@ -141,9 +143,9 @@ extension SQLEntityManager {
             }
         }
 
-        processEntityChanges(entityInsertions)
-        processEntityChanges(entityUpdates)
-        processEntityChanges(entityDeletions)
+        processEntityMap(entityInsertions)
+        processEntityMap(entityUpdates)
+        processEntityMap(entityDeletions)
 
         while !entityNames.isEmpty {
             let entityName = entityNames.removeFirst()
@@ -197,24 +199,11 @@ extension SQLEntityManager {
 extension SQLEntityManager {
     func propertyChanged<E: Entity>(entity: E, propertyName: String, oldValue: Codable?, newValue: Codable?) {
         let entityName = Configuration.entityName(from: entity)
-        let id = entity.id
-        guard let entityMaps = identityMap[entityName], let entityMap = entityMaps[id] else { return }
-
-        if entityUpdates[entityName] == nil {
-            entityUpdates[entityName] = [id: entityMap]
-        } else {
-            entityUpdates[entityName]?[id] = entityMap
-        }
-
+        let objectID = ObjectIdentifier(entity)
+        guard identityMap[entityName]?[objectID] != nil else { return }
+        entityUpdates[objectID] = entity
         let changeSet = [propertyName: (oldValue, newValue)]
-
-        if entityChangeSets[entityName] == nil {
-            entityChangeSets[entityName] = [id: changeSet]
-        } else {
-            var existingChangeSet = entityChangeSets[entityName]![id]!
-            existingChangeSet.merge(changeSet) { (_, new) in new }
-            entityChangeSets[entityName]?[id] = existingChangeSet
-        }
+        entityChangeSets[objectID] = changeSet
     }
 }
 
@@ -226,6 +215,12 @@ extension SQLEntityManager {
     func find<E: Entity>(_ entityType: E.Type, id: E.ID) async throws -> E? {
         guard !(id as AnyObject is NSNull) else { return nil }
         let id = id as AnyHashable
+        let entityName = Configuration.entityName(from: entityType)
+
+        if let objectID = objectIdentifiers[id], let entity = identityMap[entityName]?[objectID] {
+            return entity as? E
+        }
+
         let table = try table(from: entityType)
         let query = createQueryBuilder()
             .select()
@@ -355,24 +350,21 @@ extension SQLEntityManager {
         setEntityState(.managed, for: entity)
     }
 
-    private func cascadePersist<E: Entity>(
-        _ entity: inout E,
-        visited entities: inout EntityMap
-    ) throws {
+    private func cascadePersist<E: Entity>(_ entity: inout E, visited entities: inout EntityMap) throws {
         // TODO: implement
     }
 }
 
 extension SQLEntityManager {
     func remove<E: Entity>(_ entity: E) {
-        var entities = EntityMap()
-        remove(entity, visited: &entities)
+        var entityMap = EntityMap()
+        remove(entity, visited: &entityMap)
     }
 
-    private func remove<E: Entity>(_ entity: E, visited entities: inout EntityMap) {
-        let id = entity.id
-        guard entities[id] == nil else { return }
-        entities[id] = entity
+    private func remove<E: Entity>(_ entity: E, visited entityMap: inout EntityMap) {
+        let objectID = ObjectIdentifier(entity)
+        guard entityMap[objectID] == nil else { return }
+        entityMap[objectID] = entity
 
         switch getEntityState(for: entity) {
         case .managed:
@@ -387,27 +379,21 @@ extension SQLEntityManager {
     }
 
     private func doRemove<E: Entity>(_ entity: E) {
-        let entityName = Configuration.entityName(from: entity)
-        let id = entity.id
-
-        if entityDeletions[entityName] == nil {
-            entityDeletions[entityName] = [id: entity]
-        } else {
-            entityDeletions[entityName]?[id] = entity
-        }
+        let objectID = ObjectIdentifier(entity)
+        entityDeletions[objectID] = entity
     }
 }
 
 extension SQLEntityManager {
     func refresh<E: Entity>(_ entity: inout E) throws {
-        var entities = EntityMap()
-        try refresh(&entity, visited: &entities)
+        var entityMap = EntityMap()
+        try refresh(&entity, visited: &entityMap)
     }
 
-    private func refresh<E: Entity>(_ entity: inout E, visited entities: inout EntityMap) throws {
-        let id = entity.id
-        guard entities[id] == nil else { return }
-        entities[id] = entity
+    private func refresh<E: Entity>(_ entity: inout E, visited entityMap: inout EntityMap) throws {
+        let objectID = ObjectIdentifier(entity)
+        guard entityMap[objectID] == nil else { return }
+        entityMap[objectID] = entity
 
         switch getEntityState(for: entity) {
         case .managed:
@@ -427,13 +413,11 @@ extension SQLEntityManager {
 }
 
 extension SQLEntityManager {
-    private func prepareInserts(for entityName: String) throws -> [AnyHashable] {
-        var ids = [AnyHashable]()
+    private func prepareInserts(for entityName: String) throws {
+        let mapping = try mapping(from: entityName)
 
-        if let entityMap = entityInsertions[entityName] {
-            let mapping = try mapping(from: entityName)
-
-            for (id, entity) in entityMap {
+        for entity in entityInsertions.values {
+            if entityName == Configuration.entityName(from: entity) {
                 var columns = [String]()
                 var values = [Any?]()
 
@@ -460,8 +444,6 @@ extension SQLEntityManager {
                     }
                 }
 
-                ids.append(id)
-
                 let query = createQueryBuilder()
                     .insert(into: mapping.table, columns: columns, values: values)
                     .returning()
@@ -469,18 +451,16 @@ extension SQLEntityManager {
                 allQueries.append(query)
             }
         }
-
-        return ids
     }
 
     private func prepareUpdates(for entityName: String) throws {
-        if let entityMap = entityUpdates[entityName] {
-            let mapping = try mapping(from: entityName)
+        let mapping = try mapping(from: entityName)
 
-            for id in entityMap.keys {
+        for (objectID, entity) in entityUpdates {
+            if let id = entityIdentifiers[objectID], entityName == Configuration.entityName(from: entity) {
                 var values = [(String, Codable?)]()
 
-                if let changeSet = entityChangeSets[entityName]?[id] {
+                if let changeSet = entityChangeSets[objectID] {
                     for (key, (_, newValue)) in changeSet {
                         if let column = mapping.fields.first(where: { $0.field == key })?.column.name {
                             values.append((column, newValue))
@@ -501,10 +481,10 @@ extension SQLEntityManager {
     }
 
     private func prepareDeletions(for entityName: String) throws {
-        if let entityMap = entityDeletions[entityName] {
-            let table = try table(from: entityName)
+        let table = try table(from: entityName)
 
-            for id in entityMap.keys {
+        for objectID in entityDeletions.keys {
+            if let id = entityIdentifiers[objectID] {
                 let query = createQueryBuilder()
                     .delete()
                     .from(table)
@@ -532,18 +512,22 @@ extension SQLEntityManager {
 extension SQLEntityManager {
     private func addEntityToIdentityMap<E: Entity>(_ entity: E) {
         let entityName = Configuration.entityName(from: entity)
-        let id = entity.id
-
-        if identityMap[entityName] == nil {
-            identityMap[entityName] = [id: entity]
-        } else {
-            identityMap[entityName]?[id] = entity
-        }
+        let objectID = ObjectIdentifier(entity)
+        entityIdentifiers[objectID] = entity.id
+        objectIdentifiers[entity.id] = objectID
+        identityMap[entityName, default: .init()][objectID] = entity
     }
 
     private func removeEntityFromIdentityMap<E: Entity>(_ entity: E) {
         let entityName = Configuration.entityName(from: entity)
-        identityMap[entityName]?.removeValue(forKey: entity.id)
+        let objectID = ObjectIdentifier(entity)
+
+        if let id = entityIdentifiers[objectID] {
+            objectIdentifiers.removeValue(forKey: id)
+        }
+
+        entityIdentifiers.removeValue(forKey: objectID)
+        identityMap[entityName]?.removeValue(forKey: objectID)
 
         if let entityMap = identityMap[entityName], entityMap.isEmpty {
             identityMap.removeValue(forKey: entityName)
@@ -553,57 +537,34 @@ extension SQLEntityManager {
 
 extension SQLEntityManager {
     private func insertEntity<E: Entity>(_ entity: E) {
-        let entityName = Configuration.entityName(from: entity)
-        let id = entity.id
-
-        if entityInsertions[entityName] == nil {
-            entityInsertions[entityName] = [id: entity]
-        } else {
-            entityInsertions[entityName]?[id] = entity
-        }
+        let objectID = ObjectIdentifier(entity)
+        entityInsertions[objectID] = entity
     }
 
     private func removeInsertedEntity<E: Entity>(_ entity: E) {
-        let entityName = Configuration.entityName(from: entity)
-        entityInsertions[entityName]?.removeValue(forKey: entity.id)
-
-        if let entityMap = entityInsertions[entityName], entityMap.isEmpty {
-            entityInsertions.removeValue(forKey: entityName)
-        }
+        let objectID = ObjectIdentifier(entity)
+        entityInsertions.removeValue(forKey: objectID)
     }
 
     private func removeDeletedEntity<E: Entity>(_ entity: E) {
-        let entityName = Configuration.entityName(from: entity)
-        entityDeletions[entityName]?.removeValue(forKey: entity.id)
-
-        if let entityMap = entityDeletions[entityName], entityMap.isEmpty {
-            entityDeletions.removeValue(forKey: entityName)
-        }
+        let objectID = ObjectIdentifier(entity)
+        entityDeletions.removeValue(forKey: objectID)
     }
 }
 
 extension SQLEntityManager {
     private func setEntityState<E: Entity>(_ state: EntityState, for entity: E) {
-        let entityName = Configuration.entityName(from: entity)
-
-        if entityStates[entityName] == nil {
-            entityStates[entityName] = [entity.id: state]
-        } else {
-            entityStates[entityName]?[entity.id] = state
-        }
+        let objectID = ObjectIdentifier(entity)
+        entityStates[objectID] = state
     }
 
     private func getEntityState<E: Entity>(for entity: E, default state: EntityState = .new) -> EntityState {
-        let entityName = Configuration.entityName(from: entity)
-        return entityStates[entityName]?[entity.id] ?? state
+        let objectID = ObjectIdentifier(entity)
+        return entityStates[objectID] ?? state
     }
 
     private func removeEntityState<E: Entity>(for entity: E) {
-        let entityName = Configuration.entityName(from: entity)
-        entityStates[entityName]?.removeValue(forKey: entity.id)
-
-        if let entityMap = entityStates[entityName], entityMap.isEmpty {
-            entityStates.removeValue(forKey: entityName)
-        }
+        let objectID = ObjectIdentifier(entity)
+        entityStates.removeValue(forKey: objectID)
     }
 }
