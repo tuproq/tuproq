@@ -183,21 +183,20 @@ extension SQLEntityManager {
 
     func find<E: Entity>(_ entityType: E.Type, id: E.ID) async throws -> E? {
         guard !(id as AnyObject is NSNull) else { return nil }
-        let id = id as AnyHashable
         let entityName = Configuration.entityName(from: entityType)
 
-        if let objectID = objectIdentifiers[id], let entity = identityMap[entityName]?[objectID] {
-            return entity as? E
+        if let objectID = objectIdentifiers[id], let entity = identityMap[entityName]?[objectID] as? E {
+            return entity
         }
 
         let table = try table(from: entityType)
         let query = createQueryBuilder()
             .select()
             .from(table)
-            .where("id = '\(id)'") // TODO: provide the id as arguments to the query method
+            .where("id = $1")
             .getQuery()
 
-        if let entity: E = try await self.query(query.raw).first {
+        if let entity: E = try await self.query(query.raw, arguments: [id]).first {
             let objectID = ObjectIdentifier(entity)
             addEntityToIdentityMap(entity)
             entityStates[objectID] = .managed
@@ -434,7 +433,7 @@ extension SQLEntityManager {
 
                     let query = createQueryBuilder()
                         .update(table: mapping.table, values: values)
-                        .where("id = '\(id)'")
+                        .where("id = '\(id)'") // TODO: provide id as arguments to query() method
                         .returning()
                         .getQuery()
                     allQueries.append(query)
@@ -451,7 +450,7 @@ extension SQLEntityManager {
                 let query = createQueryBuilder()
                     .delete()
                     .from(table)
-                    .where("id = '\(id)'")
+                    .where("id = '\(id)'") // TODO: provide id as arguments to query() method
                     .returning()
                     .getQuery()
                 allQueries.append(query)
