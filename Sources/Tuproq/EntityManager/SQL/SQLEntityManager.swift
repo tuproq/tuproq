@@ -198,8 +198,9 @@ extension SQLEntityManager {
             .getQuery()
 
         if let entity: E = try await self.query(query.raw).first {
+            let objectID = ObjectIdentifier(entity)
             addEntityToIdentityMap(entity)
-            setEntityState(.managed, for: entity)
+            entityStates[objectID] = .managed
 
             return entity
         }
@@ -214,8 +215,9 @@ extension SQLEntityManager {
         let entities = try decoder.decode([E].self, from: data)
 
         for entity in entities {
+            let objectID = ObjectIdentifier(entity)
             addEntityToIdentityMap(entity)
-            setEntityState(.managed, for: entity)
+            entityStates[objectID] = .managed
         }
 
         return entities
@@ -299,7 +301,7 @@ extension SQLEntityManager {
             switch state {
             case .removed:
                 entityDeletions.removeValue(forKey: objectID)
-                setEntityState(.managed, for: entity)
+                entityStates[objectID] = .managed
                 entityMap[objectID] = entity
             case .detached: throw error(.detachedEntityCannotBePersisted(entity))
             default: break
@@ -308,7 +310,7 @@ extension SQLEntityManager {
             try register(&entity)
             let objectID = ObjectIdentifier(entity)
             addEntityToIdentityMap(entity)
-            setEntityState(.new, for: entity)
+            entityStates[objectID] = .new
             entityInsertions[objectID] = entity
             entityMap[objectID] = entity
         }
@@ -336,7 +338,7 @@ extension SQLEntityManager {
             switch state {
             case .managed:
                 entityDeletions[objectID] = entity
-                setEntityState(.removed, for: entity)
+                entityStates[objectID] = .removed
             case .new: removeEntityFromIdentityMap(entity)
             default: break
             }
@@ -355,19 +357,21 @@ extension SQLEntityManager {
         guard entityMap[objectID] == nil else { return }
         entityMap[objectID] = entity
 
-        switch getEntityState(for: entity) {
-        case .managed:
-            // TODO: implement
-            break
-        case .new:
-            // TODO: implement
-            break
-        case .removed:
-            // TODO: implement
-            break
-        default:
-            // TODO: implement
-            break
+        if let state = entityStates[objectID] {
+            switch state {
+            case .managed:
+                // TODO: implement
+                break
+            case .new:
+                // TODO: implement
+                break
+            case .removed:
+                // TODO: implement
+                break
+            default:
+                // TODO: implement
+                break
+            }
         }
     }
 }
@@ -401,18 +405,6 @@ extension SQLEntityManager {
         if let entityMap = identityMap[entityName], entityMap.isEmpty {
             identityMap.removeValue(forKey: entityName)
         }
-    }
-}
-
-extension SQLEntityManager {
-    private func setEntityState<E: Entity>(_ state: EntityState, for entity: E) {
-        let objectID = ObjectIdentifier(entity)
-        entityStates[objectID] = state
-    }
-
-    private func getEntityState<E: Entity>(for entity: E, default state: EntityState = .new) -> EntityState {
-        let objectID = ObjectIdentifier(entity)
-        return entityStates[objectID] ?? state
     }
 }
 
