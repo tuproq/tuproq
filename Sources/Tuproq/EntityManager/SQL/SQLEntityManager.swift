@@ -298,13 +298,10 @@ extension SQLEntityManager {
         guard entityMap[objectID] == nil else { return }
 
         if let state = entityStates[objectID] {
-            switch state {
-            case .removed:
+            if state == .removed {
                 entityDeletions.removeValue(forKey: objectID)
                 entityStates[objectID] = .managed
                 entityMap[objectID] = entity
-            case .detached: throw error(.detachedEntityCannotBePersisted(entity))
-            default: break
             }
         } else {
             try register(&entity)
@@ -347,12 +344,12 @@ extension SQLEntityManager {
 }
 
 extension SQLEntityManager {
-    func refresh<E: Entity>(_ entity: inout E) throws {
+    func refresh<E: Entity>(_ entity: inout E) async throws {
         var entityMap = EntityMap()
-        try refresh(&entity, visited: &entityMap)
+        try await refresh(&entity, visited: &entityMap)
     }
 
-    private func refresh<E: Entity>(_ entity: inout E, visited entityMap: inout EntityMap) throws {
+    private func refresh<E: Entity>(_ entity: inout E, visited entityMap: inout EntityMap) async throws {
         let objectID = ObjectIdentifier(entity)
         guard entityMap[objectID] == nil else { return }
         entityMap[objectID] = entity
@@ -366,9 +363,6 @@ extension SQLEntityManager {
                 // TODO: implement
                 break
             case .removed:
-                // TODO: implement
-                break
-            default:
                 // TODO: implement
                 break
             }
