@@ -344,33 +344,6 @@ extension SQLEntityManager {
 }
 
 extension SQLEntityManager {
-    func refresh<E: Entity>(_ entity: inout E) async throws {
-        var entityMap = EntityMap()
-        try await refresh(&entity, visited: &entityMap)
-    }
-
-    private func refresh<E: Entity>(_ entity: inout E, visited entityMap: inout EntityMap) async throws {
-        let objectID = ObjectIdentifier(entity)
-        guard entityMap[objectID] == nil else { return }
-        entityMap[objectID] = entity
-
-        if let state = entityStates[objectID] {
-            switch state {
-            case .managed:
-                // TODO: implement
-                break
-            case .new:
-                // TODO: implement
-                break
-            case .removed:
-                // TODO: implement
-                break
-            }
-        }
-    }
-}
-
-extension SQLEntityManager {
     private func addEntityToIdentityMap<E: Entity>(_ entity: E) {
         let entityName = Configuration.entityName(from: entity)
         let objectID = ObjectIdentifier(entity)

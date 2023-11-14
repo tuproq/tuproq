@@ -11,7 +11,6 @@ public protocol EntityManager: AnyObject {
     func flush() async throws
     func getRepository<R: EntityRepository>(_ entityType: R.E.Type) -> R
     func persist<E: Entity>(_ entity: inout E) throws
-    func refresh<E: Entity>(_ entity: inout E) async throws
     func remove<E: Entity>(_ entity: E)
 
     @discardableResult
