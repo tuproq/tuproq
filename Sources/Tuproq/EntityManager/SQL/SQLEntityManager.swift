@@ -64,7 +64,7 @@ extension SQLEntityManager {
 
                     try await connection.commitTransaction()
                     try await connection.close()
-                    cleanUp()
+                    cleanUpDirty()
 //                    try postFlush(insertedIDsMap: insertedIDsMap, postInserts: postInserts) // TODO: fix
                 } catch {
                     allQueries.removeAll()
@@ -110,10 +110,10 @@ extension SQLEntityManager {
             }
         }
 
-        cleanUp()
+        cleanUpDirty()
     }
 
-    private func cleanUp() {
+    private func cleanUpDirty() {
         for entity in entityDeletions.values {
             removeEntityFromIdentityMap(entity)
         }
@@ -318,39 +318,42 @@ extension SQLEntityManager {
 
 extension SQLEntityManager {
     func persist<E: Entity>(_ entity: inout E) throws {
-        var entities = EntityMap()
-        try persist(&entity, visited: &entities)
+        var entityMap = EntityMap()
+        try persist(&entity, visited: &entityMap)
     }
 
-    private func persist<E: Entity>(_ entity: inout E, visited entities: inout EntityMap) throws {
-        let objectID = ObjectIdentifier(entity)
-        guard entities[objectID] == nil else { return }
-        entities[objectID] = entity
+    private func persist<E: Entity>(_ entity: inout E, visited entityMap: inout EntityMap) throws {
+        var objectID = ObjectIdentifier(entity)
+        guard entityMap[objectID] == nil else { return }
 
         switch getEntityState(for: entity) {
-        case .new: try persistNew(&entity)
-        case .removed: persistRemoved(entity)
+        case .new: try doPersist(&entity)
+        case .removed: doRemove(entity)
         case .managed: break
         case .detached: throw error(.detachedEntityCannotBePersisted(entity))
         }
 
-        try cascadePersist(&entity, visited: &entities)
+        objectID = ObjectIdentifier(entity)
+        entityMap[objectID] = entity
+        try cascadePersist(&entity, visited: &entityMap)
     }
 
-    private func persistNew<E: Entity>(_ entity: inout E) throws {
+    private func doPersist<E: Entity>(_ entity: inout E) throws {
         let data = try JSONSerialization.data(withJSONObject: try encodeToDictionary(entity))
         entity = try decoder.decode(E.self, from: data)
+        let objectID = ObjectIdentifier(entity)
         addEntityToIdentityMap(entity)
-        insertEntity(entity)
+        entityInsertions[objectID] = entity
         setEntityState(.managed, for: entity)
     }
 
-    private func persistRemoved<E: Entity>(_ entity: E) {
-        removeDeletedEntity(entity)
+    private func doRemove<E: Entity>(_ entity: E) {
+        let objectID = ObjectIdentifier(entity)
+        entityDeletions.removeValue(forKey: objectID)
         setEntityState(.managed, for: entity)
     }
 
-    private func cascadePersist<E: Entity>(_ entity: inout E, visited entities: inout EntityMap) throws {
+    private func cascadePersist<E: Entity>(_ entity: inout E, visited entityMap: inout EntityMap) throws {
         // TODO: implement
     }
 }
@@ -368,19 +371,12 @@ extension SQLEntityManager {
 
         switch getEntityState(for: entity) {
         case .managed:
-            doRemove(entity)
+            entityDeletions[objectID] = entity
             setEntityState(.removed, for: entity)
         case .new:
             removeEntityFromIdentityMap(entity)
-            removeInsertedEntity(entity)
-            removeEntityState(for: entity)
         default: break
         }
-    }
-
-    private func doRemove<E: Entity>(_ entity: E) {
-        let objectID = ObjectIdentifier(entity)
-        entityDeletions[objectID] = entity
     }
 }
 
@@ -513,9 +509,9 @@ extension SQLEntityManager {
     private func addEntityToIdentityMap<E: Entity>(_ entity: E) {
         let entityName = Configuration.entityName(from: entity)
         let objectID = ObjectIdentifier(entity)
+        identityMap[entityName, default: .init()][objectID] = entity
         entityIdentifiers[objectID] = entity.id
         objectIdentifiers[entity.id] = objectID
-        identityMap[entityName, default: .init()][objectID] = entity
     }
 
     private func removeEntityFromIdentityMap<E: Entity>(_ entity: E) {
@@ -527,28 +523,16 @@ extension SQLEntityManager {
         }
 
         entityIdentifiers.removeValue(forKey: objectID)
+        entityInsertions.removeValue(forKey: objectID)
+        entityUpdates.removeValue(forKey: objectID)
+        entityDeletions.removeValue(forKey: objectID)
+        entityChangeSets.removeValue(forKey: objectID)
+        entityStates.removeValue(forKey: objectID)
         identityMap[entityName]?.removeValue(forKey: objectID)
 
         if let entityMap = identityMap[entityName], entityMap.isEmpty {
             identityMap.removeValue(forKey: entityName)
         }
-    }
-}
-
-extension SQLEntityManager {
-    private func insertEntity<E: Entity>(_ entity: E) {
-        let objectID = ObjectIdentifier(entity)
-        entityInsertions[objectID] = entity
-    }
-
-    private func removeInsertedEntity<E: Entity>(_ entity: E) {
-        let objectID = ObjectIdentifier(entity)
-        entityInsertions.removeValue(forKey: objectID)
-    }
-
-    private func removeDeletedEntity<E: Entity>(_ entity: E) {
-        let objectID = ObjectIdentifier(entity)
-        entityDeletions.removeValue(forKey: objectID)
     }
 }
 
@@ -561,10 +545,5 @@ extension SQLEntityManager {
     private func getEntityState<E: Entity>(for entity: E, default state: EntityState = .new) -> EntityState {
         let objectID = ObjectIdentifier(entity)
         return entityStates[objectID] ?? state
-    }
-
-    private func removeEntityState<E: Entity>(for entity: E) {
-        let objectID = ObjectIdentifier(entity)
-        entityStates.removeValue(forKey: objectID)
     }
 }
