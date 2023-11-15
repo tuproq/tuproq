@@ -3,18 +3,29 @@ public struct ParentMapping: AssociationMapping {
     public let entity: any Entity.Type
     public let inversedBy: String?
     public let column: JoinTable.Column
+    public let constraints: Set<Constraint>
+
+    public enum Constraint: Hashable {
+        case delete(_ action: Action)
+
+        public enum Action: Hashable {
+            case cascade
+        }
+    }
 
     public init<Target: Entity>(
         entity: Target.Type,
         inversedBy: String? = nil,
         isUnique: Bool = false,
-        isNullable: Bool = true
+        isNullable: Bool = true,
+        on constraints: Set<Constraint> = [.delete(.cascade)]
     ) {
         self.init(
             field: "",
             entity: entity,
             inversedBy: inversedBy,
-            column: .init(name: "", isUnique: isUnique, isNullable: isNullable)
+            column: .init(name: "", isUnique: isUnique, isNullable: isNullable),
+            on: constraints
         )
     }
 
@@ -23,26 +34,30 @@ public struct ParentMapping: AssociationMapping {
         entity: Target.Type,
         inversedBy: String? = nil,
         isUnique: Bool = false,
-        isNullable: Bool = true
+        isNullable: Bool = true,
+        on constraints: Set<Constraint> = [.delete(.cascade)]
     ) {
         self.init(
             field: field,
             entity: entity,
             inversedBy: inversedBy,
-            column: .init(name: "", isUnique: isUnique, isNullable: isNullable)
+            column: .init(name: "", isUnique: isUnique, isNullable: isNullable),
+            on: constraints
         )
     }
 
     public init<Target: Entity>(
         entity: Target.Type,
         inversedBy: String? = nil,
-        column: JoinTable.Column
+        column: JoinTable.Column,
+        on constraints: Set<Constraint> = [.delete(.cascade)]
     ) {
         self.init(
             field: "",
             entity: entity,
             inversedBy: inversedBy,
-            column: column
+            column: column,
+            on: constraints
         )
     }
 
@@ -50,7 +65,8 @@ public struct ParentMapping: AssociationMapping {
         field: String,
         entity: Target.Type,
         inversedBy: String? = nil,
-        column: JoinTable.Column
+        column: JoinTable.Column,
+        on constraints: Set<Constraint> = [.delete(.cascade)]
     ) {
         if field.isEmpty {
             self.field = String(describingNestedType: entity).components(separatedBy: ".").last!.camelCased
@@ -60,6 +76,7 @@ public struct ParentMapping: AssociationMapping {
 
         self.entity = entity
         self.inversedBy = inversedBy
+        self.constraints = constraints
 
         if column.name.isEmpty {
             self.column = .init(

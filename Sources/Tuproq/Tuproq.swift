@@ -154,7 +154,8 @@ extension Tuproq {
                 ForeignKeySQLConstraint(
                     column: parent.column.name,
                     relationTable: relationTable,
-                    relationColumn: parent.column.referenceColumn
+                    relationColumn: parent.column.referenceColumn,
+                    cascadeDelete: parent.constraints.contains(.delete(.cascade))
                 )
             )
 

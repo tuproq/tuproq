@@ -39,6 +39,7 @@ final class ParentMappingTests: XCTestCase {
         XCTAssertTrue(mapping.entity == entity)
         XCTAssertNil(mapping.inversedBy)
         XCTAssertEqual(mapping.column, .init(stringLiteral: Configuration.namingStrategy.joinColumn(field: field)))
+        XCTAssertEqual(mapping.constraints, [.delete(.cascade)])
 
         // Act
         mapping = ParentMapping(field: field, entity: entity, inversedBy: inversedBy, column: column)
@@ -48,5 +49,6 @@ final class ParentMappingTests: XCTestCase {
         XCTAssertTrue(mapping.entity == entity)
         XCTAssertEqual(mapping.inversedBy, inversedBy)
         XCTAssertEqual(mapping.column, column)
+        XCTAssertEqual(mapping.constraints, [.delete(.cascade)])
     }
 }

@@ -37,6 +37,10 @@ final class CreateTableSQLExpression: SQLExpression {
                     \(foreignKey.name) (\(foreignKey.columns.joined(separator: ", "))) \
                     REFERENCES \(foreignKey.relationTable)(\(foreignKey.relationColumns.joined(separator: ", ")))
                     """
+
+                    if foreignKey.cascadeDelete {
+                        constraintDefinition += " ON DELETE CASCADE"
+                    }
                 } else if let unique = constraint as? UniqueSQLConstraint {
                     constraintDefinition += """
                     CONSTRAINT \(unique.index) \(unique.name) (\(unique.columns.joined(separator: ", ")))
