@@ -28,7 +28,9 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
         self.configuration = configuration
 
         encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
         decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
         decoder.userInfo = [.entityManager: self]
     }
 }
