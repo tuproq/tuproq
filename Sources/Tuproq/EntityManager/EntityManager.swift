@@ -11,7 +11,7 @@ public protocol EntityManager: AnyObject {
     func flush() async throws
     func getRepository<R: EntityRepository>(_ entityType: R.E.Type) -> R
     func persist<E: Entity>(_ entity: inout E) throws
-    func remove<E: Entity>(_ entity: E)
+    func remove<E: Entity>(_ entity: E) throws
 
     @discardableResult
     func query<E: Entity>(_ string: String, arguments parameters: [Codable?]) async throws -> [E] // TODO: a temporary solution
