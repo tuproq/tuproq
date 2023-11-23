@@ -2,11 +2,9 @@ import NIOCore
 
 public protocol Connection: AnyObject {
     var id: ObjectIdentifier { get }
-    var driver: DatabaseDriver { get }
     var isOpen: Bool { get }
     var channel: Channel { get }
 
-    func open() async throws
     func close() async throws
 
     func beginTransaction() async throws

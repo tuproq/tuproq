@@ -4,11 +4,18 @@ import Foundation
 public struct Configuration {
     public static var defaultIDField = "id"
     public static var namingStrategy: NamingStrategy = SnakeCaseNamingStrategy()
+
+    public let driver: DatabaseDriver
+    public let poolSize: ClosedRange<Int>
+
     var mappings: OrderedDictionary<String, any EntityMapping> { _mappings }
     private var _mappings = OrderedDictionary<String, any EntityMapping>()
     var joinColumnTypes = [String: String]()
 
-    public init() {}
+    public init(driver: DatabaseDriver, poolSize: ClosedRange<Int>) {
+        self.driver = driver
+        self.poolSize = poolSize
+    }
 
     static func entityName<E: Entity>(from entity: E) -> String {
         String(describingNestedType: E.self)

@@ -1,12 +1,25 @@
 import Foundation
+import Logging
+import NIOCore
 
 public final class Tuproq {
-    public let connection: Connection
     public private(set) var configuration: Configuration
+    private let connectionPool: ConnectionPool
 
-    public init(connection: Connection, configuration: Configuration = .init()) {
-        self.connection = connection
+    public init(
+        eventLoop: EventLoop,
+        logger: Logger = .init(label: "dev.tuproq"),
+        configuration: Configuration,
+        connectionFactory: @escaping ConnectionFactory
+    ) {
         self.configuration = configuration
+        connectionPool = .init(
+            eventLoop: eventLoop,
+            logger: logger,
+            size: configuration.poolSize,
+            connectionFactory: connectionFactory
+        )
+        connectionPool.open()
     }
 }
 
@@ -35,8 +48,10 @@ extension Tuproq {
         configuration.mapping(tableName: tableName)
     }
 
-    public func createEntityManager() -> any EntityManager {
-        switch connection.driver {
+    public func createEntityManager() async throws -> any EntityManager {
+        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
+
+        switch configuration.driver {
         case .mysql: return SQLEntityManager<MySQLQueryBuilder>(connection: connection, configuration: configuration)
         case .oracle: return SQLEntityManager<OracleQueryBuilder>(connection: connection, configuration: configuration)
         case .postgresql: return SQLEntityManager<PostgreSQLQueryBuilder>(connection: connection, configuration: configuration)
@@ -49,18 +64,22 @@ extension Tuproq {
 extension Tuproq {
     public func migrate() async throws {
         let allQueries = "BEGIN;\(createSchema())COMMIT;"
+        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
         try await connection.query(allQueries)
     }
 
     public func beginTransaction() async throws {
+        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
         try await connection.beginTransaction()
     }
 
     public func commitTransaction() async throws {
+        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
         try await connection.commitTransaction()
     }
 
     public func rollbackTransaction() async throws {
+        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
         try await connection.rollbackTransaction()
     }
 
@@ -115,7 +134,7 @@ extension Tuproq {
         let idType = id.type
         let column = Table.Column(
             name: columnName,
-            type: idType.name(for: connection.driver),
+            type: idType.name(for: configuration.driver),
             constraints: [
                 PrimaryKeySQLConstraint(column: columnName)
             ]
@@ -139,7 +158,7 @@ extension Tuproq {
 
             let column = Table.Column(
                 name: field.column.name,
-                type: field.type.name(for: connection.driver),
+                type: field.type.name(for: configuration.driver),
                 constraints: columnConstraints
             )
             table.columns.append(column)
@@ -172,7 +191,7 @@ extension Tuproq {
             let parentIDType = parentMapping.id.type
             let column = Table.Column(
                 name: parent.column.name,
-                type: parentIDType.name(for: connection.driver),
+                type: parentIDType.name(for: configuration.driver),
                 constraints: columnConstraints
             )
             table.columns.append(column)

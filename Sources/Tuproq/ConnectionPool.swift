@@ -6,9 +6,9 @@ enum ConnectionPoolError: Error {
     case timeout
 }
 
-final class ConnectionPool {
-    typealias ConnectionFactory = (EventLoop) async throws -> Connection
+public typealias ConnectionFactory = (EventLoop) async throws -> Connection
 
+final class ConnectionPool {
     let eventLoop: EventLoop
     let logger: Logger
     let size: ClosedRange<Int>

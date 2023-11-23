@@ -112,14 +112,6 @@ extension SQLEntityManager {
 
     @discardableResult
     func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Any?]] {
-        try await connection.open()
-        let result = try await doQuery(string, arguments: parameters)
-        try await connection.close()
-
-        return result
-    }
-
-    private func doQuery(_ string: String, arguments parameters: [Codable?] = .init()) async throws -> [[String: Any?]] {
         let result = try await connection.query(string, arguments: parameters)
 
         if let result {
@@ -283,23 +275,20 @@ extension SQLEntityManager {
 
             if !allQueries.isEmpty {
                 var postInserts = [[String: Any?]]()
-                try await connection.open()
                 try await connection.beginTransaction()
 
                 do {
                     for query in allQueries {
-                        if let dictionary = try await doQuery(query.raw).first {
+                        if let dictionary = try await self.query(query.raw).first {
                             postInserts.append(dictionary)
                         }
                     }
 
                     try await connection.commitTransaction()
-                    try await connection.close()
                     cleanUpDirty()
                 } catch {
                     allQueries.removeAll()
                     try await connection.rollbackTransaction()
-                    try await connection.close()
                     throw error
                 }
             }
