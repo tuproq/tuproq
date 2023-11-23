@@ -1,5 +1,10 @@
-public protocol Connection {
+import NIOCore
+
+public protocol Connection: AnyObject {
+    var id: ObjectIdentifier { get }
     var driver: DatabaseDriver { get }
+    var isOpen: Bool { get }
+    var channel: Channel { get }
 
     func open() async throws
     func close() async throws
@@ -16,6 +21,8 @@ public protocol Connection {
 }
 
 public extension Connection {
+    var id: ObjectIdentifier { .init(self) }
+
     @discardableResult
     func query(_ string: String, arguments parameters: Codable?...) async throws -> QueryResult? {
         try await query(string, arguments: parameters)
