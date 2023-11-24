@@ -7,7 +7,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private typealias EntityMap = [ObjectIdentifier: any Entity]
     private typealias EntityStates = [ObjectIdentifier: EntityState]
 
-    let connection: Connection
+    let connectionPool: ConnectionPool
     var configuration: Configuration
 
     private let encoder: JSONEncoder
@@ -23,8 +23,8 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private var entityIdentifiers = [ObjectIdentifier: AnyHashable]()
     private var objectIdentifiers = [AnyHashable: ObjectIdentifier]()
 
-    init(connection: Connection, configuration: Configuration) {
-        self.connection = connection
+    init(connectionPool: ConnectionPool, configuration: Configuration) {
+        self.connectionPool = connectionPool
         self.configuration = configuration
 
         encoder = JSONEncoder()
@@ -112,7 +112,9 @@ extension SQLEntityManager {
 
     @discardableResult
     func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Any?]] {
+        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
         let result = try await connection.query(string, arguments: parameters)
+        connectionPool.returnConnection(connection)
 
         if let result {
             let tableIDs = Set<Int32>(result.columns.map { $0.tableID })
@@ -152,7 +154,9 @@ extension SQLEntityManager {
     private func fetchTables(tableIDs: Set<Int32>) async throws -> [Int32: String] {
         let string = "SELECT oid, relname FROM pg_class WHERE oid = ANY($1)"
         var dictionary = [Int32: String]()
+        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
         let result = try await connection.query(string, arguments: [Array(tableIDs)])
+        connectionPool.returnConnection(connection)
 
         if let result {
             for row in result.rows {
@@ -275,6 +279,7 @@ extension SQLEntityManager {
 
             if !allQueries.isEmpty {
                 var postInserts = [[String: Any?]]()
+                let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
                 try await connection.beginTransaction()
 
                 do {
@@ -285,10 +290,12 @@ extension SQLEntityManager {
                     }
 
                     try await connection.commitTransaction()
+                    connectionPool.returnConnection(connection)
                     cleanUpDirty()
                 } catch {
                     allQueries.removeAll()
                     try await connection.rollbackTransaction()
+                    connectionPool.returnConnection(connection)
                     throw error
                 }
             }

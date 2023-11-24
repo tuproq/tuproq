@@ -51,15 +51,13 @@ extension Tuproq {
         configuration.mapping(tableName: tableName)
     }
 
-    public func createEntityManager() async throws -> any EntityManager {
-        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
-
+    public func createEntityManager() -> any EntityManager {
         switch configuration.driver {
-        case .mysql: return SQLEntityManager<MySQLQueryBuilder>(connection: connection, configuration: configuration)
-        case .oracle: return SQLEntityManager<OracleQueryBuilder>(connection: connection, configuration: configuration)
-        case .postgresql: return SQLEntityManager<PostgreSQLQueryBuilder>(connection: connection, configuration: configuration)
-        case .sqlite: return SQLEntityManager<SQLiteQueryBuilder>(connection: connection, configuration: configuration)
-        case .sqlserver: return SQLEntityManager<SQLServerQueryBuilder>(connection: connection, configuration: configuration)
+        case .mysql: return SQLEntityManager<MySQLQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
+        case .oracle: return SQLEntityManager<OracleQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
+        case .postgresql: return SQLEntityManager<PostgreSQLQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
+        case .sqlite: return SQLEntityManager<SQLiteQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
+        case .sqlserver: return SQLEntityManager<SQLServerQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
         }
     }
 }
@@ -69,21 +67,25 @@ extension Tuproq {
         let allQueries = "BEGIN;\(createSchema())COMMIT;"
         let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
         try await connection.query(allQueries)
+        connectionPool.returnConnection(connection)
     }
 
     public func beginTransaction() async throws {
         let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
         try await connection.beginTransaction()
+        connectionPool.returnConnection(connection)
     }
 
     public func commitTransaction() async throws {
         let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
         try await connection.commitTransaction()
+        connectionPool.returnConnection(connection)
     }
 
     public func rollbackTransaction() async throws {
         let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
         try await connection.rollbackTransaction()
+        connectionPool.returnConnection(connection)
     }
 
     public func createTables() -> [String] {
