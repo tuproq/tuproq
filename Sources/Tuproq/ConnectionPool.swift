@@ -55,7 +55,7 @@ final class ConnectionPool {
         state = .open
     }
 
-    func open() {
+    func activate() {
         eventLoop.inEventLoop
         ? createConnections()
         : eventLoop.execute { [weak self] in self?.createConnections() }

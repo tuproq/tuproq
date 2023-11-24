@@ -1,25 +1,28 @@
 import Foundation
 import Logging
 import NIOCore
+import NIOPosix
 
 public final class Tuproq {
+    public let eventLoopGroup: EventLoopGroup
     public private(set) var configuration: Configuration
     private let connectionPool: ConnectionPool
 
     public init(
-        eventLoop: EventLoop,
+        eventLoopGroup: EventLoopGroup? = nil,
         logger: Logger = .init(label: "dev.tuproq"),
         configuration: Configuration,
         connectionFactory: @escaping ConnectionFactory
     ) {
+        self.eventLoopGroup = eventLoopGroup ?? MultiThreadedEventLoopGroup.singleton
         self.configuration = configuration
         connectionPool = .init(
-            eventLoop: eventLoop,
+            eventLoop: self.eventLoopGroup.any(), // TODO: create one ConnectionPool per EventLoop
             logger: logger,
             size: configuration.poolSize,
             connectionFactory: connectionFactory
         )
-        connectionPool.open()
+        connectionPool.activate()
     }
 }
 
