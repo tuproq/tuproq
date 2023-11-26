@@ -113,11 +113,9 @@ extension ConnectionPool {
 
                 do {
                     let connection = try await connectionFactory(eventLoop)
-                    eventLoop.preconditionInEventLoop()
                     pendingConnectionsCount -= 1
                     connectionCreationSucceeded(connection)
                 } catch {
-                    eventLoop.preconditionInEventLoop()
                     pendingConnectionsCount -= 1
                     connectionCreationFailed(error, backoffDelay: backoff)
                 }
@@ -172,8 +170,6 @@ extension ConnectionPool {
     }
 
     private func connectionClosed(_ connection: Connection) {
-        eventLoop.preconditionInEventLoop()
-
         if let index = availableConnections.firstIndex(where: { $0 === connection }) {
             availableConnections.remove(at: index)
         }
@@ -257,7 +253,6 @@ extension ConnectionPool {
     private func closeConnection(_ connection: Connection) {
         Task {
             try await connection.close()
-            eventLoop.preconditionInEventLoop()
 
             switch state {
             case .closing(let remaining, let promise):
@@ -273,8 +268,6 @@ extension ConnectionPool {
     }
 
     private func _close(promise: EventLoopPromise<Void>?) {
-        eventLoop.preconditionInEventLoop()
-
         switch state {
         case .open: 
             state = .closing(remaining: activeConnectionsCount, promise)
