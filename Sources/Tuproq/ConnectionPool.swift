@@ -90,7 +90,6 @@ final class ConnectionPool {
 
 extension ConnectionPool {
     private func createConnections() {
-        eventLoop.assertInEventLoop()
         guard case .open = state else { return }
 
         var requiredConnectionsCount = size.lowerBound - activeConnectionsCount
@@ -103,7 +102,6 @@ extension ConnectionPool {
     }
 
     private func createConnection(after delay: TimeAmount = .nanoseconds(0), backoff: TimeAmount) {
-        eventLoop.assertInEventLoop()
         pendingConnectionsCount += 1
 
         eventLoop.scheduleTask(in: delay) { [weak self] in
@@ -124,7 +122,6 @@ extension ConnectionPool {
     }
 
     private func connectionCreationSucceeded(_ connection: Connection) {
-        eventLoop.assertInEventLoop()
         logger.trace("Connection succeeded", metadata: ["connection": "\(connection.id)"])
 
         switch state {
@@ -139,7 +136,6 @@ extension ConnectionPool {
     }
 
     private func connectionCreationFailed(_ error: Error, backoffDelay: TimeAmount) {
-        eventLoop.assertInEventLoop()
         logger.error("Connection failed", metadata: ["error": "\(error)"])
 
         switch state {
@@ -178,14 +174,11 @@ extension ConnectionPool {
     }
 
     private func leaseConnection(_ connection: Connection, to request: Request) {
-        eventLoop.assertInEventLoop()
         leasedConnectionsCount += 1
         request.succeed(connection)
     }
 
     private func _leaseConnection(_ timeout: TimeAmount) -> EventLoopFuture<Connection> {
-        eventLoop.assertInEventLoop()
-
         guard case .open = state else {
             logger.trace("Attempted to lease connection from closed pool")
             return eventLoop.makeFailedFuture(ConnectionPoolError.closed)
@@ -219,7 +212,6 @@ extension ConnectionPool {
     }
 
     private func returnLeasedConnection(_ connection: Connection) {
-        eventLoop.assertInEventLoop()
         leasedConnectionsCount -= 1
 
         switch state {
@@ -230,7 +222,6 @@ extension ConnectionPool {
     }
 
     private func _returnConnection(_ connection: Connection) {
-        eventLoop.assertInEventLoop()
         precondition(state.isOpen)
 
         guard connection.isOpen else {
