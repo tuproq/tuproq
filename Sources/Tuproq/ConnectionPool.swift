@@ -58,7 +58,7 @@ final class ConnectionPool {
     func activate() {
         eventLoop.inEventLoop
         ? createConnections()
-        : eventLoop.execute { self.createConnections() }
+        : eventLoop.execute { [weak self] in self?.createConnections() }
     }
 
     func leaseConnection(timeout: TimeAmount) async throws -> Connection {
@@ -70,13 +70,21 @@ final class ConnectionPool {
     func returnConnection(_ connection: Connection) {
         eventLoop.inEventLoop
         ? returnLeasedConnection(connection)
-        : eventLoop.execute { self.returnLeasedConnection(connection) }
+        : eventLoop.execute { [weak self] in self?.returnLeasedConnection(connection) }
     }
 
-    func close(promise: EventLoopPromise<Void>? = nil) {
-        eventLoop.inEventLoop
-        ? _close(promise: promise)
-        : eventLoop.execute { self._close(promise: promise) }
+    func close() async throws {
+        let promise = eventLoop.makePromise(of: Void.self)
+
+        if eventLoop.inEventLoop {
+            _close(promise: promise)
+            return try await promise.futureResult.get()
+        }
+
+        return try await eventLoop.flatSubmit { [weak self] in
+            self?._close(promise: promise)
+            return promise.futureResult
+        }.get()
     }
 }
 
@@ -98,17 +106,20 @@ extension ConnectionPool {
         eventLoop.assertInEventLoop()
         pendingConnectionsCount += 1
 
-        eventLoop.scheduleTask(in: delay) {
-            Task {
+        eventLoop.scheduleTask(in: delay) { [weak self] in
+            guard let self else { return }
+            Task { [weak self] in
+                guard let self else { return }
+
                 do {
-                    let connection = try await self.connectionFactory(self.eventLoop)
-                    self.eventLoop.preconditionInEventLoop()
-                    self.pendingConnectionsCount -= 1
-                    self.connectionCreationSucceeded(connection)
+                    let connection = try await connectionFactory(eventLoop)
+                    eventLoop.preconditionInEventLoop()
+                    pendingConnectionsCount -= 1
+                    connectionCreationSucceeded(connection)
                 } catch {
-                    self.eventLoop.preconditionInEventLoop()
-                    self.pendingConnectionsCount -= 1
-                    self.connectionCreationFailed(error, backoffDelay: backoff)
+                    eventLoop.preconditionInEventLoop()
+                    pendingConnectionsCount -= 1
+                    connectionCreationFailed(error, backoffDelay: backoff)
                 }
             }
         }
@@ -195,11 +206,11 @@ extension ConnectionPool {
             }
         }
 
-        request.scheduleDeadline(.now() + timeout, on: eventLoop) {
-            self.logger.trace("Connection not found in time")
+        request.scheduleDeadline(.now() + timeout, on: eventLoop) { [weak self] in
+            self?.logger.trace("Connection not found in time")
             request.fail(ConnectionPoolError.timeout)
-            guard let index = self.queue.firstIndex(where: { $0.id == request.id }) else { return }
-            self.queue.remove(at: index)
+            guard let index = self?.queue.firstIndex(where: { $0.id == request.id }) else { return }
+            self?.queue.remove(at: index)
         }
         queue.append(request)
 
