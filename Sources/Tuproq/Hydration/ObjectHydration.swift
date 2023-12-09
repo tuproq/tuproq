@@ -35,7 +35,7 @@ final class ObjectHydration {
 
         if let entityMapping = entityManager.configuration.mapping(tableName: rootTable) {
             for row in result.rows {
-                hydrateObject(for: row, with: entityMapping, in: &array)
+                hydrateObject(from: row, into: &array, with: entityMapping)
             }
         }
 
@@ -43,49 +43,60 @@ final class ObjectHydration {
     }
 
     private func hydrateAll(
-        for row: [Codable?],
-        with entityMapping: any EntityMapping,
-        in dictionary: inout [String: Any?]
+        from row: [Codable?],
+        into dictionary: inout [String: Any?],
+        with entityMapping: any EntityMapping
     ) {
         let table = entityMapping.table.trimmingQuotes
+        guard let tableColumns = tableColumnIndexes[table] else { return }
 
-        if let tableColumns = tableColumnIndexes[table] {
-            for (column, index) in tableColumns {
-                let value = row[index]
+        for (column, index) in tableColumns {
+            let value = row[index]
 
-                if entityMapping.id.column == column {
-                    updateValue(value, for: entityMapping.id.field, in: &dictionary)
-                } else if let fieldMapping = tableColumnFieldMappings[table]?[column] {
-                    updateValue(value, for: fieldMapping.field, in: &dictionary)
-                } else if let parentMapping = tableColumnParentMappings[table]?[column] {
-                    if dictionary[parentMapping.field] == nil && value != nil {
-                        if let parentEntityMapping = entityManager.configuration.mapping(from: parentMapping.entity) {
-                            var parentDictionary = [String: Any?]()
-                            hydrateAll(for: row, with: parentEntityMapping, in: &parentDictionary)
-                            dictionary[parentMapping.field] = parentDictionary
-                        }
+            if entityMapping.id.column == column {
+                setValue(value, for: entityMapping.id.field, in: &dictionary)
+            } else if let fieldMapping = tableColumnFieldMappings[table]?[column] {
+                setValue(value, for: fieldMapping.field, in: &dictionary)
+            } else if let parentMapping = tableColumnParentMappings[table]?[column] {
+                if dictionary[parentMapping.field] == nil && value != nil {
+                    if let parentEntityMapping = entityManager.configuration.mapping(from: parentMapping.entity) {
+                        var parentDictionary = [String: Any?]()
+                        hydrateAll(from: row, into: &parentDictionary, with: parentEntityMapping)
+                        dictionary[parentMapping.field] = parentDictionary
                     }
                 }
             }
+        }
 
-            if let childMappings = tableColumnChildMappings[table] {
-                for childMapping in childMappings {
-                    hydrateArray(from: row, with: childMapping, in: &dictionary)
-                }
+        if let childMappings = tableColumnChildMappings[table] {
+            for childMapping in childMappings {
+                hydrateArray(from: row, into: &dictionary, with: childMapping)
             }
+        }
 
-            if let siblingMappings = tableColumnSiblingMappings[table] {
-                for siblingMapping in siblingMappings {
-                    hydrateArray(from: row, with: siblingMapping, in: &dictionary)
-                }
+        if let siblingMappings = tableColumnSiblingMappings[table] {
+            for siblingMapping in siblingMappings {
+                hydrateArray(from: row, into: &dictionary, with: siblingMapping)
             }
         }
     }
 
+    private func hydrateArray(
+        from row: [Codable?],
+        into dictionary: inout [String: Any?],
+        with mapping: any AssociationMapping
+    ) {
+        if let entityMapping = entityManager.configuration.mapping(from: mapping.entity) {
+            var array = dictionary[mapping.field] as? [[String: Any?]] ?? .init()
+            hydrateObject(from: row, into: &array, with: entityMapping)
+            dictionary[mapping.field] = array
+        }
+    }
+
     private func hydrateObject(
-        for row: [Codable?],
-        with entityMapping: any EntityMapping,
-        in array: inout [[String: Any?]]
+        from row: [Codable?],
+        into array: inout [[String: Any?]],
+        with entityMapping: any EntityMapping
     ) {
         let table = entityMapping.table.trimmingQuotes
 
@@ -95,11 +106,11 @@ final class ObjectHydration {
 
             if let dictionaryIndex = array.firstIndex(where: { $0[entityMapping.id.field] as? String == id }) {
                 var dictionary = array[dictionaryIndex]
-                hydrateAll(for: row, with: entityMapping, in: &dictionary)
+                hydrateAll(from: row, into: &dictionary, with: entityMapping)
                 array[dictionaryIndex] = dictionary
             } else {
                 var dictionary = [String: Any?]()
-                hydrateAll(for: row, with: entityMapping, in: &dictionary)
+                hydrateAll(from: row, into: &dictionary, with: entityMapping)
                 array.append(dictionary)
             }
 
@@ -107,19 +118,7 @@ final class ObjectHydration {
         }
     }
 
-    private func hydrateArray(
-        from row: [Codable?],
-        with mapping: any AssociationMapping,
-        in dictionary: inout [String: Any?]
-    ) {
-        if let entityMapping = entityManager.configuration.mapping(from: mapping.entity) {
-            var array = dictionary[mapping.field] as? [[String: Any?]] ?? .init()
-            hydrateObject(for: row, with: entityMapping, in: &array)
-            dictionary[mapping.field] = array
-        }
-    }
-
-    private func updateValue(_ value: Codable?, for field: String, in dictionary: inout [String: Any?]) {
+    private func setValue(_ value: Codable?, for field: String, in dictionary: inout [String: Any?]) {
         if let date = value as? Date {
             dictionary[field] = dateFormatter.string(from: date)
         } else if let uuid = value as? UUID {
