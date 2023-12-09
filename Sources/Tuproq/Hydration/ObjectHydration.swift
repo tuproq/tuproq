@@ -15,7 +15,13 @@ final class ObjectHydration {
     private var tableColumnChildMappings = [String: Set<ChildMapping>]()
     private var tableColumnSiblingMappings = [String: Set<SiblingMapping>]()
 
-    init(entityManager: any EntityManager, result: Result, rootTable: String, tables: Set<String>, dateFormatter: DateFormatter = .iso8601) {
+    init(
+        entityManager: any EntityManager,
+        result: Result,
+        rootTable: String,
+        tables: Set<String>,
+        dateFormatter: DateFormatter = .iso8601
+    ) {
         self.entityManager = entityManager
         self.result = result
         self.rootTable = rootTable
@@ -87,9 +93,7 @@ final class ObjectHydration {
             let id = String(describing: id)
             tablesInHydration.insert(table)
 
-            if let dictionaryIndex = array.firstIndex(where: {
-                $0[entityMapping.id.field] as? String == id
-            }) {
+            if let dictionaryIndex = array.firstIndex(where: { $0[entityMapping.id.field] as? String == id }) {
                 var dictionary = array[dictionaryIndex]
                 hydrateAll(for: row, with: entityMapping, in: &dictionary)
                 array[dictionaryIndex] = dictionary
@@ -127,54 +131,35 @@ final class ObjectHydration {
 
     private func gatherMetadata() {
         for table in tables {
-            if tableColumnIndexes[table] == nil {
-                tableColumnIndexes[table] = .init()
-            }
-
-            if tableColumnFieldMappings[table] == nil {
-                tableColumnFieldMappings[table] = .init()
-            }
-
-            if tableColumnParentMappings[table] == nil {
-                tableColumnParentMappings[table] = .init()
-            }
-
-            if tableColumnChildMappings[table] == nil {
-                tableColumnChildMappings[table] = .init()
-            }
-
-            if tableColumnSiblingMappings[table] == nil {
-                tableColumnSiblingMappings[table] = .init()
-            }
-
             if let entityMapping = entityManager.configuration.mapping(tableName: table) {
                 var tables = tables
                 tables.remove(table)
 
-                let childMappings = entityMapping.children.filter({
+                let childMappings = entityMapping.children.filter {
                     tables.contains(entityManager.configuration.mapping(from: $0.entity)!.table.trimmingQuotes)
-                })
-                tableColumnChildMappings[table] = tableColumnChildMappings[table]!.union(childMappings)
+                }
+                tableColumnChildMappings[table] = tableColumnChildMappings[table, default: .init()].union(childMappings)
 
-                let siblingMappings = entityMapping.siblings.filter({
+                let siblingMappings = entityMapping.siblings.filter {
                     tables.contains(entityManager.configuration.mapping(from: $0.entity)!.table.trimmingQuotes)
-                })
-                tableColumnSiblingMappings[table] = tableColumnSiblingMappings[table]!.union(siblingMappings)
+                }
+                tableColumnSiblingMappings[table] = tableColumnSiblingMappings[table, default: .init()].union(siblingMappings)
             }
         }
 
         for (index, column) in result.columns.enumerated() {
-            if let idColumn = entityManager.configuration.mapping(tableName: column.table)?.id.column, idColumn == column.name {
+            if let idColumn = entityManager.configuration.mapping(tableName: column.table)?.id.column,
+               idColumn == column.name {
                 tableIDColumnIndexes[column.table] = index
             }
 
-            tableColumnIndexes[column.table]?[column.name] = index
+            tableColumnIndexes[column.table, default: .init()][column.name] = index
 
             if let entityMapping = entityManager.configuration.mapping(tableName: column.table) {
                 if let fieldMapping = entityMapping.fields.first(where: { $0.column.name == column.name }) {
-                    tableColumnFieldMappings[column.table]?[column.name] = fieldMapping
+                    tableColumnFieldMappings[column.table, default: .init()][column.name] = fieldMapping
                 } else if let parentMapping = entityMapping.parents.first(where: { $0.column.name == column.name }) {
-                    tableColumnParentMappings[column.table]?[column.name] = parentMapping
+                    tableColumnParentMappings[column.table, default: .init()][column.name] = parentMapping
                 }
             }
         }
