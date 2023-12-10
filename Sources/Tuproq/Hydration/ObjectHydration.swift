@@ -7,6 +7,7 @@ final class ObjectHydration {
     let tables: Set<String>
     let dateFormatter: DateFormatter
 
+    private var hydratedObjects = [String: [String: [String: Any?]]]()
     private var tablesInHydration = Set<String>()
     private var tableIDColumnIndexes = [String: Int]()
     private var tableColumnIndexes = [String: [String: Int]]()
@@ -84,12 +85,12 @@ final class ObjectHydration {
     private func hydrateArray(
         from row: [Codable?],
         into dictionary: inout [String: Any?],
-        with mapping: any AssociationMapping
+        with associationMapping: any AssociationMapping
     ) {
-        if let entityMapping = entityManager.configuration.mapping(from: mapping.entity) {
-            var array = dictionary[mapping.field] as? [[String: Any?]] ?? .init()
+        if let entityMapping = entityManager.configuration.mapping(from: associationMapping.entity) {
+            var array = dictionary[associationMapping.field] as? [[String: Any?]] ?? .init()
             hydrateObject(from: row, into: &array, with: entityMapping)
-            dictionary[mapping.field] = array
+            dictionary[associationMapping.field] = array
         }
     }
 
