@@ -7,7 +7,7 @@ final class ObjectHydration {
     let tables: Set<String>
     let dateFormatter: DateFormatter
 
-    private var hydratedObjectIndexes = [String: [String: Int]]()
+    private var hydratedObjects = [String: [String: [String: Any?]]]()
     private var tablesInHydration = Set<String>()
     private var tableIDColumnIndexes = [String: Int]()
     private var tableColumnIndexes = [String: [String: Int]]()
@@ -105,15 +105,11 @@ final class ObjectHydration {
             let id = String(describing: id)
             tablesInHydration.insert(table)
 
-            if let dictionaryIndex = hydratedObjectIndexes[table]?[id] {
-                var dictionary = array[dictionaryIndex]
-                hydrateAll(from: row, into: &dictionary, with: entityMapping)
-                array[dictionaryIndex] = dictionary
-            } else {
+            if hydratedObjects[table]?[id] == nil {
                 var dictionary = [String: Any?]()
                 hydrateAll(from: row, into: &dictionary, with: entityMapping)
                 array.append(dictionary)
-                hydratedObjectIndexes[table, default: .init()][id] = array.count - 1
+                hydratedObjects[table, default: .init()][id] = dictionary
             }
 
             tablesInHydration.remove(table)
