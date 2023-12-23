@@ -30,6 +30,10 @@ public extension EntityManager {
         R(entityManager: self)
     }
 
+    func remove<E: SoftDeletableEntity>(_ entity: inout E, isSoft: Bool = true) throws {
+        isSoft ? entity.deletedDate = nil : try remove(entity)
+    }
+
     // TODO: a temporary solution
     @discardableResult
     func query<E: Entity>(_ string: String, arguments parameters: Codable?...) async throws -> [E] {
