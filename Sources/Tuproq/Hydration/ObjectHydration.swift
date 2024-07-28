@@ -120,12 +120,16 @@ final class ObjectHydration {
     }
 
     private func setValue(_ value: Codable?, for field: String, in dictionary: inout [String: Any?]) {
-        if let date = value as? Date {
-            dictionary[field] = dateFormatter.string(from: date)
-        } else if let uuid = value as? UUID {
-            dictionary[field] = uuid.uuidString
+        if let value {
+            if let date = value as? Date {
+                dictionary[field] = dateFormatter.string(from: date)
+            } else if let uuid = value as? UUID {
+                dictionary[field] = uuid.uuidString
+            } else {
+                dictionary[field] = value
+            }
         } else {
-            dictionary[field] = value
+            dictionary[field] = NSNull()
         }
     }
 
