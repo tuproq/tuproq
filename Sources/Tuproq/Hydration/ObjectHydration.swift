@@ -59,11 +59,15 @@ final class ObjectHydration {
             } else if let fieldMapping = tableColumnFieldMappings[table]?[column] {
                 setValue(value, for: fieldMapping.field, in: &dictionary)
             } else if let parentMapping = tableColumnParentMappings[table]?[column] {
-                if dictionary[parentMapping.field] == nil && value != nil {
-                    if let parentEntityMapping = entityManager.configuration.mapping(from: parentMapping.entity) {
-                        var parentDictionary = [String: Any?]()
-                        hydrateAll(from: row, into: &parentDictionary, with: parentEntityMapping)
-                        dictionary[parentMapping.field] = parentDictionary
+                if dictionary[parentMapping.field] == nil {
+                    if value == nil {
+                        dictionary[parentMapping.field] = NSNull()
+                    } else {
+                        if let parentEntityMapping = entityManager.configuration.mapping(from: parentMapping.entity) {
+                            var parentDictionary = [String: Any?]()
+                            hydrateAll(from: row, into: &parentDictionary, with: parentEntityMapping)
+                            dictionary[parentMapping.field] = parentDictionary
+                        }
                     }
                 }
             }
