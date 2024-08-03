@@ -384,7 +384,7 @@ extension SQLEntityManager {
                         let column = Configuration.namingStrategy.joinColumn(field: field)
                         columns.append(column)
 
-                        if let value = value {
+                        if let value {
                             let valueDictionary = value as! [String: Any?]
                             values.append(valueDictionary["id"]!)
                         } else {
@@ -417,8 +417,9 @@ extension SQLEntityManager {
                     for (key, (_, newValue)) in changeSet {
                         if let column = mapping.fields.first(where: { $0.field == key })?.column.name {
                             values.append((column, newValue))
-                        } else if let column = mapping.parents.first(where: { $0.field == key })?.column.name {
-                            values.append((column, newValue))
+                        } else if let column = mapping.parents.first(where: { $0.field == key })?.column.name,
+                                  let entity = newValue as? (any Entity) {
+                            values.append((column, entity.id))
                         }
                     }
 
