@@ -59,7 +59,8 @@ extension SQLEntityManager {
         let objectID = ObjectIdentifier(entity)
         guard identityMap[entityName]?[objectID] != nil else { return }
         entityUpdates[objectID] = entity
-        let changeSet = [propertyName: (oldValue, newValue)]
+        var changeSet = entityChangeSets[objectID, default: .init()]
+        changeSet[propertyName] = (oldValue, newValue)
         entityChangeSets[objectID] = changeSet
     }
 }
