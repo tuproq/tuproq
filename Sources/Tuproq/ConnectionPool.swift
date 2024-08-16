@@ -298,8 +298,8 @@ extension ConnectionPool {
 
         var isOpen: Bool {
             switch self {
-            case .open: return true
-            default: return false
+            case .open: true
+            default: false
             }
         }
     }

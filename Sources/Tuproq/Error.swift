@@ -27,8 +27,8 @@ enum ErrorType: CustomStringConvertible {
 
     var message: String {
         switch self {
-        case .entityToDictionaryFailed: return "Can't encode an entity to a dictionary."
-        case .unknown: return "An unknown error."
+        case .entityToDictionaryFailed: "Can't encode an entity to a dictionary."
+        case .unknown: "An unknown error."
         }
     }
 }

@@ -23,130 +23,129 @@ public indirect enum FieldType: Hashable {
         switch self {
         case .bool:
             switch driver {
-            case .mysql: return "TINYINT(1)"
-            case .postgresql, .sqlite: return "BOOLEAN"
-            case .oracle: return "NUMBER(1)"
-            case .sqlserver: return "BIT"
+            case .mysql: "TINYINT(1)"
+            case .postgresql, .sqlite: "BOOLEAN"
+            case .oracle: "NUMBER(1)"
+            case .sqlserver: "BIT"
             }
         case .character:
             switch driver {
-            case .mysql, .postgresql: return "VARCHAR(1)"
-            case .oracle: return "CHAR(1)"
-            case .sqlite: return "TEXT"
-            case .sqlserver: return "NCHAR(1)"
+            case .mysql, .postgresql: "VARCHAR(1)"
+            case .oracle: "CHAR(1)"
+            case .sqlite: "TEXT"
+            case .sqlserver: "NCHAR(1)"
             }
         case .data(let length, let isFixed):
             if let length = length {
                 switch driver {
                 case .mysql:
                     if length <= 255 {
-                        return isFixed ? "BINARY(\(length))" : "VARBINARY(\(length))" // options: TINYBLOB
+                        isFixed ? "BINARY(\(length))" : "VARBINARY(\(length))" // options: TINYBLOB
                     } else if length <= 65535 {
-                        return "BLOB"
+                        "BLOB"
                     } else if length <= 16777215 {
-                        return "MEDIUMBLOB"
+                        "MEDIUMBLOB"
+                    } else {
+                        "LONGBLOB"
                     }
-
-                    return "LONGBLOB"
-                case .oracle, .sqlserver: return isFixed ? "BINARY(\(length))" : "VARBINARY(\(length))"
-                case .postgresql: return "BYTEA"
-                case .sqlite: return "BLOB"
+                case .oracle, .sqlserver: isFixed ? "BINARY(\(length))" : "VARBINARY(\(length))"
+                case .postgresql: "BYTEA"
+                case .sqlite: "BLOB"
                 }
             } else {
                 switch driver {
-                case .mysql: return "LONGBLOB"
-                case .postgresql: return "BYTEA"
-                case .oracle, .sqlite: return "BLOB"
-                case .sqlserver: return "VARBINARY(MAX)"
+                case .mysql: "LONGBLOB"
+                case .postgresql: "BYTEA"
+                case .oracle, .sqlite: "BLOB"
+                case .sqlserver: "VARBINARY(MAX)"
                 }
             }
         case .date:
             switch driver {
-            case .mysql, .sqlite, .sqlserver: return "DATETIME"
-            case .postgresql, .oracle: return "TIMESTAMP(0) WITH TIME ZONE"
+            case .mysql, .sqlite, .sqlserver: "DATETIME"
+            case .postgresql, .oracle: "TIMESTAMP(0) WITH TIME ZONE"
             }
         case .decimal(let precision, let scale, let isUnsigned):
             switch driver {
-            case .mysql: return isUnsigned ? "UNSIGNED" : "NUMERIC(\(precision), \(scale))"
-            case .postgresql, .oracle, .sqlite, .sqlserver: return "NUMERIC(\(precision), \(scale))"
+            case .mysql: isUnsigned ? "UNSIGNED" : "NUMERIC(\(precision), \(scale))"
+            case .postgresql, .oracle, .sqlite, .sqlserver: "NUMERIC(\(precision), \(scale))"
             }
         case .double(let isUnsigned), .float(let isUnsigned):
             switch driver {
-            case .mysql: return isUnsigned ? "UNSIGNED" : "DOUBLE PRECISION"
-            case .postgresql, .oracle, .sqlite, .sqlserver: return "DOUBLE PRECISION"
+            case .mysql: isUnsigned ? "UNSIGNED" : "DOUBLE PRECISION"
+            case .postgresql, .oracle, .sqlite, .sqlserver: "DOUBLE PRECISION"
             }
         case .id(let strategy):
             switch strategy {
             case .auto:
                 switch driver {
-                case .mysql: return "AUTO_INCREMENT"
-                case .postgresql: return "BIGSERIAL"
-                case .oracle, .sqlserver: return "IDENTITY"
-                case .sqlite: return "INTEGER"
+                case .mysql: "AUTO_INCREMENT"
+                case .postgresql: "BIGSERIAL"
+                case .oracle, .sqlserver: "IDENTITY"
+                case .sqlite: "INTEGER"
                 }
-            case .custom(let type): return type.name(for: driver)
+            case .custom(let type): type.name(for: driver)
             }
         case .int8, .int16, .uint8, .uint16:
             switch driver {
-            case .mysql: return self == .int8 || self == .int16 ? "SMALLINT" : "UNSIGNED"
-            case .postgresql: return "SMALLINT"
-            case .oracle: return "NUMBERS(5)"
-            case .sqlite: return "INTEGER"
-            case .sqlserver: return "SMALLINT"
+            case .mysql: self == .int8 || self == .int16 ? "SMALLINT" : "UNSIGNED"
+            case .postgresql: "SMALLINT"
+            case .oracle: "NUMBERS(5)"
+            case .sqlite: "INTEGER"
+            case .sqlserver: "SMALLINT"
             }
         case .int32, .uint32:
             switch driver {
-            case .mysql: return self == .int32 ? "INT" : "UNSIGNED"
-            case .postgresql: return "INT"
-            case .oracle: return "NUMBERS(10)"
-            case .sqlite: return "INTEGER"
-            case .sqlserver: return "INT"
+            case .mysql: self == .int32 ? "INT" : "UNSIGNED"
+            case .postgresql: "INT"
+            case .oracle: "NUMBERS(10)"
+            case .sqlite: "INTEGER"
+            case .sqlserver: "INT"
             }
         case .int64, .uint64:
             switch driver {
-            case .mysql: return self == .int64 ? "BIGINT" : "UNSIGNED"
-            case .postgresql: return "BIGINT"
-            case .oracle: return "NUMBERS(20)"
-            case .sqlite: return "INTEGER"
-            case .sqlserver: return "BIGINT"
+            case .mysql: self == .int64 ? "BIGINT" : "UNSIGNED"
+            case .postgresql: "BIGINT"
+            case .oracle: "NUMBERS(20)"
+            case .sqlite: "INTEGER"
+            case .sqlserver: "BIGINT"
             }
         case .string(let length, let isFixed):
             if let length = length {
                 switch driver {
                 case .mysql:
                     if length <= 255 {
-                        return "VARCHAR(\(length))" // options: TINYTEXT
+                        "VARCHAR(\(length))" // options: TINYTEXT
                     } else if length <= 65535 {
-                        return "TEXT"
+                        "TEXT"
                     } else if length <= 16777215 {
-                        return "MEDIUMTEXT"
+                        "MEDIUMTEXT"
+                    } else {
+                        "LONGTEXT"
                     }
-
-                    return "LONGTEXT"
-                case .oracle: return length <= 4000 ? (isFixed ? "CHAR(\(length))" : "VARCHAR2(\(length))") : "TEXT"
-                case .postgresql: return length <= 65535 ? "VARCHAR(\(length))" : "TEXT"
-                case .sqlite: return "TEXT"
-                case .sqlserver:
-                    return length <= 4000 ? (isFixed ? "NCHAR(\(length))" : "NVARCHAR(\(length))") : "VARCHAR(MAX)"
+                case .oracle: length <= 4000 ? (isFixed ? "CHAR(\(length))" : "VARCHAR2(\(length))") : "TEXT"
+                case .postgresql: length <= 65535 ? "VARCHAR(\(length))" : "TEXT"
+                case .sqlite: "TEXT"
+                case .sqlserver: length <= 4000 ? (isFixed ? "NCHAR(\(length))" : "NVARCHAR(\(length))") : "VARCHAR(MAX)"
                 }
             } else {
                 switch driver {
-                case .mysql: return "LONGTEXT"
-                case .oracle, .postgresql, .sqlite: return "TEXT"
-                case .sqlserver: return "VARCHAR(MAX)"
+                case .mysql: "LONGTEXT"
+                case .oracle, .postgresql, .sqlite: "TEXT"
+                case .sqlserver: "VARCHAR(MAX)"
                 }
             }
         case .url:
             switch driver {
-            case .mysql: return "LONGTEXT"
-            case .oracle, .postgresql, .sqlite: return "TEXT"
-            case .sqlserver: return "VARCHAR(MAX)"
+            case .mysql: "LONGTEXT"
+            case .oracle, .postgresql, .sqlite: "TEXT"
+            case .sqlserver: "VARCHAR(MAX)"
             }
         case .uuid:
             switch driver {
-            case .mysql, .oracle, .sqlite: return "CHAR(36)"
-            case .postgresql: return "UUID"
-            case .sqlserver: return "UNIQUEIDENTIFIER"
+            case .mysql, .oracle, .sqlite: "CHAR(36)"
+            case .postgresql: "UUID"
+            case .sqlserver: "UNIQUEIDENTIFIER"
             }
         }
     }

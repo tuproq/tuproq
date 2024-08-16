@@ -53,11 +53,11 @@ extension Tuproq {
 
     public func createEntityManager() -> any EntityManager {
         switch configuration.driver {
-        case .mysql: return SQLEntityManager<MySQLQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
-        case .oracle: return SQLEntityManager<OracleQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
-        case .postgresql: return SQLEntityManager<PostgreSQLQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
-        case .sqlite: return SQLEntityManager<SQLiteQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
-        case .sqlserver: return SQLEntityManager<SQLServerQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
+        case .mysql: SQLEntityManager<MySQLQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
+        case .oracle: SQLEntityManager<OracleQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
+        case .postgresql: SQLEntityManager<PostgreSQLQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
+        case .sqlite: SQLEntityManager<SQLiteQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
+        case .sqlserver: SQLEntityManager<SQLServerQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
         }
     }
 }

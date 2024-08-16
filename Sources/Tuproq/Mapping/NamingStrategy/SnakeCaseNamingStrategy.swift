@@ -3,8 +3,8 @@ public struct SnakeCaseNamingStrategy: NamingStrategy {
 
     public var referenceColumn: String {
         switch letterCase {
-        case .lower: return "id"
-        case .upper: return "ID"
+        case .lower: "id"
+        case .upper: "ID"
         }
     }
 
