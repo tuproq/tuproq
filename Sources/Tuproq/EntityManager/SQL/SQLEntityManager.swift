@@ -137,7 +137,7 @@ extension SQLEntityManager {
                 return array
             }
 
-            let columns = result.columns.map { ObjectHydration.Column(name: $0.name, table: tables[$0.tableID]!) }
+            let columns = result.columns.map { ObjectHydration.Column($0.name, table: tables[$0.tableID]!) }
             let rootTable = columns.map { $0.table }.first! // TODO: fix identifying root table
 
             return ObjectHydration(
@@ -376,12 +376,12 @@ extension SQLEntityManager {
                 var values = [Any?]()
 
                 for (field, value) in try encodeToDictionary(entity) {
-                    if mapping.children.contains(where: { $0.field == field }) ||
-                        mapping.siblings.contains(where: { $0.field == field }) {
+                    if mapping.children.contains(where: { $0.name == field }) ||
+                        mapping.siblings.contains(where: { $0.name == field }) {
                         continue
                     }
 
-                    if mapping.parents.contains(where: { $0.field == field }) {
+                    if mapping.parents.contains(where: { $0.name == field }) {
                         let column = Configuration.namingStrategy.joinColumn(field: field)
                         columns.append(column)
 
@@ -416,9 +416,9 @@ extension SQLEntityManager {
 
                 if let changeSet = entityChangeSets[objectID] {
                     for (key, (_, newValue)) in changeSet {
-                        if let column = mapping.fields.first(where: { $0.field == key })?.column.name {
+                        if let column = mapping.fields.first(where: { $0.name == key })?.column.name {
                             values.append((column, newValue))
-                        } else if let column = mapping.parents.first(where: { $0.field == key })?.column.name,
+                        } else if let column = mapping.parents.first(where: { $0.name == key })?.column.name,
                                   let entity = newValue as? (any Entity) {
                             values.append((column, entity.id))
                         }

@@ -1,5 +1,5 @@
 public struct ParentMapping: AssociationMapping {
-    public let field: String
+    public let name: String
     public let entity: any Entity.Type
     public let inversedBy: String?
     public let column: JoinTable.Column
@@ -21,16 +21,20 @@ public struct ParentMapping: AssociationMapping {
         on constraints: Set<Constraint> = [.delete(.cascade)]
     ) {
         self.init(
-            field: "",
+            "",
             entity: entity,
             inversedBy: inversedBy,
-            column: .init(name: "", isUnique: isUnique, isNullable: isNullable),
+            column: .init(
+                "",
+                isUnique: isUnique,
+                isNullable: isNullable
+            ),
             on: constraints
         )
     }
 
     public init<Target: Entity>(
-        field: String,
+        _ name: String,
         entity: Target.Type,
         inversedBy: String? = nil,
         isUnique: Bool = false,
@@ -38,10 +42,14 @@ public struct ParentMapping: AssociationMapping {
         on constraints: Set<Constraint> = [.delete(.cascade)]
     ) {
         self.init(
-            field: field,
+            name,
             entity: entity,
             inversedBy: inversedBy,
-            column: .init(name: "", isUnique: isUnique, isNullable: isNullable),
+            column: .init(
+                "",
+                isUnique: isUnique,
+                isNullable: isNullable
+            ),
             on: constraints
         )
     }
@@ -53,7 +61,7 @@ public struct ParentMapping: AssociationMapping {
         on constraints: Set<Constraint> = [.delete(.cascade)]
     ) {
         self.init(
-            field: "",
+            "",
             entity: entity,
             inversedBy: inversedBy,
             column: column,
@@ -62,16 +70,16 @@ public struct ParentMapping: AssociationMapping {
     }
 
     public init<Target: Entity>(
-        field: String,
+        _ name: String,
         entity: Target.Type,
         inversedBy: String? = nil,
         column: JoinTable.Column,
         on constraints: Set<Constraint> = [.delete(.cascade)]
     ) {
-        if field.isEmpty {
-            self.field = String(describingNestedType: entity).components(separatedBy: ".").last!.camelCased
+        if name.isEmpty {
+            self.name = String(describingNestedType: entity).components(separatedBy: ".").last!.camelCased
         } else {
-            self.field = field
+            self.name = name
         }
 
         self.entity = entity
@@ -80,7 +88,7 @@ public struct ParentMapping: AssociationMapping {
 
         if column.name.isEmpty {
             self.column = .init(
-                name: Configuration.namingStrategy.joinColumn(field: self.field),
+                Configuration.namingStrategy.joinColumn(field: self.name),
                 referenceColumn: column.referenceColumn,
                 isUnique: column.isUnique,
                 isNullable: column.isNullable

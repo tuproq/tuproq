@@ -33,7 +33,7 @@ extension JoinTable {
         public let isNullable: Bool
 
         public init(
-            name: String,
+            _ name: String,
             referenceColumn: String = Configuration.namingStrategy.referenceColumn,
             isUnique: Bool = false,
             isNullable: Bool = true
@@ -51,7 +51,7 @@ extension JoinTable {
         }
 
         public init(stringLiteral name: StringLiteralType) {
-            self.init(name: name)
+            self.init(name)
         }
 
         public static func == (lhs: Self, rhs: Self) -> Bool {

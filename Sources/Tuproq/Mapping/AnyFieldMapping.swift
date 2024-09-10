@@ -1,13 +1,13 @@
 public protocol AnyFieldMapping: Hashable {
-    var field: String { get }
+    var name: String { get }
 }
 
 public extension AnyFieldMapping {
     static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.field == rhs.field
+        lhs.name == rhs.name
     }
 
     func hash(into hasher: inout Hasher) {
-        hasher.combine(field)
+        hasher.combine(name)
     }
 }

@@ -55,18 +55,18 @@ final class ObjectHydration {
             let value = row[index]
 
             if entityMapping.id.column == column {
-                setValue(value, for: entityMapping.id.field, in: &dictionary)
+                setValue(value, for: entityMapping.id.name, in: &dictionary)
             } else if let fieldMapping = tableColumnFieldMappings[table]?[column] {
-                setValue(value, for: fieldMapping.field, in: &dictionary)
+                setValue(value, for: fieldMapping.name, in: &dictionary)
             } else if let parentMapping = tableColumnParentMappings[table]?[column] {
-                if dictionary[parentMapping.field] == nil {
+                if dictionary[parentMapping.name] == nil {
                     if value == nil {
-                        dictionary[parentMapping.field] = NSNull()
+                        dictionary[parentMapping.name] = NSNull()
                     } else {
                         if let parentEntityMapping = entityManager.configuration.mapping(from: parentMapping.entity) {
                             var parentDictionary = [String: Any?]()
                             hydrateAll(from: row, into: &parentDictionary, with: parentEntityMapping)
-                            dictionary[parentMapping.field] = parentDictionary
+                            dictionary[parentMapping.name] = parentDictionary
                         }
                     }
                 }
@@ -92,9 +92,9 @@ final class ObjectHydration {
         with associationMapping: any AssociationMapping
     ) {
         if let entityMapping = entityManager.configuration.mapping(from: associationMapping.entity) {
-            var array = dictionary[associationMapping.field] as? [[String: Any?]] ?? .init()
+            var array = dictionary[associationMapping.name] as? [[String: Any?]] ?? .init()
             hydrateObject(from: row, into: &array, with: entityMapping)
-            dictionary[associationMapping.field] = array
+            dictionary[associationMapping.name] = array
         }
     }
 
@@ -109,7 +109,7 @@ final class ObjectHydration {
             let id = String(describing: id)
             tablesInHydration.insert(table)
 
-            if let dictionaryIndex = array.firstIndex(where: { $0[entityMapping.id.field] as? String == id }) {
+            if let dictionaryIndex = array.firstIndex(where: { $0[entityMapping.id.name] as? String == id }) {
                 var dictionary = array[dictionaryIndex]
                 hydrateAll(from: row, into: &dictionary, with: entityMapping)
                 array[dictionaryIndex] = dictionary
@@ -183,5 +183,13 @@ extension ObjectHydration {
     struct Column: Hashable {
         let name: String
         let table: String
+
+        init(
+            _ name: String,
+             table: String
+        ) {
+            self.name = name
+            self.table = table
+        }
     }
 }

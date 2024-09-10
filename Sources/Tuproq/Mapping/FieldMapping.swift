@@ -1,27 +1,47 @@
 public struct FieldMapping: AnyFieldMapping {
-    public let field: String
+    public let name: String
     public let type: FieldType
     public let column: Column
 
-    public init(field: String, type: FieldType) {
-        self.init(field: field, type: type, column: "")
-    }
-
-    public init(field: String, type: FieldType, isUnique: Bool = false, isNullable: Bool = true) {
+    public init(
+        _ name: String,
+        type: FieldType
+    ) {
         self.init(
-            field: field,
+            name,
             type: type,
-            column: .init(name: "", isUnique: isUnique, isNullable: isNullable)
+            column: ""
         )
     }
 
-    public init(field: String, type: FieldType, column: Column) {
-        self.field = field
+    public init(
+        _ name: String,
+        type: FieldType,
+        isUnique: Bool = false,
+        isNullable: Bool = true
+    ) {
+        self.init(
+            name,
+            type: type,
+            column: .init(
+                "",
+                isUnique: isUnique,
+                isNullable: isNullable
+            )
+        )
+    }
+
+    public init(
+        _ name: String,
+        type: FieldType,
+        column: Column
+    ) {
+        self.name = name
         self.type = type
 
         if column.name.isEmpty {
             self.column = .init(
-                name: Configuration.namingStrategy.column(field: self.field),
+                Configuration.namingStrategy.column(field: self.name),
                 isUnique: column.isUnique,
                 isNullable: column.isNullable
             )
@@ -37,7 +57,11 @@ extension FieldMapping {
         public let isUnique: Bool
         public let isNullable: Bool
 
-        public init(name: String, isUnique: Bool = false, isNullable: Bool = true) {
+        public init(
+            _ name: String,
+            isUnique: Bool = false,
+            isNullable: Bool = true
+        ) {
             self.name = name
             self.isUnique = isUnique
             self.isNullable = isNullable
