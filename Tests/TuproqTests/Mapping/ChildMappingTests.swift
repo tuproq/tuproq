@@ -24,25 +24,25 @@ private extension ChildMappingTests {
 final class ChildMappingTests: XCTestCase {
     func testInit() {
         // Arrange
-        let field = "posts"
+        let name = "posts"
         let entity = Post.self
         let mappedBy = "author"
         let isUnique = true
 
         // Act
-        var mapping = ChildMapping(field: field, entity: entity, mappedBy: mappedBy)
+        var mapping = ChildMapping(name, entity: entity, mappedBy: mappedBy)
 
         // Assert
-        XCTAssertEqual(mapping.field, field)
+        XCTAssertEqual(mapping.name, name)
         XCTAssertTrue(mapping.entity == entity)
         XCTAssertEqual(mapping.mappedBy, mappedBy)
         XCTAssertFalse(mapping.isUnique)
 
         // Act
-        mapping = ChildMapping(field: field, entity: entity, mappedBy: mappedBy, isUnique: isUnique)
+        mapping = ChildMapping(name, entity: entity, mappedBy: mappedBy, isUnique: isUnique)
 
         // Assert
-        XCTAssertEqual(mapping.field, field)
+        XCTAssertEqual(mapping.name, name)
         XCTAssertTrue(mapping.entity == entity)
         XCTAssertEqual(mapping.mappedBy, mappedBy)
         XCTAssertEqual(mapping.isUnique, isUnique)

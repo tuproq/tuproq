@@ -14,7 +14,7 @@ public extension NamingStrategy {
     }
 
     func column<E: Entity>(field: String, entity: E.Type?) -> String {
-        if let entity = entity {
+        if let entity {
             return column(field: field, entity: Configuration.entityName(from: entity))
         }
 

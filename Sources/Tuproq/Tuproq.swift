@@ -1,12 +1,11 @@
-import Foundation
 import Logging
 import NIOCore
 import NIOPosix
 
 public final class Tuproq {
     public let eventLoopGroup: EventLoopGroup
-    public private(set) var configuration: Configuration
     private let connectionPool: ConnectionPool
+    public private(set) var configuration: Configuration
 
     public init(
         eventLoopGroup: EventLoopGroup? = nil,
@@ -50,26 +49,41 @@ extension Tuproq {
     public func mapping(tableName: String) -> (any EntityMapping)? {
         configuration.mapping(tableName: tableName)
     }
+}
 
+extension Tuproq {
     public func createEntityManager() -> any EntityManager {
         switch configuration.driver {
-        case .mysql: SQLEntityManager<MySQLQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
-        case .oracle: SQLEntityManager<OracleQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
-        case .postgresql: SQLEntityManager<PostgreSQLQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
-        case .sqlite: SQLEntityManager<SQLiteQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
-        case .sqlserver: SQLEntityManager<SQLServerQueryBuilder>(connectionPool: connectionPool, configuration: configuration)
+        case .mysql:
+            SQLEntityManager<MySQLQueryBuilder>(
+                connectionPool: connectionPool,
+                configuration: configuration
+            )
+        case .oracle:
+            SQLEntityManager<OracleQueryBuilder>(
+                connectionPool: connectionPool,
+                configuration: configuration
+            )
+        case .postgresql:
+            SQLEntityManager<PostgreSQLQueryBuilder>(
+                connectionPool: connectionPool,
+                configuration: configuration
+            )
+        case .sqlite:
+            SQLEntityManager<SQLiteQueryBuilder>(
+                connectionPool: connectionPool,
+                configuration: configuration
+            )
+        case .sqlserver:
+            SQLEntityManager<SQLServerQueryBuilder>(
+                connectionPool: connectionPool,
+                configuration: configuration
+            )
         }
     }
 }
 
 extension Tuproq {
-    public func migrate() async throws {
-        let allQueries = "BEGIN;\(createSchema())COMMIT;"
-        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
-        try await connection.query(allQueries)
-        connectionPool.returnConnection(connection)
-    }
-
     public func beginTransaction() async throws {
         let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
         try await connection.beginTransaction()
@@ -85,6 +99,15 @@ extension Tuproq {
     public func rollbackTransaction() async throws {
         let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
         try await connection.rollbackTransaction()
+        connectionPool.returnConnection(connection)
+    }
+}
+
+extension Tuproq {
+    public func migrate() async throws {
+        let allQueries = "BEGIN;\(createSchema())COMMIT;"
+        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
+        try await connection.query(allQueries)
         connectionPool.returnConnection(connection)
     }
 
@@ -121,7 +144,7 @@ extension Tuproq {
 
     private func createTable<M: EntityMapping>(from mapping: M) -> Table {
         var table = Table(name: mapping.table)
-        ids(mapping: mapping, table: &table)
+        id(mapping: mapping, table: &table)
         fields(mapping: mapping, table: &table)
         parents(mapping: mapping, table: &table)
         constraints(mapping: mapping, table: &table)
@@ -133,7 +156,7 @@ extension Tuproq {
         siblings(mapping: mapping, tables: &tables)
     }
 
-    private func ids(mapping: some EntityMapping, table: inout Table) {
+    private func id(mapping: some EntityMapping, table: inout Table) {
         let id = mapping.id
         let columnName = id.column
         let idType = id.type
@@ -216,7 +239,7 @@ extension Tuproq {
                     joinTable = tables[index]
                 } else {
                     joinTable = Table(name: joinTableName)
-                    ids(mapping: siblingMapping, table: &joinTable)
+                    id(mapping: siblingMapping, table: &joinTable)
                 }
 
                 for column in siblingJoinTable.columns {

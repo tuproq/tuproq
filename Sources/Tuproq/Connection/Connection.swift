@@ -12,18 +12,18 @@ public protocol Connection: AnyObject {
     func rollbackTransaction() async throws
 
     @discardableResult
-    func query(_ string: String, arguments parameters: [Codable?]) async throws -> QueryResult?
+    func query(_ string: String, arguments: [Codable?]) async throws -> QueryResult?
 
     @discardableResult
-    func query(_ string: String, arguments parameters: Codable?...) async throws -> QueryResult?
+    func query(_ string: String, arguments: Codable?...) async throws -> QueryResult?
 }
 
 public extension Connection {
     var id: ObjectIdentifier { .init(self) }
 
     @discardableResult
-    func query(_ string: String, arguments parameters: Codable?...) async throws -> QueryResult? {
-        try await query(string, arguments: parameters)
+    func query(_ string: String, arguments: Codable?...) async throws -> QueryResult? {
+        try await query(string, arguments: arguments)
     }
 }
 

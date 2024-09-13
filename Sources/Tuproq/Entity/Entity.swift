@@ -1,4 +1,4 @@
-import Foundation
+import class Foundation.NSNull
 
 public protocol Entity: AnyObject, Codable, Hashable {
     associatedtype ID: Codable, Hashable

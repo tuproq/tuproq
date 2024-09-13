@@ -280,7 +280,7 @@ extension ConnectionPool {
                 promise?.succeed()
             }
         case .closing(let count, let existingPromise):
-            if let existingPromise = existingPromise {
+            if let existingPromise {
                 existingPromise.futureResult.cascade(to: promise)
             } else {
                 state = .closing(remaining: count, promise)

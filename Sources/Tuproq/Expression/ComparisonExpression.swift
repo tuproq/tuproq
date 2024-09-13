@@ -1,9 +1,9 @@
 final class ComparisonExpression: Expression {
-    let kind: Kind
-    var raw: String { kind.rawValue }
+    let type: Kind
+    var raw: String { type.rawValue }
 
-    init(kind: Kind) {
-        self.kind = kind
+    init(_ type: Kind) {
+        self.type = type
     }
 }
 

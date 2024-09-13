@@ -11,38 +11,68 @@ public protocol EntityManager: AnyObject {
     func remove<E: Entity>(_ entity: E) throws
 
     @discardableResult
-    func query<E: Entity>(_ string: String, arguments parameters: [Codable?]) async throws -> [E] // TODO: a temporary solution
+    func query<E: Entity>(
+        _ string: String,
+        arguments: [Codable?]
+    ) async throws -> [E]
 
     @discardableResult
-    func query<E: Entity>(_ string: String, arguments parameters: Codable?...) async throws -> [E] // TODO: a temporary solution
+    func query<E: Entity>(
+        _ string: String,
+        arguments: Codable?...
+    ) async throws -> [E]
 
     @discardableResult
-    func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Any?]] // TODO: a temporary solution
+    func query(
+        _ string: String,
+        arguments: [Codable?]
+    ) async throws -> [[String: Any?]]
 
     @discardableResult
-    func query(_ string: String, arguments parameters: Codable?...) async throws -> [[String: Any?]] // TODO: a temporary solution
+    func query(
+        _ string: String,
+        arguments: Codable?...
+    ) async throws -> [[String: Any?]]
 
-    func propertyChanged<E: Entity>(entity: E, propertyName: String, oldValue: Codable?, newValue: Codable?) // TODO: a temporary solution
+    func propertyValueChanged<E: Entity>(
+        _ entity: E,
+        name: String,
+        oldValue: Codable?,
+        newValue: Codable?
+    )
 }
 
 public extension EntityManager {
     func getRepository<R: EntityRepository>(_ entityType: R.E.Type) -> R {
-        R(entityManager: self)
+        .init(entityManager: self)
     }
 
-    func remove<E: SoftDeletableEntity>(_ entity: inout E, isSoft: Bool = true) throws {
+    func remove<E: SoftDeletableEntity>(
+        _ entity: inout E,
+        isSoft: Bool = true
+    ) throws {
         isSoft ? entity.deletedDate = .init() : try remove(entity)
     }
 
-    // TODO: a temporary solution
     @discardableResult
-    func query<E: Entity>(_ string: String, arguments parameters: Codable?...) async throws -> [E] {
-        try await query(string, arguments: parameters)
+    func query<E: Entity>(
+        _ string: String,
+        arguments: Codable?...
+    ) async throws -> [E] {
+        try await query(
+            string,
+            arguments: arguments
+        )
     }
 
-    // TODO: a temporary solution
     @discardableResult
-    func query(_ string: String, arguments parameters: Codable?...) async throws -> [[String: Any?]] {
-        try await query(string, arguments: parameters)
+    func query(
+        _ string: String,
+        arguments: Codable?...
+    ) async throws -> [[String: Any?]] {
+        try await query(
+            string,
+            arguments: arguments
+        )
     }
 }

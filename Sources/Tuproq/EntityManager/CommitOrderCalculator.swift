@@ -4,41 +4,25 @@ final class CommitOrderCalculator {
 
     init() {}
 
-    func hasNode(_ node: Node) -> Bool {
-        nodes[node.value] != nil
+    func addDependency(_ dependency: Dependency) {
+        nodes[dependency.from]?.addDependency(dependency)
     }
 
     func addNode(_ node: Node) {
         nodes[node.value] = node
     }
 
-    func addDependency(_ dependency: Dependency) {
-        nodes[dependency.from]?.dependencies[dependency.to] = dependency
+    func hasNode(_ node: Node) -> Bool {
+        nodes[node.value] != nil
     }
 
-    func sort() -> [String] {
-        for node in nodes.values {
-            if node.state != .notVisited {
-                continue
-            }
-
-            visit(node: node)
-        }
-
-        let sortedNodes = sortedNodes
-        nodes.removeAll()
-        self.sortedNodes.removeAll()
-
-        return sortedNodes.reversed()
-    }
-
-    func visit(node: Node) {
+    func visitNode(_ node: Node) {
         node.state = .inProgress
 
         for dependency in node.dependencies.values {
             if let adjacentNode = nodes[dependency.to] {
                 switch adjacentNode.state {
-                case .notVisited: visit(node: adjacentNode)
+                case .notVisited: visitNode(adjacentNode)
                 case .visited: break
                 case .inProgress:
                     if let adjacentDependency = adjacentNode.dependencies[node.value],
@@ -46,7 +30,7 @@ final class CommitOrderCalculator {
                         for adjacentDependency in adjacentNode.dependencies.values {
                             if let adjacentDependencyNode = nodes[adjacentDependency.to],
                                adjacentDependencyNode.state == .notVisited {
-                                visit(node: adjacentDependencyNode)
+                                visitNode(adjacentDependencyNode)
                             }
 
                             adjacentNode.state = .visited
@@ -62,13 +46,29 @@ final class CommitOrderCalculator {
             sortedNodes.append(node.value)
         }
     }
+
+    func sort() -> [String] {
+        for node in nodes.values {
+            if node.state != .notVisited {
+                continue
+            }
+
+            visitNode(node)
+        }
+
+        let sortedNodes = sortedNodes
+        nodes.removeAll()
+        self.sortedNodes.removeAll()
+
+        return sortedNodes.reversed()
+    }
 }
 
 extension CommitOrderCalculator {
     final class Node {
+        let value: String
         var state: State
-        var value: String
-        var dependencies: [String: Dependency]
+        private(set) var dependencies: [String: Dependency]
 
         enum State {
             case notVisited
@@ -76,19 +76,33 @@ extension CommitOrderCalculator {
             case visited
         }
 
-        init(state: State = .notVisited, value: String, dependencies: [String: Dependency] = .init()) {
+        init(
+            value: String,
+            state: State = .notVisited,
+            dependencies: [String: Dependency] = .init()
+        ) {
             self.state = state
             self.value = value
             self.dependencies = dependencies
         }
+
+        func addDependency(_ dependency: Dependency) {
+            dependencies[dependency.to] = dependency
+        }
     }
+}
 
+extension CommitOrderCalculator {
     final class Dependency {
-        var from: String
-        var to: String
-        var weight: Int
+        let from: String
+        let to: String
+        let weight: Int
 
-        init(from: String, to: String, weight: Int) {
+        init(
+            from: String,
+            to: String,
+            weight: Int
+        ) {
             self.from = from
             self.to = to
             self.weight = weight

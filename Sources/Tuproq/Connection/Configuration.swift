@@ -12,7 +12,10 @@ public struct Configuration {
     private var _mappings = OrderedDictionary<String, any EntityMapping>()
     var joinColumnTypes = [String: String]()
 
-    public init(driver: DatabaseDriver, poolSize: ClosedRange<Int>) {
+    public init(
+        driver: DatabaseDriver,
+        poolSize: ClosedRange<Int>
+    ) {
         self.driver = driver
         self.poolSize = poolSize
     }

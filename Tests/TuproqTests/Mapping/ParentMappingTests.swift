@@ -24,28 +24,28 @@ private extension ParentMappingTests {
 final class ParentMappingTests: XCTestCase {
     func testInit() {
         // Arrange
-        let field = "author"
+        let name = "author"
         let entity = Author.self
         let inversedBy = "posts"
         let isUnique = true
         let isNullable = false
-        let column = JoinTable.Column(name: "author_id", isUnique: isUnique, isNullable: isNullable)
+        let column = JoinTable.Column("author_id", isUnique: isUnique, isNullable: isNullable)
 
         // Act
         var mapping = ParentMapping(entity: entity)
 
         // Assert
-        XCTAssertEqual(mapping.field, field)
+        XCTAssertEqual(mapping.name, name)
         XCTAssertTrue(mapping.entity == entity)
         XCTAssertNil(mapping.inversedBy)
-        XCTAssertEqual(mapping.column, .init(stringLiteral: Configuration.namingStrategy.joinColumn(field: field)))
+        XCTAssertEqual(mapping.column, .init(stringLiteral: Configuration.namingStrategy.joinColumn(field: name)))
         XCTAssertEqual(mapping.constraints, [.delete(.cascade)])
 
         // Act
-        mapping = ParentMapping(field: field, entity: entity, inversedBy: inversedBy, column: column)
+        mapping = ParentMapping(name, entity: entity, inversedBy: inversedBy, column: column)
 
         // Assert
-        XCTAssertEqual(mapping.field, field)
+        XCTAssertEqual(mapping.name, name)
         XCTAssertTrue(mapping.entity == entity)
         XCTAssertEqual(mapping.inversedBy, inversedBy)
         XCTAssertEqual(mapping.column, column)

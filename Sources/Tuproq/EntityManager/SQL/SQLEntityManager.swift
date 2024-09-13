@@ -23,7 +23,10 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private var entityIdentifiers = [ObjectIdentifier: AnyHashable]()
     private var objectIdentifiers = [AnyHashable: ObjectIdentifier]()
 
-    init(connectionPool: ConnectionPool, configuration: Configuration) {
+    init(
+        connectionPool: ConnectionPool,
+        configuration: Configuration
+    ) {
         self.connectionPool = connectionPool
         self.configuration = configuration
 
@@ -54,13 +57,18 @@ extension SQLEntityManager {
 }
 
 extension SQLEntityManager {
-    func propertyChanged<E: Entity>(entity: E, propertyName: String, oldValue: Codable?, newValue: Codable?) {
+    func propertyValueChanged<E: Entity>(
+        _ entity: E,
+        name: String,
+        oldValue: Codable?,
+        newValue: Codable?
+    ) {
         let entityName = Configuration.entityName(from: entity)
         let objectID = ObjectIdentifier(entity)
         guard identityMap[entityName]?[objectID] != nil else { return }
         entityUpdates[objectID] = entity
         var changeSet = entityChangeSets[objectID, default: .init()]
-        changeSet[propertyName] = (oldValue, newValue)
+        changeSet[name] = (oldValue, newValue)
         entityChangeSets[objectID] = changeSet
     }
 }
@@ -72,6 +80,7 @@ extension SQLEntityManager {
 
     func find<E: Entity>(_ entityType: E.Type, id: E.ID) async throws -> E? {
         let mapping = try mapping(from: entityType)
+        let idColumn = idColumn(tableName: mapping.table)
         guard !(id as AnyObject is NSNull) else { return nil }
         let entityName = Configuration.entityName(from: entityType)
 
@@ -82,7 +91,7 @@ extension SQLEntityManager {
         let query = createQueryBuilder()
             .select()
             .from(mapping.table)
-            .where("id = $1")
+            .where("\(idColumn) = $1")
             .getQuery()
 
         if let entity: E = try await self.query(query.raw, arguments: [id]).first {
@@ -97,8 +106,8 @@ extension SQLEntityManager {
     }
 
     @discardableResult
-    func query<E: Entity>(_ string: String, arguments parameters: [Codable?]) async throws -> [E] {
-        let result = try await query(string, arguments: parameters)
+    func query<E: Entity>(_ string: String, arguments: [Codable?]) async throws -> [E] {
+        let result = try await query(string, arguments: arguments)
         let data = try JSONSerialization.data(withJSONObject: result)
         let entities = try decoder.decode([E].self, from: data)
 
@@ -112,9 +121,9 @@ extension SQLEntityManager {
     }
 
     @discardableResult
-    func query(_ string: String, arguments parameters: [Codable?]) async throws -> [[String: Any?]] {
+    func query(_ string: String, arguments: [Codable?]) async throws -> [[String: Any?]] {
         let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
-        let result = try await connection.query(string, arguments: parameters)
+        let result = try await connection.query(string, arguments: arguments)
         connectionPool.returnConnection(connection)
 
         if let result {
@@ -369,6 +378,7 @@ extension SQLEntityManager {
 
     private func prepareInserts(for entityName: String) throws {
         let mapping = try mapping(from: entityName)
+        let idField = configuration.mapping(tableName: mapping.table)?.id.name ?? Configuration.defaultIDField
 
         for entity in entityInsertions.values {
             if entityName == Configuration.entityName(from: entity) {
@@ -387,7 +397,7 @@ extension SQLEntityManager {
 
                         if let value {
                             let valueDictionary = value as! [String: Any?]
-                            values.append(valueDictionary["id"]!)
+                            values.append(valueDictionary[idField]!)
                         } else {
                             values.append(nil)
                         }
@@ -409,6 +419,7 @@ extension SQLEntityManager {
 
     private func prepareUpdates(for entityName: String) throws {
         let mapping = try mapping(from: entityName)
+        let idColumn = idColumn(tableName: mapping.table)
 
         for (objectID, entity) in entityUpdates {
             if let id = entityIdentifiers[objectID], entityName == Configuration.entityName(from: entity) {
@@ -426,7 +437,7 @@ extension SQLEntityManager {
 
                     let query = createQueryBuilder()
                         .update(table: mapping.table, values: values)
-                        .where("id = '\(id)'") // TODO: provide id as arguments to query() method
+                        .where("\(idColumn) = '\(id)'") // TODO: provide id as arguments to query() method
                         .returning()
                         .getQuery()
                     allQueries.append(query)
@@ -437,18 +448,23 @@ extension SQLEntityManager {
 
     private func prepareDeletions(for entityName: String) throws {
         let table = try mapping(from: entityName).table
+        let idColumn = idColumn(tableName: table)
 
         for objectID in entityDeletions.keys {
             if let id = entityIdentifiers[objectID] {
                 let query = createQueryBuilder()
                     .delete()
                     .from(table)
-                    .where("id = '\(id)'") // TODO: provide id as arguments to query() method
+                    .where("\(idColumn) = '\(id)'") // TODO: provide id as arguments to query() method
                     .returning()
                     .getQuery()
                 allQueries.append(query)
             }
         }
+    }
+
+    private func idColumn(tableName: String) -> String {
+        configuration.mapping(tableName: tableName)?.id.column ?? Configuration.defaultIDField
     }
 
     private func encodeToDictionary<E: Entity>(_ entity: E) throws -> [String: Any?] {

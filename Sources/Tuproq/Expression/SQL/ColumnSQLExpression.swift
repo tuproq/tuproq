@@ -17,7 +17,7 @@ class ColumnSQLExpression: SQLExpression, ExpressibleByStringLiteral {
         self.alias = alias
         var raw = name
 
-        if let alias = alias {
+        if let alias {
             raw += " \(Kind.as) \(alias)"
         }
 

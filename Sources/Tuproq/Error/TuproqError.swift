@@ -11,24 +11,10 @@ public struct TuproqError: LocalizedError {
     init(_ message: String? = nil) {
         let errorType = String(describing: type(of: self))
 
-        if let message = message, !message.isEmpty {
+        if let message, !message.isEmpty {
             self.message = "\(errorType): \(message)"
         } else {
             self.message = "\(errorType): \(ErrorType.unknown)"
-        }
-    }
-}
-
-enum ErrorType: CustomStringConvertible {
-    case entityToDictionaryFailed
-    case unknown
-
-    var description: String { message }
-
-    var message: String {
-        switch self {
-        case .entityToDictionaryFailed: "Can't encode an entity to a dictionary."
-        case .unknown: "An unknown error."
         }
     }
 }

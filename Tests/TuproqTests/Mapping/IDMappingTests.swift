@@ -4,7 +4,7 @@ import XCTest
 final class IDMappingTests: XCTestCase {
     func testInit() {
         // Arrange
-        let field = "id"
+        let name = "id"
         let type: FieldType = .id()
         let column = "column_id"
 
@@ -12,23 +12,23 @@ final class IDMappingTests: XCTestCase {
         var mapping = IDMapping()
 
         // Assert
-        XCTAssertEqual(mapping.field, field)
+        XCTAssertEqual(mapping.name, name)
         XCTAssertEqual(mapping.type, type)
-        XCTAssertEqual(mapping.column, field)
+        XCTAssertEqual(mapping.column, name)
 
         // Act
-        mapping = IDMapping(field: "", type: type)
+        mapping = IDMapping("", type: type)
 
         // Assert
-        XCTAssertEqual(mapping.field, field)
+        XCTAssertEqual(mapping.name, name)
         XCTAssertEqual(mapping.type, type)
-        XCTAssertEqual(mapping.column, field)
+        XCTAssertEqual(mapping.column, name)
 
         // Act
-        mapping = IDMapping(field: field, type: type, column: column)
+        mapping = IDMapping(name, type: type, column: column)
 
         // Assert
-        XCTAssertEqual(mapping.field, field)
+        XCTAssertEqual(mapping.name, name)
         XCTAssertEqual(mapping.type, type)
         XCTAssertEqual(mapping.column, column)
     }

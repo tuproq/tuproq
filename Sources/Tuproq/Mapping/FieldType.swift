@@ -36,7 +36,7 @@ public indirect enum FieldType: Hashable {
             case .sqlserver: "NCHAR(1)"
             }
         case .data(let length, let isFixed):
-            if let length = length {
+            if let length {
                 switch driver {
                 case .mysql:
                     if length <= 255 {
@@ -111,7 +111,7 @@ public indirect enum FieldType: Hashable {
             case .sqlserver: "BIGINT"
             }
         case .string(let length, let isFixed):
-            if let length = length {
+            if let length {
                 switch driver {
                 case .mysql:
                     if length <= 255 {

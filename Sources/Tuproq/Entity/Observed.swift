@@ -1,11 +1,10 @@
-import Foundation
-
 @propertyWrapper
 public final class Observed<V: Codable>: Codable {
-    private weak var entityManager: (any EntityManager)?
     private let name: String?
     private let originalValue: V
+
     public var wrappedValue: V
+    private weak var entityManager: (any EntityManager)?
 
     public init(wrappedValue: V) {
         name = nil
@@ -32,9 +31,9 @@ public final class Observed<V: Codable>: Codable {
             guard let name = entity[keyPath: storageKeyPath].name else { return }
             let oldValue = entity[keyPath: storageKeyPath].originalValue
             entity[keyPath: storageKeyPath].wrappedValue = newValue
-            entity[keyPath: storageKeyPath].entityManager?.propertyChanged(
-                entity: entity,
-                propertyName: name,
+            entity[keyPath: storageKeyPath].entityManager?.propertyValueChanged(
+                entity,
+                name: name,
                 oldValue: oldValue,
                 newValue: newValue
             )

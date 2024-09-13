@@ -24,15 +24,15 @@ private extension SiblingMappingTests {
 final class SiblingMappingTests: XCTestCase {
     func testInitWithMappedBy() {
         // Arrange
-        let field = "users"
+        let name = "users"
         let entity = User.self
         let mappedBy = "groups"
 
         // Act
-        let mapping = SiblingMapping(field: field, entity: entity, mappedBy: mappedBy)
+        let mapping = SiblingMapping(name, entity: entity, mappedBy: mappedBy)
 
         // Assert
-        XCTAssertEqual(mapping.field, field)
+        XCTAssertEqual(mapping.name, name)
         XCTAssertTrue(mapping.entity == entity)
         XCTAssertEqual(mapping.mappedBy, mappedBy)
         XCTAssertNil(mapping.inversedBy)
@@ -41,16 +41,16 @@ final class SiblingMappingTests: XCTestCase {
 
     func testInitWithInversedBy() {
         // Arrange
-        let field = "groups"
+        let name = "groups"
         let entity = Group.self
         let inversedBy = "users"
         let joinTable = JoinTable(name: "user_group", columns: ["user_id"], inverseColumns: ["group_id"])
 
         // Act
-        let mapping = SiblingMapping(field: field, entity: entity, inversedBy: inversedBy, joinTable: joinTable)
+        let mapping = SiblingMapping(name, entity: entity, inversedBy: inversedBy, joinTable: joinTable)
 
         // Assert
-        XCTAssertEqual(mapping.field, field)
+        XCTAssertEqual(mapping.name, name)
         XCTAssertTrue(mapping.entity == entity)
         XCTAssertNil(mapping.mappedBy)
         XCTAssertEqual(mapping.inversedBy, inversedBy)
