@@ -77,7 +77,10 @@ public struct ParentMapping: AssociationMapping {
         on constraints: Set<Constraint> = [.delete(.cascade)]
     ) {
         if name.isEmpty {
-            self.name = String(describingNestedType: entity).components(separatedBy: ".").last!.camelCased
+            self.name = String(describingNestedType: entity)
+                .components(separatedBy: ".")
+                .last!
+                .camelCased
         } else {
             self.name = name
         }

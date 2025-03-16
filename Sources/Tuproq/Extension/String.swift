@@ -26,7 +26,11 @@ extension String {
         let regex = try? NSRegularExpression(pattern: pattern)
         let range = NSRange(location: 0, length: count)
 
-        return regex?.stringByReplacingMatches(in: self, range: range, withTemplate: "$1_$2")
+        return regex?.stringByReplacingMatches(
+            in: self,
+            range: range,
+            withTemplate: "$1_$2"
+        )
     }
 }
 
@@ -46,7 +50,10 @@ extension String {
 
 extension String {
     init<T>(describingNestedType: T) {
-        self = .init(reflecting: describingNestedType).split(separator: ".").dropFirst().joined(separator: ".")
+        self = .init(reflecting: describingNestedType)
+            .split(separator: ".")
+            .dropFirst()
+            .joined(separator: "")
     }
 }
 
