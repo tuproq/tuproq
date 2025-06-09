@@ -58,11 +58,11 @@ public extension SQLQueryBuilder {
 }
 
 public extension SQLQueryBuilder {
-    func update(table: String, values: (String, Codable?)...) -> Self {
+    func update(table: String, values: (String, Any?)...) -> Self {
         update(table: table, values: values)
     }
 
-    func update(table: String, values: [(String, Codable?)]) -> Self {
+    func update(table: String, values: [(String, Any?)]) -> Self {
         expressions.append(UpdateSQLExpression(table: table, values: values))
         return self
     }

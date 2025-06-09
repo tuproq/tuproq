@@ -423,15 +423,15 @@ extension SQLEntityManager {
 
         for (objectID, entity) in entityUpdates {
             if let id = entityIdentifiers[objectID], entityName == Configuration.entityName(from: entity) {
-                var values = [(String, Codable?)]()
+                var values = [(String, Any?)]()
 
                 if let changeSet = entityChangeSets[objectID] {
                     for (key, (_, newValue)) in changeSet {
                         if let column = mapping.fields.first(where: { $0.name == key })?.column.name {
-                            values.append((column, newValue))
+                            values.append((column, try encodeValue(newValue)))
                         } else if let column = mapping.parents.first(where: { $0.name == key })?.column.name,
                                   let entity = newValue as? (any Entity) {
-                            values.append((column, entity.id))
+                            values.append((column, try encodeValue(entity.id)))
                         }
                     }
 
@@ -468,14 +468,18 @@ extension SQLEntityManager {
     }
 
     private func encodeToDictionary<E: Entity>(_ entity: E) throws -> [String: Any?] {
-        let data = try encoder.encode(entity)
         guard let dictionary = try JSONSerialization.jsonObject(
-            with: data,
+            with: try encoder.encode(entity),
             options: .fragmentsAllowed
-        ) as? [String: Any?] else {
-            throw error(.entityToDictionaryFailed)
-        }
-
+        ) as? [String: Any?] else { throw error(.entityToDictionaryFailed) }
         return dictionary
+    }
+
+    private func encodeValue(_ value: (any Codable)?) throws -> Any? {
+        guard let value else { return nil }
+        return try JSONSerialization.jsonObject(
+            with: try encoder.encode(value),
+            options: .fragmentsAllowed
+        )
     }
 }
