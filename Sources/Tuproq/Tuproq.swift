@@ -181,7 +181,7 @@ extension Tuproq {
             }
 
             if field.column.isUnique {
-                columnConstraints.append(UniqueSQLConstraint(column: field.column.name))
+                columnConstraints.append(UniqueSQLConstraint(table: table.name, column: field.column.name))
             }
 
             let column = Table.Column(
@@ -209,7 +209,7 @@ extension Tuproq {
             var columnConstraints = [SQLConstraint]()
 
             if parent.column.isUnique {
-                columnConstraints.append(UniqueSQLConstraint(column: parent.column.name))
+                columnConstraints.append(UniqueSQLConstraint(table: table.name, column: parent.column.name))
             }
 
             if !parent.column.isNullable {
@@ -246,7 +246,7 @@ extension Tuproq {
                     var columnConstraints = [SQLConstraint]()
 
                     if column.isUnique {
-                        columnConstraints.append(UniqueSQLConstraint(column: column.name))
+                        columnConstraints.append(UniqueSQLConstraint(table: siblingJoinTable.name, column: column.name))
                     }
 
                     if !column.isNullable {
@@ -273,7 +273,7 @@ extension Tuproq {
                     var columnConstraints = [SQLConstraint]()
 
                     if column.isUnique {
-                        columnConstraints.append(UniqueSQLConstraint(column: column.name))
+                        columnConstraints.append(UniqueSQLConstraint(table: siblingJoinTable.name, column: column.name))
                     }
 
                     if !column.isNullable {
@@ -299,7 +299,7 @@ extension Tuproq {
                 for constraint in siblingJoinTable.constraints {
                     switch constraint {
                     case .unique(let columns, let index):
-                        joinTable.constraints.append(UniqueSQLConstraint(columns: columns, index: index))
+                        joinTable.constraints.append(UniqueSQLConstraint(table: siblingJoinTable.name, columns: columns, index: index))
                     }
                 }
 
@@ -316,7 +316,7 @@ extension Tuproq {
         for constraint in mapping.constraints {
             switch constraint {
             case .unique(let columns, let index):
-                table.constraints.append(UniqueSQLConstraint(columns: columns, index: index))
+                table.constraints.append(UniqueSQLConstraint(table: table.name, columns: columns, index: index))
             }
         }
     }
