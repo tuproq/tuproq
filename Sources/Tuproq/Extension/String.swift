@@ -52,7 +52,6 @@ extension String {
     init<T>(describingNestedType: T) {
         self = .init(reflecting: describingNestedType)
             .split(separator: ".")
-            .dropFirst()
             .joined(separator: "")
     }
 }
