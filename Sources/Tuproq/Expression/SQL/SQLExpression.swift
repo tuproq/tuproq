@@ -28,7 +28,7 @@ extension SQLExpression {
         case createDatabase = "CREATE DATABASE"
         case createIndex = "CREATE INDEX"
         case createOrReplaceView = "CREATE OR REPLACE VIEW"
-        case createTable = "CREATE TABLE IF NOT EXISTS"
+        case createTable = "CREATE TABLE"
         case createProcedure = "CREATE PROCEDURE"
         case createUniqueIndex = "CREATE UNIQUE INDEX"
         case createView = "CREATE VIEW"
