@@ -130,7 +130,7 @@ extension SQLEntityManager {
             let tableIDs = Set<Int32>(result.columns.map { $0.tableID })
             let tables = try await fetchTables(tableIDs: tableIDs)
 
-            if tables.isEmpty {
+            if tables.isEmpty || result.columns.contains(where: { tables[$0.tableID] == nil }) {
                 var array = [[String: Any?]]()
 
                 for row in result.rows {
@@ -395,9 +395,10 @@ extension SQLEntityManager {
                         let column = Configuration.namingStrategy.joinColumn(field: field)
                         columns.append(column)
 
-                        if let value {
-                            let valueDictionary = value as! [String: Any?]
-                            values.append(valueDictionary[idField]!)
+                        if let value,
+                           let valueDictionary = value as? [String: Any?],
+                           let id = valueDictionary[idField] {
+                            values.append(id)
                         } else {
                             values.append(nil)
                         }
