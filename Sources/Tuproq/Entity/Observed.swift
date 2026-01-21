@@ -31,12 +31,15 @@ public final class Observed<V: Codable>: Codable {
             guard let name = entity[keyPath: storageKeyPath].name else { return }
             let oldValue = entity[keyPath: storageKeyPath].originalValue
             entity[keyPath: storageKeyPath].wrappedValue = newValue
-            entity[keyPath: storageKeyPath].entityManager?.propertyValueChanged(
-                entity,
-                name: name,
-                oldValue: oldValue,
-                newValue: newValue
-            )
+
+            Task {
+                await entity[keyPath: storageKeyPath].entityManager?.propertyValueChanged(
+                    entity,
+                    name: name,
+                    oldValue: oldValue,
+                    newValue: newValue
+                )
+            }
         }
     }
 

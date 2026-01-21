@@ -1,12 +1,21 @@
-public protocol SQLQueryBuilder: QueryBuilder {
-    var expressions: [SQLExpression] { set get }
+public class SQLQueryBuilder: QueryBuilder {
+    private var _expressions = [SQLExpression]()
 
-    init()
+    public init() {}
+
+    public func addExpression(_ expression: SQLExpression) {
+        _expressions.append(expression)
+    }
+
+    public func getExpressions() -> [SQLExpression] {
+        _expressions
+    }
 }
 
 public extension SQLQueryBuilder {
     func getQuery() -> SQLQuery {
         var raw = ""
+        let expressions = getExpressions()
 
         for expression in expressions {
             if raw.isEmpty {
@@ -27,7 +36,12 @@ public extension SQLQueryBuilder {
         columns: Table.Column...,
         constraints: SQLConstraint...
     ) -> Self {
-        create(table: table, ifNotExists: ifNotExists, columns: columns, constraints: constraints)
+        create(
+            table: table,
+            ifNotExists: ifNotExists,
+            columns: columns,
+            constraints: constraints
+        )
     }
 
     func create(
@@ -36,9 +50,13 @@ public extension SQLQueryBuilder {
         columns: [Table.Column] = .init(),
         constraints: [SQLConstraint] = .init()
     ) -> Self {
-        expressions.append(
+        addExpression(
             CreateTableSQLExpression(
-                table: Table(name: table, columns: columns, constraints: constraints),
+                table: Table(
+                    name: table,
+                    columns: columns,
+                    constraints: constraints
+                ),
                 ifNotExists: ifNotExists
             )
         )
@@ -47,30 +65,62 @@ public extension SQLQueryBuilder {
 }
 
 public extension SQLQueryBuilder {
-    func insert(into table: String, columns: String..., values: Any?...) -> Self {
-        insert(into: table, columns: columns, values: values)
+    func insert(
+        into table: String,
+        columns: String...,
+        values: Any?...
+    ) -> Self {
+        insert(
+            into: table,
+            columns: columns,
+            values: values
+        )
     }
 
-    func insert(into table: String, columns: [String] = .init(), values: [Any?]) -> Self {
-        expressions.append(InsertIntoSQLExpression(table: table, columns: columns, values: values))
+    func insert(
+        into table: String,
+        columns: [String] = .init(),
+        values: [Any?]
+    ) -> Self {
+        addExpression(
+            InsertIntoSQLExpression(
+                table: table,
+                columns: columns,
+                values: values
+            )
+        )
         return self
     }
 }
 
 public extension SQLQueryBuilder {
-    func update(table: String, values: (String, Any?)...) -> Self {
-        update(table: table, values: values)
+    func update(
+        table: String,
+        values: (String, Any?)...
+    ) -> Self {
+        update(
+            table: table,
+            values: values
+        )
     }
 
-    func update(table: String, values: [(String, Any?)]) -> Self {
-        expressions.append(UpdateSQLExpression(table: table, values: values))
+    func update(
+        table: String,
+        values: [(String, Any?)]
+    ) -> Self {
+        addExpression(
+            UpdateSQLExpression(
+                table: table,
+                values: values
+            )
+        )
         return self
     }
 }
 
 public extension SQLQueryBuilder {
     func delete() -> Self {
-        expressions.append(DeleteSQLExpression())
+        addExpression(DeleteSQLExpression())
         return self
     }
 }
@@ -81,14 +131,26 @@ public extension SQLQueryBuilder {
     }
 
     func select(_ columns: [String]) -> Self {
-        expressions.append(SelectSQLExpression(columns: columns))
+        addExpression(SelectSQLExpression(columns: columns))
         return self
     }
 }
 
 public extension SQLQueryBuilder {
-    func from(_ table: String, as alias: String?) -> Self {
-        expressions.append(FromSQLExpression(tables: [TableSQLExpression(name: table, alias: alias)]))
+    func from(
+        _ table: String,
+        as alias: String?
+    ) -> Self {
+        addExpression(
+            FromSQLExpression(
+                tables: [
+                    TableSQLExpression(
+                        name: table,
+                        alias: alias
+                    )
+                ]
+            )
+        )
         return self
     }
 
@@ -97,49 +159,59 @@ public extension SQLQueryBuilder {
     }
 
     func from(_ tables: [String]) -> Self {
-        expressions.append(FromSQLExpression(tables: tables))
+        addExpression(FromSQLExpression(tables: tables))
         return self
     }
 }
 
 public extension SQLQueryBuilder {
     func `where`(_ condition: String) -> Self {
-        expressions.append(WhereSQLExpression(condition: condition))
+        addExpression(WhereSQLExpression(condition: condition))
         return self
     }
 
     func andWhere(_ condition: String) -> Self {
-        expressions.append(AndSQLExpression(condition: condition))
+        addExpression(AndSQLExpression(condition: condition))
         return self
     }
 
     func orWhere(_ condition: String) -> Self {
-        expressions.append(OrSQLExpression(condition: condition))
+        addExpression(OrSQLExpression(condition: condition))
         return self
     }
 }
 
 public extension SQLQueryBuilder {
     func having(_ condition: String) -> Self {
-        expressions.append(HavingSQLExpression(condition: condition))
+        addExpression(HavingSQLExpression(condition: condition))
         return self
     }
 
     func andHaving(_ condition: String) -> Self {
-        expressions.append(AndSQLExpression(condition: condition))
+        addExpression(AndSQLExpression(condition: condition))
         return self
     }
 
     func orHaving(_ condition: String) -> Self {
-        expressions.append(OrSQLExpression(condition: condition))
+        addExpression(OrSQLExpression(condition: condition))
         return self
     }
 }
 
 public extension SQLQueryBuilder {
-    func join(_ table: String, as alias: String? = nil, on condition: String) -> Self {
-        expressions.append(
-            JoinSQLExpression(table: TableSQLExpression(name: table, alias: alias), condition: condition)
+    func join(
+        _ table: String,
+        as alias: String? = nil,
+        on condition: String
+    ) -> Self {
+        addExpression(
+            JoinSQLExpression(
+                table: TableSQLExpression(
+                    name: table,
+                    alias: alias
+                ),
+                condition: condition
+            )
         )
         return self
     }
@@ -151,7 +223,7 @@ public extension SQLQueryBuilder {
     }
 
     func orderBy(_ columns: [(String, SQLExpression.Sorting)]) -> Self {
-        expressions.append(OrderBySQLExpression(columns: columns))
+        addExpression(OrderBySQLExpression(columns: columns))
         return self
     }
 }
@@ -162,7 +234,7 @@ public extension SQLQueryBuilder {
     }
 
     func returning(_ columns: [String]) -> Self {
-        expressions.append(ReturningSQLExpression(columns: columns))
+        addExpression(ReturningSQLExpression(columns: columns))
         return self
     }
 }

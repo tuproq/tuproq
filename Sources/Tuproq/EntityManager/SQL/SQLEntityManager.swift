@@ -1,6 +1,6 @@
 import Foundation
 
-final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
+final actor SQLEntityManager: EntityManager {
     private typealias ChangeSet = [String: (Codable?, Codable?)] // [property: (oldValue, newValue)]
     private typealias EntityChanges = [String: EntityMap]
     private typealias EntityChangeSets = [ObjectIdentifier: ChangeSet]
@@ -8,7 +8,7 @@ final class SQLEntityManager<QB: SQLQueryBuilder>: EntityManager {
     private typealias EntityStates = [ObjectIdentifier: EntityState]
 
     let connectionPool: ConnectionPool
-    var configuration: Configuration
+    let configuration: Configuration
 
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
@@ -62,7 +62,7 @@ extension SQLEntityManager {
         name: String,
         oldValue: Codable?,
         newValue: Codable?
-    ) {
+    ) async {
         let entityName = Configuration.entityName(from: entity)
         let objectID = ObjectIdentifier(entity)
         guard identityMap[entityName]?[objectID] != nil else { return }
@@ -74,8 +74,8 @@ extension SQLEntityManager {
 }
 
 extension SQLEntityManager {
-    func createQueryBuilder() -> QB {
-        QB()
+    nonisolated func createQueryBuilder() -> SQLQueryBuilder {
+        .init()
     }
 
     func find<E: Entity>(_ entityType: E.Type, id: E.ID) async throws -> E? {
@@ -181,7 +181,7 @@ extension SQLEntityManager {
 }
 
 extension SQLEntityManager {
-    func persist<E: Entity>(_ entity: inout E) throws {
+    func persist<E: Entity>(_ entity: inout E) async throws {
         var entityMap = EntityMap()
         try persist(&entity, visited: &entityMap)
     }
@@ -215,7 +215,7 @@ extension SQLEntityManager {
 }
 
 extension SQLEntityManager {
-    func remove<E: Entity>(_ entity: E) throws {
+    func remove<E: Entity>(_ entity: E) async throws {
         var entityMap = EntityMap()
         try remove(entity, visited: &entityMap)
     }
@@ -276,15 +276,15 @@ extension SQLEntityManager {
             let commitOrder = try getCommitOrder()
 
             for entityName in commitOrder {
-                try prepareInserts(for: entityName)
+                try await prepareInserts(for: entityName)
             }
 
             for entityName in commitOrder {
-                try prepareUpdates(for: entityName)
+                try await prepareUpdates(for: entityName)
             }
 
             for entityName in commitOrder {
-                try prepareDeletions(for: entityName)
+                try await prepareDeletions(for: entityName)
             }
 
             if !allQueries.isEmpty {
@@ -376,7 +376,7 @@ extension SQLEntityManager {
         allQueries.removeAll()
     }
 
-    private func prepareInserts(for entityName: String) throws {
+    private func prepareInserts(for entityName: String) async throws {
         let mapping = try mapping(from: entityName)
         let idField = configuration.mapping(tableName: mapping.table)?.id.name ?? Configuration.defaultIDField
 
@@ -418,7 +418,7 @@ extension SQLEntityManager {
         }
     }
 
-    private func prepareUpdates(for entityName: String) throws {
+    private func prepareUpdates(for entityName: String) async throws {
         let mapping = try mapping(from: entityName)
         let idColumn = idColumn(tableName: mapping.table)
 
@@ -447,7 +447,7 @@ extension SQLEntityManager {
         }
     }
 
-    private func prepareDeletions(for entityName: String) throws {
+    private func prepareDeletions(for entityName: String) async throws {
         let table = try mapping(from: entityName).table
         let idColumn = idColumn(tableName: table)
 

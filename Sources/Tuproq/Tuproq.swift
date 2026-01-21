@@ -53,33 +53,10 @@ extension Tuproq {
 
 extension Tuproq {
     public func createEntityManager() -> any EntityManager {
-        switch configuration.driver {
-        case .mysql:
-            SQLEntityManager<MySQLQueryBuilder>(
-                connectionPool: connectionPool,
-                configuration: configuration
-            )
-        case .oracle:
-            SQLEntityManager<OracleQueryBuilder>(
-                connectionPool: connectionPool,
-                configuration: configuration
-            )
-        case .postgresql:
-            SQLEntityManager<PostgreSQLQueryBuilder>(
-                connectionPool: connectionPool,
-                configuration: configuration
-            )
-        case .sqlite:
-            SQLEntityManager<SQLiteQueryBuilder>(
-                connectionPool: connectionPool,
-                configuration: configuration
-            )
-        case .sqlserver:
-            SQLEntityManager<SQLServerQueryBuilder>(
-                connectionPool: connectionPool,
-                configuration: configuration
-            )
-        }
+        SQLEntityManager(
+            connectionPool: connectionPool,
+            configuration: configuration
+        )
     }
 }
 
@@ -105,13 +82,13 @@ extension Tuproq {
 
 extension Tuproq {
     public func migrate() async throws {
-        let allQueries = "BEGIN;\(createSchema())COMMIT;"
+        let allQueries = "BEGIN;\(await createSchema())COMMIT;"
         let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
         try await connection.query(allQueries)
         connectionPool.returnConnection(connection)
     }
 
-    public func createTables() -> [String] {
+    public func createTables() async -> [String] {
         var queries = [String]()
         var tables = [Table]()
 
@@ -125,8 +102,8 @@ extension Tuproq {
         }
 
         for table in tables {
-            let queryBuilder = PostgreSQLQueryBuilder()
-            let query = queryBuilder.create(
+            let queryBuilder = SQLQueryBuilder()
+            let query = await queryBuilder.create(
                 table: table.name,
                 ifNotExists: true,
                 columns: table.columns,
@@ -138,8 +115,8 @@ extension Tuproq {
         return queries
     }
 
-    public func createSchema() -> String {
-        createTables().joined()
+    public func createSchema() async -> String {
+        await createTables().joined()
     }
 
     private func createTable<M: EntityMapping>(from mapping: M) -> Table {

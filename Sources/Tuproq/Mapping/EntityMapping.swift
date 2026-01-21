@@ -1,4 +1,4 @@
-public protocol EntityMapping {
+public protocol EntityMapping: Sendable {
     associatedtype E: Entity
 
     typealias Constraint = ConstraintType

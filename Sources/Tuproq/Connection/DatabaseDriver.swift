@@ -1,4 +1,4 @@
-public enum DatabaseDriver {
+public enum DatabaseDriver: Sendable {
     case mysql
     case postgresql
     case oracle

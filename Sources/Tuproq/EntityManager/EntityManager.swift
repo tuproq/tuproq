@@ -1,14 +1,14 @@
 public protocol EntityManager: AnyObject {
     associatedtype Q: QueryBuilder
 
-    var configuration: Configuration { set get }
+    var configuration: Configuration { get }
 
     func createQueryBuilder() -> Q
     func find<E: Entity>(_ entityType: E.Type, id: E.ID) async throws -> E?
     func flush() async throws
     func getRepository<R: EntityRepository>(_ entityType: R.E.Type) -> R
-    func persist<E: Entity>(_ entity: inout E) throws
-    func remove<E: Entity>(_ entity: E) throws
+    func persist<E: Entity>(_ entity: inout E) async throws
+    func remove<E: Entity>(_ entity: E) async throws
 
     @discardableResult
     func query<E: Entity>(
@@ -39,7 +39,7 @@ public protocol EntityManager: AnyObject {
         name: String,
         oldValue: Codable?,
         newValue: Codable?
-    )
+    ) async
 }
 
 public extension EntityManager {
@@ -50,8 +50,8 @@ public extension EntityManager {
     func remove<E: SoftDeletableEntity>(
         _ entity: inout E,
         isSoft: Bool = true
-    ) throws {
-        isSoft ? entity.deletedDate = .init() : try remove(entity)
+    ) async throws {
+        isSoft ? entity.deletedDate = .init() : try await remove(entity)
     }
 
     @discardableResult
