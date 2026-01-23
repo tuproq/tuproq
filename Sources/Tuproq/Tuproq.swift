@@ -129,11 +129,20 @@ extension Tuproq {
         return table
     }
 
-    private func createJoinTable(from mapping: some EntityMapping, tables: inout [Table]) {
-        siblings(mapping: mapping, tables: &tables)
+    private func createJoinTable(
+        from mapping: some EntityMapping,
+        tables: inout [Table]
+    ) {
+        siblings(
+            mapping: mapping,
+            tables: &tables
+        )
     }
 
-    private func id(mapping: some EntityMapping, table: inout Table) {
+    private func id(
+        mapping: some EntityMapping,
+        table: inout Table
+    ) {
         let id = mapping.id
         let columnName = id.column
         let idType = id.type
@@ -149,7 +158,10 @@ extension Tuproq {
         table.columns.append(column)
     }
 
-    private func fields(mapping: some EntityMapping, table: inout Table) {
+    private func fields(
+        mapping: some EntityMapping,
+        table: inout Table
+    ) {
         for field in mapping.fields {
             var columnConstraints = [SQLConstraint]()
 
@@ -158,7 +170,12 @@ extension Tuproq {
             }
 
             if field.column.isUnique {
-                columnConstraints.append(UniqueSQLConstraint(table: table.name, column: field.column.name))
+                columnConstraints.append(
+                    UniqueSQLConstraint(
+                        table: table.name,
+                        column: field.column.name
+                    )
+                )
             }
 
             let column = Table.Column(
@@ -170,7 +187,10 @@ extension Tuproq {
         }
     }
 
-    private func parents(mapping: some EntityMapping, table: inout Table) {
+    private func parents(
+        mapping: some EntityMapping,
+        table: inout Table
+    ) {
         for parent in mapping.parents {
             if let parentMapping = configuration.mapping(from: parent.entity) {
                 let relationTable = parentMapping.table
@@ -209,7 +229,10 @@ extension Tuproq {
         }
     }
 
-    private func siblings(mapping: some EntityMapping, tables: inout [Table]) {
+    private func siblings(
+        mapping: some EntityMapping,
+        tables: inout [Table]
+    ) {
         for sibling in mapping.siblings {
             if let siblingJoinTable = sibling.joinTable {
                 if let siblingMapping = configuration.mapping(from: sibling.entity) {
@@ -312,11 +335,20 @@ extension Tuproq {
         }
     }
 
-    private func constraints(mapping: some EntityMapping, table: inout Table) {
+    private func constraints(
+        mapping: some EntityMapping,
+        table: inout Table
+    ) {
         for constraint in mapping.constraints {
             switch constraint {
             case .unique(let columns, let index):
-                table.constraints.append(UniqueSQLConstraint(table: table.name, columns: columns, index: index))
+                table.constraints.append(
+                    UniqueSQLConstraint(
+                        table: table.name,
+                        columns: columns,
+                        index: index
+                    )
+                )
             }
         }
     }

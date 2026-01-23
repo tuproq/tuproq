@@ -78,7 +78,10 @@ extension SQLEntityManager {
         .init()
     }
 
-    func find<E: Entity>(_ entityType: E.Type, id: E.ID) async throws -> E? {
+    func find<E: Entity>(
+        _ entityType: E.Type,
+        id: E.ID
+    ) async throws -> E? {
         let mapping = try mapping(from: entityType)
         let idColumn = idColumn(tableName: mapping.table)
         guard !(id as AnyObject is NSNull) else { return nil }
@@ -106,8 +109,14 @@ extension SQLEntityManager {
     }
 
     @discardableResult
-    func query<E: Entity>(_ string: String, arguments: [Codable?]) async throws -> [E] {
-        let result = try await query(string, arguments: arguments)
+    func query<E: Entity>(
+        _ string: String,
+        arguments: [Codable?]
+    ) async throws -> [E] {
+        let result = try await query(
+            string,
+            arguments: arguments
+        )
         let data = try JSONSerialization.data(withJSONObject: result)
         let entities = try decoder.decode([E].self, from: data)
 
@@ -121,9 +130,15 @@ extension SQLEntityManager {
     }
 
     @discardableResult
-    func query(_ string: String, arguments: [Codable?]) async throws -> [[String: Any?]] {
+    func query(
+        _ string: String,
+        arguments: [Codable?]
+    ) async throws -> [[String: Any?]] {
         let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
-        let result = try await connection.query(string, arguments: arguments)
+        let result = try await connection.query(
+            string,
+            arguments: arguments
+        )
         connectionPool.returnConnection(connection)
 
         if let result {
@@ -194,7 +209,10 @@ extension SQLEntityManager {
         try persist(&entity, visited: &entityMap)
     }
 
-    private func persist<E: Entity>(_ entity: inout E, visited entityMap: inout EntityMap) throws {
+    private func persist<E: Entity>(
+        _ entity: inout E,
+        visited entityMap: inout EntityMap
+    ) throws {
         try mapping(from: E.self)
         let objectID = ObjectIdentifier(entity)
         guard entityMap[objectID] == nil else { return }
@@ -228,7 +246,10 @@ extension SQLEntityManager {
         try remove(entity, visited: &entityMap)
     }
 
-    private func remove<E: Entity>(_ entity: E, visited entityMap: inout EntityMap) throws {
+    private func remove<E: Entity>(
+        _ entity: E,
+        visited entityMap: inout EntityMap
+    ) throws {
         try mapping(from: E.self)
         let objectID = ObjectIdentifier(entity)
         guard entityMap[objectID] == nil else { return }

@@ -1,11 +1,6 @@
 import Logging
 import NIOCore
 
-enum ConnectionPoolError: Error {
-    case closed
-    case timeout
-}
-
 public typealias ConnectionFactory = (EventLoop) async throws -> Connection
 
 final class ConnectionPool {
