@@ -1,22 +1,39 @@
+import Foundation
+
 @propertyWrapper
-public final class Observed<V: Codable>: Codable {
+public final class Observed<V: Codable & Sendable>: Codable, @unchecked Sendable {
     private let name: String?
     private let originalValue: V
+    private let lock = NSLock()
 
-    public var wrappedValue: V
-    private weak var entityManager: (any EntityManager)?
+    private var _wrappedValue: V
+    private weak var _entityManager: (any EntityManager)?
+
+    public var wrappedValue: V {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return _wrappedValue
+        }
+        set {
+            lock.lock()
+            _wrappedValue = newValue
+            lock.unlock()
+        }
+    }
 
     public init(wrappedValue: V) {
         name = nil
         originalValue = wrappedValue
-        self.wrappedValue = originalValue
+        _wrappedValue = wrappedValue
     }
 
     public init(from decoder: Decoder) throws {
-        entityManager = decoder.userInfo[.entityManager] as? (any EntityManager)
+        let container = try decoder.singleValueContainer()
+        originalValue = try container.decode(V.self)
+        _wrappedValue = originalValue
         name = decoder.codingPath.last?.stringValue
-        originalValue = try decoder.singleValueContainer().decode(V.self)
-        wrappedValue = originalValue
+        _entityManager = decoder.userInfo[.entityManager] as? (any EntityManager)
     }
 
     public static subscript<E: Entity>(
@@ -28,18 +45,20 @@ public final class Observed<V: Codable>: Codable {
             entity[keyPath: storageKeyPath].wrappedValue
         }
         set {
-            guard let name = entity[keyPath: storageKeyPath].name else { return }
-            let oldValue = entity[keyPath: storageKeyPath].originalValue
-            entity[keyPath: storageKeyPath].wrappedValue = newValue
+            let storage = entity[keyPath: storageKeyPath]
+            storage.lock.lock()
+            let oldValue = storage.originalValue
+            storage._wrappedValue = newValue
+            let entityManager = storage._entityManager
+            storage.lock.unlock()
 
-            Task {
-                await entity[keyPath: storageKeyPath].entityManager?.propertyValueChanged(
-                    entity,
-                    name: name,
-                    oldValue: oldValue,
-                    newValue: newValue
-                )
-            }
+            guard let name = storage.name else { return }
+            entityManager?.propertyValueChanged(
+                entity,
+                name: name,
+                oldValue: oldValue,
+                newValue: newValue
+            )
         }
     }
 
