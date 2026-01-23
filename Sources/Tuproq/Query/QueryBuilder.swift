@@ -1,8 +1,8 @@
-public protocol QueryBuilder {
+public protocol QueryBuilder: Sendable {
     associatedtype E: Expression
     associatedtype Q: Query
 
-    func addExpression(_ expression: E)
+    mutating func addExpression(_ expression: E)
     func getExpressions() -> [E]
 
     func getQuery() -> Q

@@ -1,9 +1,9 @@
-public class SQLQueryBuilder: QueryBuilder {
+public struct SQLQueryBuilder: QueryBuilder {
     private var _expressions = [SQLExpression]()
 
     public init() {}
 
-    public func addExpression(_ expression: SQLExpression) {
+    public mutating func addExpression(_ expression: SQLExpression) {
         _expressions.append(expression)
     }
 
@@ -14,17 +14,7 @@ public class SQLQueryBuilder: QueryBuilder {
 
 public extension SQLQueryBuilder {
     func getQuery() -> SQLQuery {
-        var raw = ""
-        let expressions = getExpressions()
-
-        for expression in expressions {
-            if raw.isEmpty {
-                raw = expression.raw
-            } else {
-                raw += " " + expression.raw
-            }
-        }
-
+        let raw = _expressions.map { $0.raw }.joined(separator: " ")
         return .init(raw)
     }
 }
@@ -50,7 +40,8 @@ public extension SQLQueryBuilder {
         columns: [Table.Column] = .init(),
         constraints: [SQLConstraint] = .init()
     ) -> Self {
-        addExpression(
+        var copy = self
+        copy.addExpression(
             CreateTableSQLExpression(
                 table: Table(
                     name: table,
@@ -60,7 +51,8 @@ public extension SQLQueryBuilder {
                 ifNotExists: ifNotExists
             )
         )
-        return self
+
+        return copy
     }
 }
 
@@ -82,14 +74,16 @@ public extension SQLQueryBuilder {
         columns: [String] = .init(),
         values: [Any?]
     ) -> Self {
-        addExpression(
+        var copy = self
+        copy.addExpression(
             InsertIntoSQLExpression(
                 table: table,
                 columns: columns,
                 values: values
             )
         )
-        return self
+
+        return copy
     }
 }
 
@@ -108,20 +102,24 @@ public extension SQLQueryBuilder {
         table: String,
         values: [(String, Any?)]
     ) -> Self {
-        addExpression(
+        var copy = self
+        copy.addExpression(
             UpdateSQLExpression(
                 table: table,
                 values: values
             )
         )
-        return self
+
+        return copy
     }
 }
 
 public extension SQLQueryBuilder {
     func delete() -> Self {
-        addExpression(DeleteSQLExpression())
-        return self
+        var copy = self
+        copy.addExpression(DeleteSQLExpression())
+
+        return copy
     }
 }
 
@@ -131,70 +129,82 @@ public extension SQLQueryBuilder {
     }
 
     func select(_ columns: [String]) -> Self {
-        addExpression(SelectSQLExpression(columns: columns))
-        return self
+        var copy = self
+        copy.addExpression(SelectSQLExpression(columns: columns))
+
+        return copy
     }
 }
 
 public extension SQLQueryBuilder {
     func from(
         _ table: String,
-        as alias: String?
+        as alias: String? = nil
     ) -> Self {
-        addExpression(
+        var copy = self
+        copy.addExpression(
             FromSQLExpression(
-                tables: [
-                    TableSQLExpression(
-                        name: table,
-                        alias: alias
-                    )
-                ]
+                tables: [TableSQLExpression(
+                    name: table,
+                    alias: alias
+                )]
             )
         )
-        return self
-    }
 
-    func from(_ tables: String...) -> Self {
-        from(tables)
+        return copy
     }
 
     func from(_ tables: [String]) -> Self {
-        addExpression(FromSQLExpression(tables: tables))
-        return self
+        var copy = self
+        copy.addExpression(FromSQLExpression(tables: tables))
+
+        return copy
     }
 }
 
 public extension SQLQueryBuilder {
     func `where`(_ condition: String) -> Self {
-        addExpression(WhereSQLExpression(condition: condition))
-        return self
+        var copy = self
+        copy.addExpression(WhereSQLExpression(condition: condition))
+
+        return copy
     }
 
     func andWhere(_ condition: String) -> Self {
-        addExpression(AndSQLExpression(condition: condition))
-        return self
+        var copy = self
+        copy.addExpression(AndSQLExpression(condition: condition))
+
+        return copy
     }
 
     func orWhere(_ condition: String) -> Self {
-        addExpression(OrSQLExpression(condition: condition))
-        return self
+        var copy = self
+        copy.addExpression(OrSQLExpression(condition: condition))
+
+        return copy
     }
 }
 
 public extension SQLQueryBuilder {
     func having(_ condition: String) -> Self {
-        addExpression(HavingSQLExpression(condition: condition))
-        return self
+        var copy = self
+        copy.addExpression(HavingSQLExpression(condition: condition))
+
+        return copy
     }
 
     func andHaving(_ condition: String) -> Self {
-        addExpression(AndSQLExpression(condition: condition))
-        return self
+        var copy = self
+        copy.addExpression(AndSQLExpression(condition: condition))
+
+        return copy
     }
 
     func orHaving(_ condition: String) -> Self {
-        addExpression(OrSQLExpression(condition: condition))
-        return self
+        var copy = self
+        copy.addExpression(OrSQLExpression(condition: condition))
+
+        return copy
     }
 }
 
@@ -204,7 +214,8 @@ public extension SQLQueryBuilder {
         as alias: String? = nil,
         on condition: String
     ) -> Self {
-        addExpression(
+        var copy = self
+        copy.addExpression(
             JoinSQLExpression(
                 table: TableSQLExpression(
                     name: table,
@@ -213,7 +224,8 @@ public extension SQLQueryBuilder {
                 condition: condition
             )
         )
-        return self
+
+        return copy
     }
 }
 
@@ -223,8 +235,10 @@ public extension SQLQueryBuilder {
     }
 
     func orderBy(_ columns: [(String, SQLExpression.Ordering)]) -> Self {
-        addExpression(OrderBySQLExpression(columns: columns))
-        return self
+        var copy = self
+        copy.addExpression(OrderBySQLExpression(columns: columns))
+
+        return copy
     }
 }
 
@@ -234,7 +248,10 @@ public extension SQLQueryBuilder {
     }
 
     func returning(_ columns: [String]) -> Self {
-        addExpression(ReturningSQLExpression(columns: columns))
-        return self
+        var copy = self
+        copy.addExpression(ReturningSQLExpression(columns: columns))
+
+        return copy
     }
 }
+

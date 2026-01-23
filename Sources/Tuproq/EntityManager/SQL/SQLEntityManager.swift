@@ -74,7 +74,7 @@ extension SQLEntityManager {
 }
 
 extension SQLEntityManager {
-    nonisolated func createQueryBuilder() -> SQLQueryBuilder {
+    func createQueryBuilder() -> SQLQueryBuilder {
         .init()
     }
 
