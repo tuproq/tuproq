@@ -1,6 +1,6 @@
 import Foundation
 
-final class UpdateSQLExpression: SQLExpression {
+final class UpdateSQLExpression: SQLExpression, @unchecked Sendable {
     let table: String
     let values: [(String, Any?)]
 

@@ -1,4 +1,4 @@
-final class ReturningSQLExpression: SQLExpression {
+final class ReturningSQLExpression: SQLExpression, @unchecked Sendable {
     let columns: [ColumnSQLExpression]
 
     convenience init(columns: String...) {

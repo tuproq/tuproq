@@ -1,7 +1,10 @@
-final class CreateTableSQLExpression: SQLExpression {
+final class CreateTableSQLExpression: SQLExpression, @unchecked Sendable {
     let table: Table
 
-    init(table: Table, ifNotExists: Bool = false) {
+    init(
+        table: Table,
+        ifNotExists: Bool = false
+    ) {
         self.table = table
         var raw = "\(Kind.createTable)"
 

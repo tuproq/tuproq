@@ -1,6 +1,6 @@
 import Foundation
 
-final class InsertIntoSQLExpression: SQLExpression {
+final class InsertIntoSQLExpression: SQLExpression, @unchecked Sendable {
     let table: String
     let columns: [String]
     let values: [Any?]

@@ -1,4 +1,4 @@
-class ColumnSQLExpression: SQLExpression, ExpressibleByStringLiteral {
+class ColumnSQLExpression: SQLExpression, ExpressibleByStringLiteral, @unchecked Sendable {
     let name: String
     let alias: String?
 

@@ -1,1 +1,1 @@
-final class TableSQLExpression: ColumnSQLExpression {}
+final class TableSQLExpression: ColumnSQLExpression, @unchecked Sendable {}

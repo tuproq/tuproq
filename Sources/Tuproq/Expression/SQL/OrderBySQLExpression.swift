@@ -1,4 +1,4 @@
-final class OrderBySQLExpression: SQLExpression {
+final class OrderBySQLExpression: SQLExpression, @unchecked Sendable {
     let columns: [(String, Ordering)]
 
     init(columns: [(String, Ordering)]) {

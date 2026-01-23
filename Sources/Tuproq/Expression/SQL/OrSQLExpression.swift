@@ -1,4 +1,4 @@
-final class OrSQLExpression: SQLExpression {
+final class OrSQLExpression: SQLExpression, @unchecked Sendable {
     let condition: String
 
     init(condition: String) {

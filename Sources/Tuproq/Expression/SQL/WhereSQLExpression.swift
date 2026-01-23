@@ -1,4 +1,4 @@
-final class WhereSQLExpression: SQLExpression {
+final class WhereSQLExpression: SQLExpression, @unchecked Sendable {
     let condition: String
 
     init(condition: String) {

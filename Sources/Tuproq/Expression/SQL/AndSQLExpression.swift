@@ -1,4 +1,4 @@
-final class AndSQLExpression: SQLExpression {
+final class AndSQLExpression: SQLExpression, @unchecked Sendable {
     let condition: String
 
     init(condition: String) {

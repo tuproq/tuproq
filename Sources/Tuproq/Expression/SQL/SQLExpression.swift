@@ -1,7 +1,7 @@
-public class SQLExpression: Expression {
+public class SQLExpression: Expression, @unchecked Sendable {
     public let raw: String
 
-    public init(raw: String = "") {
+    public init(raw: String) {
         self.raw = raw
     }
 }
