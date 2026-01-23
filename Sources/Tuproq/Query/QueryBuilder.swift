@@ -1,4 +1,4 @@
-public protocol QueryBuilder: AnyObject {
+public protocol QueryBuilder {
     associatedtype E: Expression
     associatedtype Q: Query
 

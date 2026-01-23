@@ -1,8 +1,11 @@
-public final class QueryResult {
+public actor QueryResult {
     public let columns: [Column]
-    public internal(set) var rows = [[Codable?]]()
+    public internal(set) var rows: [[Codable?]]
 
-    public init(columns: [Column], rows: [[Codable?]]) {
+    public init(
+        columns: [Column],
+        rows: [[Codable?]] = .init()
+    ) {
         self.columns = columns
         self.rows = rows
     }
@@ -11,10 +14,13 @@ public final class QueryResult {
 extension QueryResult {
     public struct Column: CustomStringConvertible, Hashable, Sendable {
         public let name: String
-        public let tableID: Int32 // TODO: a temporary solution (PostgreSQL specific)
+        public let tableID: Int32
         public var description: String { name }
-        
-        public init(name: String, tableID: Int32) {
+
+        public init(
+            name: String,
+            tableID: Int32
+        ) {
             self.name = name
             self.tableID = tableID
         }

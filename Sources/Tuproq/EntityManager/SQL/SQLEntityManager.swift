@@ -133,7 +133,7 @@ extension SQLEntityManager {
             if tables.isEmpty || result.columns.contains(where: { tables[$0.tableID] == nil }) {
                 var array = [[String: Any?]]()
 
-                for row in result.rows {
+                for row in await result.rows {
                     var dictionary = [String: Any?]()
 
                     for (index, column) in result.columns.enumerated() {
@@ -151,7 +151,10 @@ extension SQLEntityManager {
 
             return ObjectHydration(
                 entityManager: self,
-                result: .init(columns: columns, rows: result.rows),
+                result: .init(
+                    columns: columns,
+                    rows: await result.rows
+                ),
                 rootTable: rootTable,
                 tables: Set(tables.values)
             ).hydrate()
@@ -169,7 +172,7 @@ extension SQLEntityManager {
         connectionPool.returnConnection(connection)
 
         if let result {
-            for row in result.rows {
+            for row in await result.rows {
                 if let oid = row[0] as? Int32, let table = row[1] as? String {
                     dictionary[oid] = table
                 }
