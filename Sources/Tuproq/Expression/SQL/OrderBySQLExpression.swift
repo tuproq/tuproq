@@ -1,7 +1,7 @@
 final class OrderBySQLExpression: SQLExpression {
-    let columns: [(String, Sorting)]
+    let columns: [(String, Ordering)]
 
-    init(columns: [(String, Sorting)]) {
+    init(columns: [(String, Ordering)]) {
         self.columns = columns
         var raw = "\(Kind.orderBy)"
 

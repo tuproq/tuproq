@@ -218,11 +218,11 @@ public extension SQLQueryBuilder {
 }
 
 public extension SQLQueryBuilder {
-    func orderBy(_ columns: (String, SQLExpression.Sorting)...) -> Self {
+    func orderBy(_ columns: (String, SQLExpression.Ordering)...) -> Self {
         orderBy(columns)
     }
 
-    func orderBy(_ columns: [(String, SQLExpression.Sorting)]) -> Self {
+    func orderBy(_ columns: [(String, SQLExpression.Ordering)]) -> Self {
         addExpression(OrderBySQLExpression(columns: columns))
         return self
     }

@@ -97,7 +97,7 @@ extension SQLExpression {
 }
 
 extension SQLExpression {
-    public enum Sorting: String, CustomStringConvertible {
+    public enum Ordering: String, CustomStringConvertible, Sendable {
         case asc = "ASC"
         case desc = "DESC"
 
