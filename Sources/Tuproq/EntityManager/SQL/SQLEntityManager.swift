@@ -149,11 +149,11 @@ extension SQLEntityManager {
             let columns = result.columns.map { ObjectHydration.Column($0.name, table: tables[$0.tableID]!) }
             let rootTable = columns.map { $0.table }.first! // TODO: fix identifying root table
 
-            return ObjectHydration(
+            return await ObjectHydration(
                 entityManager: self,
                 result: .init(
                     columns: columns,
-                    rows: await result.rows
+                    rows: result.rows
                 ),
                 rootTable: rootTable,
                 tables: Set(tables.values)

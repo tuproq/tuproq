@@ -1,6 +1,6 @@
 import Foundation
 
-final class ObjectHydration {
+final actor ObjectHydration {
     let entityManager: any EntityManager
     let result: Result
     let rootTable: String
@@ -22,7 +22,7 @@ final class ObjectHydration {
         rootTable: String,
         tables: Set<String>,
         dateFormatter: DateFormatter = .iso8601
-    ) {
+    ) async {
         self.entityManager = entityManager
         self.result = result
         self.rootTable = rootTable
