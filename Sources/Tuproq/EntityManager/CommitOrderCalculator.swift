@@ -1,12 +1,8 @@
-final class CommitOrderCalculator {
+final actor CommitOrderCalculator {
     private var nodes = [String: Node]()
     private var sortedNodes = [String]()
 
     init() {}
-
-    func addDependency(_ dependency: Dependency) {
-        nodes[dependency.from]?.addDependency(dependency)
-    }
 
     func addNode(_ node: Node) {
         nodes[node.value] = node
@@ -16,7 +12,27 @@ final class CommitOrderCalculator {
         nodes[node.value] != nil
     }
 
-    func visitNode(_ node: Node) {
+    func addDependency(_ dependency: Dependency) {
+        nodes[dependency.from]?.addDependency(dependency)
+    }
+
+    func sort() -> [String] {
+        for node in nodes.values {
+            if node.state == .notVisited {
+                visitNode(node)
+            }
+        }
+
+        let result = Array(sortedNodes.reversed())
+
+        // Reset state
+        nodes.removeAll()
+        sortedNodes.removeAll()
+
+        return result
+    }
+
+    private func visitNode(_ node: Node) {
         node.state = .inProgress
 
         for dependency in node.dependencies.values {
@@ -25,18 +41,11 @@ final class CommitOrderCalculator {
                 case .notVisited: visitNode(adjacentNode)
                 case .visited: break
                 case .inProgress:
-                    if let adjacentDependency = adjacentNode.dependencies[node.value],
-                       adjacentDependency.weight < dependency.weight {
-                        for adjacentDependency in adjacentNode.dependencies.values {
-                            if let adjacentDependencyNode = nodes[adjacentDependency.to],
-                               adjacentDependencyNode.state == .notVisited {
-                                visitNode(adjacentDependencyNode)
-                            }
-
-                            adjacentNode.state = .visited
-                            sortedNodes.append(adjacentNode.value)
-                        }
-                    }
+                    handleCycle(
+                        node: node,
+                        adjacentNode: adjacentNode,
+                        dependency: dependency
+                    )
                 }
             }
         }
@@ -47,20 +56,23 @@ final class CommitOrderCalculator {
         }
     }
 
-    func sort() -> [String] {
-        for node in nodes.values {
-            if node.state != .notVisited {
-                continue
+    private func handleCycle(
+        node: Node,
+        adjacentNode: Node,
+        dependency: Dependency
+    ) {
+        if let adjacentDependency = adjacentNode.dependencies[node.value],
+           adjacentDependency.weight < dependency.weight {
+            for adjacentDependencyItem in adjacentNode.dependencies.values {
+                if let adjacentDependencyNode = nodes[adjacentDependencyItem.to],
+                   adjacentDependencyNode.state == .notVisited {
+                    visitNode(adjacentDependencyNode)
+                }
             }
 
-            visitNode(node)
+            adjacentNode.state = .visited
+            sortedNodes.append(adjacentNode.value)
         }
-
-        let sortedNodes = sortedNodes
-        nodes.removeAll()
-        self.sortedNodes.removeAll()
-
-        return sortedNodes.reversed()
     }
 }
 
@@ -81,8 +93,8 @@ extension CommitOrderCalculator {
             state: State = .notVisited,
             dependencies: [String: Dependency] = .init()
         ) {
-            self.state = state
             self.value = value
+            self.state = state
             self.dependencies = dependencies
         }
 
@@ -90,22 +102,10 @@ extension CommitOrderCalculator {
             dependencies[dependency.to] = dependency
         }
     }
-}
 
-extension CommitOrderCalculator {
-    final class Dependency {
+    struct Dependency: Sendable {
         let from: String
         let to: String
         let weight: Int
-
-        init(
-            from: String,
-            to: String,
-            weight: Int
-        ) {
-            self.from = from
-            self.to = to
-            self.weight = weight
-        }
     }
 }

@@ -276,7 +276,7 @@ extension SQLEntityManager {
 extension SQLEntityManager {
     func flush() async throws {
         do {
-            let commitOrder = try getCommitOrder()
+            let commitOrder = try await getCommitOrder()
 
             for entityName in commitOrder {
                 try prepareInserts(for: entityName)
@@ -318,25 +318,25 @@ extension SQLEntityManager {
         }
     }
 
-    private func getCommitOrder() throws -> [String] {
+    private func getCommitOrder() async throws -> [String] {
         let calculator = CommitOrderCalculator()
         var entityNames = [String]()
 
-        func processEntityMap(_ entityMap: EntityMap) {
+        func processEntityMap(_ entityMap: EntityMap) async {
             for entity in entityMap.values {
                 let entityName = Configuration.entityName(from: entity)
                 let node = CommitOrderCalculator.Node(value: entityName)
 
-                if !calculator.hasNode(node) {
-                    calculator.addNode(node)
+                if !(await calculator.hasNode(node)) {
+                    await calculator.addNode(node)
                     entityNames.append(entityName)
                 }
             }
         }
 
-        processEntityMap(entityInsertions)
-        processEntityMap(entityUpdates)
-        processEntityMap(entityDeletions)
+        await processEntityMap(entityInsertions)
+        await processEntityMap(entityUpdates)
+        await processEntityMap(entityDeletions)
 
         while !entityNames.isEmpty {
             let entityName = entityNames.removeFirst()
@@ -346,8 +346,8 @@ extension SQLEntityManager {
                 let parentEntityName = Configuration.entityName(from: parentMapping.entity)
                 let node = CommitOrderCalculator.Node(value: parentEntityName)
 
-                if !calculator.hasNode(node) {
-                    calculator.addNode(node)
+                if !(await calculator.hasNode(node)) {
+                    await calculator.addNode(node)
                     entityNames.append(parentEntityName)
                 }
 
@@ -356,11 +356,11 @@ extension SQLEntityManager {
                     to: entityName,
                     weight: parentMapping.column.isNullable ? 0 : 1
                 )
-                calculator.addDependency(dependency)
+                await calculator.addDependency(dependency)
             }
         }
 
-        return calculator.sort()
+        return await calculator.sort()
     }
 
     private func cleanUpDirty() {

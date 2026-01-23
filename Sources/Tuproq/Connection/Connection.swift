@@ -32,6 +32,9 @@ public extension Connection {
         _ string: String,
         arguments: Codable?...
     ) async throws -> QueryResult? {
-        try await query(string, arguments: arguments)
+        try await query(
+            string,
+            arguments: arguments
+        )
     }
 }
