@@ -103,7 +103,7 @@ extension Tuproq {
 
         for table in tables {
             let queryBuilder = SQLQueryBuilder()
-            let query = await queryBuilder.create(
+            let query = queryBuilder.create(
                 table: table.name,
                 ifNotExists: true,
                 columns: table.columns,
@@ -172,118 +172,141 @@ extension Tuproq {
 
     private func parents(mapping: some EntityMapping, table: inout Table) {
         for parent in mapping.parents {
-            let parentMapping = configuration.mapping(from: parent.entity)!
-            let relationTable = parentMapping.table
-            table.constraints.append(
-                ForeignKeySQLConstraint(
-                    column: parent.column.name,
-                    relationTable: relationTable,
-                    relationColumn: parent.column.referenceColumn,
-                    cascadeDelete: parent.constraints.contains(.delete(.cascade))
+            if let parentMapping = configuration.mapping(from: parent.entity) {
+                let relationTable = parentMapping.table
+                table.constraints.append(
+                    ForeignKeySQLConstraint(
+                        column: parent.column.name,
+                        relationTable: relationTable,
+                        relationColumn: parent.column.referenceColumn,
+                        cascadeDelete: parent.constraints.contains(.delete(.cascade))
+                    )
                 )
-            )
 
-            var columnConstraints = [SQLConstraint]()
+                var columnConstraints = [SQLConstraint]()
 
-            if parent.column.isUnique {
-                columnConstraints.append(UniqueSQLConstraint(table: table.name, column: parent.column.name))
+                if parent.column.isUnique {
+                    columnConstraints.append(
+                        UniqueSQLConstraint(
+                            table: table.name,
+                            column: parent.column.name
+                        )
+                    )
+                }
+
+                if !parent.column.isNullable {
+                    columnConstraints.append(NotNullSQLConstraint())
+                }
+
+                let parentIDType = parentMapping.id.type
+                let column = Table.Column(
+                    name: parent.column.name,
+                    type: parentIDType.name(for: configuration.driver),
+                    constraints: columnConstraints
+                )
+                table.columns.append(column)
             }
-
-            if !parent.column.isNullable {
-                columnConstraints.append(NotNullSQLConstraint())
-            }
-
-            let parentIDType = parentMapping.id.type
-            let column = Table.Column(
-                name: parent.column.name,
-                type: parentIDType.name(for: configuration.driver),
-                constraints: columnConstraints
-            )
-            table.columns.append(column)
         }
     }
 
     private func siblings(mapping: some EntityMapping, tables: inout [Table]) {
         for sibling in mapping.siblings {
             if let siblingJoinTable = sibling.joinTable {
-                let siblingMapping = configuration.mapping(from: sibling.entity)!
-                let joinTableName = siblingJoinTable.name
-                var joinTable: Table
-                var joinTableIndex: Int?
+                if let siblingMapping = configuration.mapping(from: sibling.entity) {
+                    let joinTableName = siblingJoinTable.name
+                    var joinTable: Table
+                    var joinTableIndex: Int?
 
-                if let index = tables.firstIndex(where: { $0.name == joinTableName }) {
-                    joinTableIndex = index
-                    joinTable = tables[index]
-                } else {
-                    joinTable = Table(name: joinTableName)
-                    id(mapping: siblingMapping, table: &joinTable)
-                }
-
-                for column in siblingJoinTable.columns {
-                    var columnConstraints = [SQLConstraint]()
-
-                    if column.isUnique {
-                        columnConstraints.append(UniqueSQLConstraint(table: siblingJoinTable.name, column: column.name))
+                    if let index = tables.firstIndex(where: { $0.name == joinTableName }) {
+                        joinTableIndex = index
+                        joinTable = tables[index]
+                    } else {
+                        joinTable = Table(name: joinTableName)
+                        id(mapping: siblingMapping, table: &joinTable)
                     }
 
-                    if !column.isNullable {
-                        columnConstraints.append(NotNullSQLConstraint())
-                    }
+                    for column in siblingJoinTable.columns {
+                        var columnConstraints = [SQLConstraint]()
 
-                    joinTable.columns.append(
-                        Table.Column(
-                            name: column.name,
-                            type: configuration.joinColumnTypes[column.name]!,
-                            constraints: columnConstraints
+                        if column.isUnique {
+                            columnConstraints.append(
+                                UniqueSQLConstraint(
+                                    table: siblingJoinTable.name,
+                                    column: column.name
+                                )
+                            )
+                        }
+
+                        if !column.isNullable {
+                            columnConstraints.append(NotNullSQLConstraint())
+                        }
+
+                        joinTable.columns.append(
+                            Table.Column(
+                                name: column.name,
+                                type: configuration.joinColumnTypes[column.name]!,
+                                constraints: columnConstraints
+                            )
                         )
-                    )
-                    joinTable.constraints.append(
-                        ForeignKeySQLConstraint(
-                            column: column.name,
-                            relationTable: mapping.table,
-                            relationColumn: column.referenceColumn
+                        joinTable.constraints.append(
+                            ForeignKeySQLConstraint(
+                                column: column.name,
+                                relationTable: mapping.table,
+                                relationColumn: column.referenceColumn
+                            )
                         )
-                    )
-                }
-
-                for column in siblingJoinTable.inverseColumns {
-                    var columnConstraints = [SQLConstraint]()
-
-                    if column.isUnique {
-                        columnConstraints.append(UniqueSQLConstraint(table: siblingJoinTable.name, column: column.name))
                     }
 
-                    if !column.isNullable {
-                        columnConstraints.append(NotNullSQLConstraint())
+                    for column in siblingJoinTable.inverseColumns {
+                        var columnConstraints = [SQLConstraint]()
+
+                        if column.isUnique {
+                            columnConstraints.append(
+                                UniqueSQLConstraint(
+                                    table: siblingJoinTable.name,
+                                    column: column.name
+                                )
+                            )
+                        }
+
+                        if !column.isNullable {
+                            columnConstraints.append(NotNullSQLConstraint())
+                        }
+
+                        joinTable.columns.append(
+                            Table.Column(
+                                name: column.name,
+                                type: configuration.joinColumnTypes[column.name]!,
+                                constraints: columnConstraints
+                            )
+                        )
+                        joinTable.constraints.append(
+                            ForeignKeySQLConstraint(
+                                column: column.name,
+                                relationTable: siblingMapping.table,
+                                relationColumn: column.referenceColumn
+                            )
+                        )
                     }
 
-                    joinTable.columns.append(
-                        Table.Column(
-                            name: column.name,
-                            type: configuration.joinColumnTypes[column.name]!,
-                            constraints: columnConstraints
-                        )
-                    )
-                    joinTable.constraints.append(
-                        ForeignKeySQLConstraint(
-                            column: column.name,
-                            relationTable: siblingMapping.table,
-                            relationColumn: column.referenceColumn
-                        )
-                    )
-                }
-
-                for constraint in siblingJoinTable.constraints {
-                    switch constraint {
-                    case .unique(let columns, let index):
-                        joinTable.constraints.append(UniqueSQLConstraint(table: siblingJoinTable.name, columns: columns, index: index))
+                    for constraint in siblingJoinTable.constraints {
+                        switch constraint {
+                        case .unique(let columns, let index):
+                            joinTable.constraints.append(
+                                UniqueSQLConstraint(
+                                    table: siblingJoinTable.name,
+                                    columns: columns,
+                                    index: index
+                                )
+                            )
+                        }
                     }
-                }
 
-                if let index = joinTableIndex {
-                    tables[index] = joinTable
-                } else {
-                    tables.append(joinTable)
+                    if let index = joinTableIndex {
+                        tables[index] = joinTable
+                    } else {
+                        tables.append(joinTable)
+                    }
                 }
             }
         }

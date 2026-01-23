@@ -29,20 +29,38 @@ final class ParentMappingTests: XCTestCase {
         let inversedBy = "posts"
         let isUnique = true
         let isNullable = false
-        let column = JoinTable.Column("author_id", isUnique: isUnique, isNullable: isNullable)
+        let column = JoinTable.Column(
+            "author_id",
+            isUnique: isUnique,
+            isNullable: isNullable
+        )
 
         // Act
         var mapping = ParentMapping(entity: entity)
 
         // Assert
-        XCTAssertEqual(mapping.name, name)
+        XCTAssertEqual(
+            mapping.name,
+            String(describingNestedType: entity).components(separatedBy: ".").last?.camelCased ?? ""
+        )
         XCTAssertTrue(mapping.entity == entity)
         XCTAssertNil(mapping.inversedBy)
-        XCTAssertEqual(mapping.column, .init(stringLiteral: Configuration.namingStrategy.joinColumn(field: name)))
+        XCTAssertEqual(
+            mapping.column,
+            .init(
+                Configuration.namingStrategy.joinColumn(field: mapping.name),
+                referenceColumn: mapping.column.referenceColumn
+            )
+        )
         XCTAssertEqual(mapping.constraints, [.delete(.cascade)])
 
         // Act
-        mapping = ParentMapping(name, entity: entity, inversedBy: inversedBy, column: column)
+        mapping = ParentMapping(
+            name,
+            entity: entity,
+            inversedBy: inversedBy,
+            column: column
+        )
 
         // Assert
         XCTAssertEqual(mapping.name, name)

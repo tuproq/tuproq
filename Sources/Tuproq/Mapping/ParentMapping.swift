@@ -76,18 +76,18 @@ public struct ParentMapping: AssociationMapping {
         column: JoinTable.Column,
         on constraints: Set<Constraint> = [.delete(.cascade)]
     ) {
-        if name.isEmpty {
-            self.name = String(describingNestedType: entity)
-                .components(separatedBy: ".")
-                .last!
-                .camelCased
-        } else {
-            self.name = name
-        }
-
         self.entity = entity
         self.inversedBy = inversedBy
         self.constraints = constraints
+
+        if name.isEmpty {
+            self.name = String(describingNestedType: entity)
+                .components(separatedBy: ".")
+                .last?
+                .camelCased ?? ""
+        } else {
+            self.name = name
+        }
 
         if column.name.isEmpty {
             self.column = .init(

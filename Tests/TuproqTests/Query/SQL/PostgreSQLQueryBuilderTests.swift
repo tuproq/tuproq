@@ -1,10 +1,10 @@
 @testable import Tuproq
 import XCTest
 
-final class PostgreSQLQueryBuilderTests: XCTestCase {
+final class SQLQueryBuilderTests: XCTestCase {
     func testDelete() {
         // Arrange
-        let queryBuilder = PostgreSQLQueryBuilder()
+        let queryBuilder = SQLQueryBuilder()
 
         // Act
         let query = queryBuilder
@@ -19,7 +19,7 @@ final class PostgreSQLQueryBuilderTests: XCTestCase {
 
     func testInsert() {
         // Arrange
-        let queryBuilder = PostgreSQLQueryBuilder()
+        let queryBuilder = SQLQueryBuilder()
 
         // Act
         let query = queryBuilder
@@ -36,7 +36,7 @@ final class PostgreSQLQueryBuilderTests: XCTestCase {
 
     func testSelect() {
         // Arrange
-        let queryBuilder = PostgreSQLQueryBuilder()
+        let queryBuilder = SQLQueryBuilder()
 
         // Act
         let query = queryBuilder
@@ -66,7 +66,7 @@ final class PostgreSQLQueryBuilderTests: XCTestCase {
 
     func testUpdate() {
         // Arrange
-        let queryBuilder = PostgreSQLQueryBuilder()
+        let queryBuilder = SQLQueryBuilder()
 
         // Act
         let query = queryBuilder

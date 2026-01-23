@@ -144,12 +144,12 @@ final actor ObjectHydration {
                 tables.remove(table)
 
                 let childMappings = entityMapping.children.filter {
-                    tables.contains(entityManager.configuration.mapping(from: $0.entity)!.table.trimmingQuotes)
+                    tables.contains(entityManager.configuration.mapping(from: $0.entity)?.table.trimmingQuotes ?? "")
                 }
                 tableColumnChildMappings[table] = tableColumnChildMappings[table, default: .init()].union(childMappings)
 
                 let siblingMappings = entityMapping.siblings.filter {
-                    tables.contains(entityManager.configuration.mapping(from: $0.entity)!.table.trimmingQuotes)
+                    tables.contains(entityManager.configuration.mapping(from: $0.entity)?.table.trimmingQuotes ?? "")
                 }
                 tableColumnSiblingMappings[table] = tableColumnSiblingMappings[table, default: .init()].union(siblingMappings)
             }

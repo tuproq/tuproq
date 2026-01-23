@@ -146,8 +146,13 @@ extension SQLEntityManager {
                 return array
             }
 
-            let columns = result.columns.map { ObjectHydration.Column($0.name, table: tables[$0.tableID]!) }
-            let rootTable = columns.map { $0.table }.first! // TODO: fix identifying root table
+            let columns = result.columns.map {
+                ObjectHydration.Column(
+                    $0.name,
+                    table: tables[$0.tableID, default: ""]
+                )
+            }
+            let rootTable = columns.map { $0.table }.first ?? "" // TODO: fix identifying root table
 
             return await ObjectHydration(
                 entityManager: self,
