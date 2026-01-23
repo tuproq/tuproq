@@ -1,33 +1,65 @@
-public protocol NamingStrategy {
+public protocol NamingStrategy: Sendable {
     var referenceColumn: String { get }
 
-    func column(field: String, entity: String?) -> String
+    func column(
+        field: String,
+        entity: String?
+    ) -> String
+
     func joinColumn(field: String) -> String
-    func joinKeyColumn(entity: String, referenceColumn: String?) -> String
-    func joinTable(sourceEntity: String, targetEntity: String, field: String?) -> String
+
+    func joinKeyColumn(
+        entity: String,
+        referenceColumn: String?
+    ) -> String
+
+    func joinTable(
+        sourceEntity: String,
+        targetEntity: String,
+        field: String?
+    ) -> String
+
     func table(entity: String) -> String
 }
 
 public extension NamingStrategy {
     func column(field: String) -> String {
-        column(field: field, entity: nil)
+        column(
+            field: field,
+            entity: nil
+        )
     }
 
-    func column<E: Entity>(field: String, entity: E.Type?) -> String {
+    func column<E: Entity>(
+        field: String,
+        entity: E.Type?
+    ) -> String {
         if let entity {
-            return column(field: field, entity: Configuration.entityName(from: entity))
+            return column(
+                field: field,
+                entity: Configuration.entityName(from: entity)
+            )
         }
 
-        return column(field: field, entity: nil)
+        return column(
+            field: field,
+            entity: nil
+        )
     }
 
     func joinColumn<E: Entity>(entity: E.Type) -> String {
-        let field = Configuration.entityName(from: entity).components(separatedBy: ".").last!.camelCased
+        let field = Configuration.entityName(from: entity).components(separatedBy: ".").last?.camelCased ?? ""
         return joinColumn(field: field)
     }
 
-    func joinKeyColumn<E: Entity>(entity: E.Type, referenceColumn: String? = nil) -> String {
-        joinKeyColumn(entity: Configuration.entityName(from: entity), referenceColumn: referenceColumn)
+    func joinKeyColumn<E: Entity>(
+        entity: E.Type,
+        referenceColumn: String? = nil
+    ) -> String {
+        joinKeyColumn(
+            entity: Configuration.entityName(from: entity),
+            referenceColumn: referenceColumn
+        )
     }
 
     func joinTable<SE: Entity, TE: Entity>(

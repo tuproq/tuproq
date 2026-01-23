@@ -12,7 +12,10 @@ public struct SnakeCaseNamingStrategy: NamingStrategy {
         self.letterCase = letterCase
     }
 
-    public func column(field: String, entity: String?) -> String {
+    public func column(
+        field: String,
+        entity: String?
+    ) -> String {
         field.snakeCase(letterCase)
     }
 
@@ -20,11 +23,18 @@ public struct SnakeCaseNamingStrategy: NamingStrategy {
         "\(field.snakeCase(letterCase))_\(referenceColumn)"
     }
 
-    public func joinKeyColumn(entity: String, referenceColumn: String?) -> String {
+    public func joinKeyColumn(
+        entity: String,
+        referenceColumn: String?
+    ) -> String {
         "\(table(entity: entity))_\(referenceColumn ?? self.referenceColumn)"
     }
 
-    public func joinTable(sourceEntity: String, targetEntity: String, field: String?) -> String {
+    public func joinTable(
+        sourceEntity: String,
+        targetEntity: String,
+        field: String?
+    ) -> String {
         "\(table(entity: sourceEntity))_\(table(entity: targetEntity))"
     }
 

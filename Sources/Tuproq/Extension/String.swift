@@ -1,7 +1,7 @@
 import Foundation
 
 public extension String {
-    enum LetterCase {
+    enum LetterCase: Sendable {
         case lower
         case upper
     }

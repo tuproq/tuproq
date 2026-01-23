@@ -1,6 +1,6 @@
 import Foundation
 
-final actor SQLEntityManager: EntityManager {
+final class SQLEntityManager: EntityManager {
     private typealias ChangeSet = [String: (Codable?, Codable?)] // [property: (oldValue, newValue)]
     private typealias EntityChanges = [String: EntityMap]
     private typealias EntityChangeSets = [ObjectIdentifier: ChangeSet]
@@ -62,7 +62,7 @@ extension SQLEntityManager {
         name: String,
         oldValue: Codable?,
         newValue: Codable?
-    ) async {
+    ) {
         let entityName = Configuration.entityName(from: entity)
         let objectID = ObjectIdentifier(entity)
         guard identityMap[entityName]?[objectID] != nil else { return }
@@ -181,7 +181,7 @@ extension SQLEntityManager {
 }
 
 extension SQLEntityManager {
-    func persist<E: Entity>(_ entity: inout E) async throws {
+    func persist<E: Entity>(_ entity: inout E) throws {
         var entityMap = EntityMap()
         try persist(&entity, visited: &entityMap)
     }
@@ -215,7 +215,7 @@ extension SQLEntityManager {
 }
 
 extension SQLEntityManager {
-    func remove<E: Entity>(_ entity: E) async throws {
+    func remove<E: Entity>(_ entity: E) throws {
         var entityMap = EntityMap()
         try remove(entity, visited: &entityMap)
     }
@@ -276,15 +276,15 @@ extension SQLEntityManager {
             let commitOrder = try getCommitOrder()
 
             for entityName in commitOrder {
-                try await prepareInserts(for: entityName)
+                try prepareInserts(for: entityName)
             }
 
             for entityName in commitOrder {
-                try await prepareUpdates(for: entityName)
+                try prepareUpdates(for: entityName)
             }
 
             for entityName in commitOrder {
-                try await prepareDeletions(for: entityName)
+                try prepareDeletions(for: entityName)
             }
 
             if !allQueries.isEmpty {
@@ -376,7 +376,7 @@ extension SQLEntityManager {
         allQueries.removeAll()
     }
 
-    private func prepareInserts(for entityName: String) async throws {
+    private func prepareInserts(for entityName: String) throws {
         let mapping = try mapping(from: entityName)
         let idField = configuration.mapping(tableName: mapping.table)?.id.name ?? Configuration.defaultIDField
 
@@ -418,7 +418,7 @@ extension SQLEntityManager {
         }
     }
 
-    private func prepareUpdates(for entityName: String) async throws {
+    private func prepareUpdates(for entityName: String) throws {
         let mapping = try mapping(from: entityName)
         let idColumn = idColumn(tableName: mapping.table)
 
@@ -447,7 +447,7 @@ extension SQLEntityManager {
         }
     }
 
-    private func prepareDeletions(for entityName: String) async throws {
+    private func prepareDeletions(for entityName: String) throws {
         let table = try mapping(from: entityName).table
         let idColumn = idColumn(tableName: table)
 

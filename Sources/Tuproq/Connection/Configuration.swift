@@ -1,7 +1,7 @@
 import Collections
 import Foundation
 
-public struct Configuration {
+public struct Configuration: Sendable {
     public static var defaultIDField = "id"
     public static var namingStrategy: NamingStrategy = SnakeCaseNamingStrategy()
 
@@ -19,23 +19,9 @@ public struct Configuration {
         self.driver = driver
         self.poolSize = poolSize
     }
+}
 
-    static func entityName<E: Entity>(from entity: E) -> String {
-        String(describingNestedType: E.self)
-    }
-
-    static func entityName<E: Entity>(from entityType: E.Type) -> String {
-        String(describingNestedType: entityType)
-    }
-
-    static func entityName(from entityType: any Entity.Type) -> String {
-        String(describingNestedType: entityType)
-    }
-
-    static func entityName<M: EntityMapping>(from mapping: M) -> String {
-        String(describingNestedType: M.E.self)
-    }
-
+extension Configuration {
     mutating func addMapping<M: EntityMapping>(_ mapping: M) {
         let entityName = Self.entityName(from: mapping)
         _mappings[entityName] = mapping
@@ -64,5 +50,23 @@ public struct Configuration {
             ==
             tableName.trimmingCharacters(in: quotes)
         })?.value
+    }
+}
+
+extension Configuration {
+    static func entityName<E: Entity>(from entity: E) -> String {
+        String(describingNestedType: E.self)
+    }
+
+    static func entityName<E: Entity>(from entityType: E.Type) -> String {
+        String(describingNestedType: entityType)
+    }
+
+    static func entityName(from entityType: any Entity.Type) -> String {
+        String(describingNestedType: entityType)
+    }
+
+    static func entityName<M: EntityMapping>(from mapping: M) -> String {
+        String(describingNestedType: M.E.self)
     }
 }

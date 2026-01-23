@@ -1,4 +1,4 @@
-public protocol Expression: CustomStringConvertible, Equatable {
+public protocol Expression: CustomStringConvertible, Equatable, Sendable {
     var raw: String { get }
 }
 

@@ -52,7 +52,7 @@ public struct FieldMapping: AnyFieldMapping {
 }
 
 extension FieldMapping {
-    public struct Column: ExpressibleByStringLiteral, Hashable {
+    public struct Column: ExpressibleByStringLiteral, Hashable, Sendable {
         public let name: String
         public let isUnique: Bool
         public let isNullable: Bool

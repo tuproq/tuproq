@@ -5,7 +5,11 @@ final class InsertIntoSQLExpression: SQLExpression {
     let columns: [String]
     let values: [Any?]
 
-    init(table: String, columns: [String] = .init(), values: [Any?]) {
+    init(
+        table: String,
+        columns: [String] = .init(),
+        values: [Any?]
+    ) {
         self.table = table
         self.columns = columns
         self.values = values

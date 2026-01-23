@@ -103,7 +103,7 @@ extension Tuproq {
 
         for table in tables {
             let queryBuilder = SQLQueryBuilder()
-            let query = await queryBuilder.create(
+            let query = queryBuilder.create(
                 table: table.name,
                 ifNotExists: true,
                 columns: table.columns,

@@ -1,4 +1,4 @@
-public protocol EntityRepository {
+public protocol EntityRepository: AnyObject {
     associatedtype E: Entity
 
     var entity: E.Type { get }

@@ -6,13 +6,19 @@ class ColumnSQLExpression: SQLExpression, ExpressibleByStringLiteral {
         let components = name.components(separatedBy: " ")
 
         if components.count == 3, components[1].lowercased() == Kind.as.rawValue.lowercased() {
-            self.init(name: components[0], alias: components[2])
+            self.init(
+                name: components[0],
+                alias: components[2]
+            )
         } else {
             self.init(name: name)
         }
     }
 
-    init(name: String, alias: String? = nil) {
+    init(
+        name: String,
+        alias: String? = nil
+    ) {
         self.name = name
         self.alias = alias
         var raw = name

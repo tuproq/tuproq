@@ -1,4 +1,4 @@
-public struct JoinTable: Hashable {
+public struct JoinTable: Hashable, Sendable {
     public let name: String
     public let columns: Set<Column>
     public let inverseColumns: Set<Column>
@@ -26,7 +26,7 @@ public struct JoinTable: Hashable {
 }
 
 extension JoinTable {
-    public struct Column: ExpressibleByStringLiteral, Hashable {
+    public struct Column: ExpressibleByStringLiteral, Hashable, Sendable {
         public let name: String
         public let referenceColumn: String
         public let isUnique: Bool
@@ -39,15 +39,14 @@ extension JoinTable {
             isNullable: Bool = true
         ) {
             self.name = name
+            self.isUnique = isUnique
+            self.isNullable = isNullable
 
             if referenceColumn.isEmpty {
                 self.referenceColumn = Configuration.namingStrategy.referenceColumn
             } else {
                 self.referenceColumn = referenceColumn
             }
-
-            self.isUnique = isUnique
-            self.isNullable = isNullable
         }
 
         public init(stringLiteral name: StringLiteralType) {

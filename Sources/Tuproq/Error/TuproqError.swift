@@ -1,6 +1,6 @@
 import Foundation
 
-public struct TuproqError: LocalizedError {
+public struct TuproqError: LocalizedError, Sendable {
     let message: String
     public var errorDescription: String? { message }
 

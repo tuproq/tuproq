@@ -1,3 +1,3 @@
-public protocol SQLConstraint {
+public protocol SQLConstraint: Sendable {
     var name: String { get }
 }

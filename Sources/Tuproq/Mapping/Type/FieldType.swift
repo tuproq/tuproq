@@ -1,4 +1,4 @@
-public indirect enum FieldType: Hashable {
+public indirect enum FieldType: Hashable, Sendable {
     case bool
     case character
     case data(length: UInt? = nil, isFixed: Bool = false)

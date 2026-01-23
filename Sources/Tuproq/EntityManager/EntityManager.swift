@@ -7,8 +7,8 @@ public protocol EntityManager: AnyObject {
     func find<E: Entity>(_ entityType: E.Type, id: E.ID) async throws -> E?
     func flush() async throws
     func getRepository<R: EntityRepository>(_ entityType: R.E.Type) -> R
-    func persist<E: Entity>(_ entity: inout E) async throws
-    func remove<E: Entity>(_ entity: E) async throws
+    func persist<E: Entity>(_ entity: inout E) throws
+    func remove<E: Entity>(_ entity: E) throws
 
     @discardableResult
     func query<E: Entity>(
@@ -39,7 +39,7 @@ public protocol EntityManager: AnyObject {
         name: String,
         oldValue: Codable?,
         newValue: Codable?
-    ) async
+    )
 }
 
 public extension EntityManager {
@@ -51,7 +51,7 @@ public extension EntityManager {
         _ entity: inout E,
         isSoft: Bool = true
     ) async throws {
-        isSoft ? entity.deletedDate = .init() : try await remove(entity)
+        isSoft ? entity.deletedDate = .init() : try remove(entity)
     }
 
     @discardableResult

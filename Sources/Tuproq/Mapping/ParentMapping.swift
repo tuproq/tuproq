@@ -5,10 +5,10 @@ public struct ParentMapping: AssociationMapping {
     public let column: JoinTable.Column
     public let constraints: Set<Constraint>
 
-    public enum Constraint: Hashable {
+    public enum Constraint: Hashable, Sendable {
         case delete(_ action: Action)
 
-        public enum Action: Hashable {
+        public enum Action: Hashable, Sendable {
             case cascade
         }
     }
