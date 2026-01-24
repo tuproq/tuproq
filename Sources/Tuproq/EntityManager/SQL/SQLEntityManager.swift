@@ -312,11 +312,11 @@ extension SQLEntityManager {
         var queries = [SQLQuery]()
 
         for (objectID, entity) in changeTracker.getUpdates() {
-            if let id = changeTracker.getID(for: objectID),
+            if let id = changeTracker.id(for: objectID),
                entityName == Configuration.entityName(from: entity) {
                 var values = [(String, Any?)]()
 
-                if let changeSet = changeTracker.getChangeSet(for: objectID) {
+                if let changeSet = changeTracker.changeSet(for: objectID) {
                     for (key, (_, newValue)) in changeSet {
                         if let column = mapping.fields.first(where: { $0.name == key })?.column.name {
                             values.append((column, try changeTracker.encodeValue(newValue)))
@@ -348,7 +348,7 @@ extension SQLEntityManager {
         let idColumn = idColumn(tableName: table)
 
         for objectID in changeTracker.getRemovals().keys {
-            if let id = changeTracker.getID(for: objectID) {
+            if let id = changeTracker.id(for: objectID) {
                 let query = createQueryBuilder()
                     .delete()
                     .from(table)

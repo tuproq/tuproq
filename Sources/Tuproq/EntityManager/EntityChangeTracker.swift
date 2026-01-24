@@ -1,6 +1,6 @@
 import Foundation
 
-final class EntityChangeTracker: @unchecked Sendable {
+final class EntityChangeTracker: Locking, @unchecked Sendable {
     typealias ChangeSet = [String: (oldValue: Codable?, newValue: Codable?)]
     typealias EntityMap = [ObjectID: any Entity]
     typealias ID = AnyHashable
@@ -8,7 +8,7 @@ final class EntityChangeTracker: @unchecked Sendable {
 
     let decoder: JSONDecoder
     private let encoder: JSONEncoder
-    private let lock = NSLock()
+    let lock = NSLock()
 
     private var insertions = EntityMap()
     private var updates = EntityMap()
@@ -45,14 +45,7 @@ final class EntityChangeTracker: @unchecked Sendable {
         }
     }
 
-    func setState(
-        _ state: EntityState,
-        for objectID: ObjectID
-    ) {
-        withLock { statesMap[objectID] = state }
-    }
-
-    func getID(for objectID: ObjectID) -> ID? {
+    func id(for objectID: ObjectID) -> ID? {
         withLock { idsMap[objectID] }
     }
 }
@@ -60,7 +53,7 @@ final class EntityChangeTracker: @unchecked Sendable {
 // MARK: - ChangeSet
 
 extension EntityChangeTracker {
-    func getChangeSet(for objectID: ObjectID) -> ChangeSet? {
+    func changeSet(for objectID: ObjectID) -> ChangeSet? {
         withLock { changeSets[objectID] }
     }
 }
@@ -214,17 +207,5 @@ extension EntityChangeTracker {
             with: try encoder.encode(value),
             options: .fragmentsAllowed
         )
-    }
-}
-
-// MARK: -
-
-extension EntityChangeTracker {
-    @inline(__always)
-    private func withLock<T>(_ body: () throws -> T) rethrows -> T {
-        lock.lock()
-        defer { lock.unlock() }
-
-        return try body()
     }
 }
