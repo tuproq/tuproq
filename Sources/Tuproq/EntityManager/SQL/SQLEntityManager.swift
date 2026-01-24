@@ -110,7 +110,7 @@ extension SQLEntityManager {
             arguments: arguments
         )
         let data = try JSONSerialization.data(withJSONObject: result)
-        let decoder = changeTracker.decoder()
+        let decoder = changeTracker.createDecoder()
         let entities = try decoder.decode([E].self, from: data)
 
         for entity in entities {

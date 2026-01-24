@@ -188,12 +188,27 @@ extension EntityChangeTracker {
 // MARK: - Decoder/Encoder
 
 extension EntityChangeTracker {
+    func createDecoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        decoder.userInfo = [.entityChangeTracker: self]
+
+        return decoder
+    }
+
+    private func createEncoder() -> JSONEncoder {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+
+        return encoder
+    }
+
     func dictionary<E: Entity>(from entity: E) throws -> [String: Any?] {
         try withLock { try _dictionary(from: entity) }
     }
 
     private func _dictionary<E: Entity>(from entity: E) throws -> [String: Any?] {
-        let encoder = self.encoder()
+        let encoder = createEncoder()
         guard let dictionary = try JSONSerialization.jsonObject(
             with: try encoder.encode(entity),
             options: .fragmentsAllowed
@@ -205,7 +220,7 @@ extension EntityChangeTracker {
     func encodeValue(_ value: (any Codable)?) throws -> Any? {
         try withLock {
             guard let value else { return nil }
-            let encoder = self.encoder()
+            let encoder = createEncoder()
 
             return try JSONSerialization.jsonObject(
                 with: try encoder.encode(value),
@@ -218,22 +233,7 @@ extension EntityChangeTracker {
         let dictionary = try _dictionary(from: entity)
         let data = try JSONSerialization.data(withJSONObject: dictionary)
 
-        let decoder = self.decoder()
+        let decoder = createDecoder()
         entity = try decoder.decode(E.self, from: data)
-    }
-
-    private func encoder() -> JSONEncoder {
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-
-        return encoder
-    }
-
-    func decoder() -> JSONDecoder {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        decoder.userInfo = [.entityChangeTracker: self]
-
-        return decoder
     }
 }
