@@ -17,12 +17,12 @@ final class SQLEntityManager: EntityManager {
 extension SQLEntityManager {
     func persist<E: Entity>(_ entity: inout E) throws {
         try mapping(from: E.self)
-        try changeTracker.insertEntity(&entity)
+        try changeTracker.insert(&entity)
     }
 
     func remove<E: Entity>(_ entity: E) throws {
         try mapping(from: E.self)
-        changeTracker.removeEntity(entity)
+        changeTracker.remove(entity)
     }
 
     func flush() async throws {
@@ -82,7 +82,7 @@ extension SQLEntityManager {
         let idColumn = idColumn(tableName: mapping.table)
         guard !(id as AnyObject is NSNull) else { return nil }
 
-        if let entity = changeTracker.getEntityIdentityMap(entityType, id: id) {
+        if let entity = changeTracker.getEntityFromIdentityMap(entityType, id: id) {
             return entity
         }
 
@@ -95,7 +95,10 @@ extension SQLEntityManager {
         if let entity: E = try await self.query(query.raw, arguments: [id]).first {
             let objectID = ObjectIdentifier(entity)
             changeTracker.addEntityToIdentityMap(entity)
-            changeTracker.setEntityState(.managed, id: objectID)
+            changeTracker.setState(
+                .managed,
+                for: objectID
+            )
 
             return entity
         }
@@ -118,7 +121,10 @@ extension SQLEntityManager {
         for entity in entities {
             let objectID = ObjectIdentifier(entity)
             changeTracker.addEntityToIdentityMap(entity)
-            changeTracker.setEntityState(.managed, id: objectID)
+            changeTracker.setState(
+                .managed,
+                for: objectID
+            )
         }
 
         return entities
@@ -233,9 +239,9 @@ extension SQLEntityManager {
             }
         }
 
-        await processEntityMap(changeTracker.getInsertedEntities())
-        await processEntityMap(changeTracker.getUpdatedEntities())
-        await processEntityMap(changeTracker.getDeletedEntities())
+        await processEntityMap(changeTracker.getInsertions())
+        await processEntityMap(changeTracker.getUpdates())
+        await processEntityMap(changeTracker.getRemovals())
 
         while !entityNames.isEmpty {
             let entityName = entityNames.removeFirst()
@@ -267,7 +273,7 @@ extension SQLEntityManager {
         let idField = configuration.mapping(tableName: mapping.table)?.id.name ?? Configuration.defaultIDField
         var queries = [SQLQuery]()
 
-        for entity in changeTracker.getInsertedEntities().values {
+        for entity in changeTracker.getInsertions().values {
             if entityName == Configuration.entityName(from: entity) {
                 var columns = [String]()
                 var values = [Any?]()
@@ -316,12 +322,12 @@ extension SQLEntityManager {
         let idColumn = idColumn(tableName: mapping.table)
         var queries = [SQLQuery]()
 
-        for (objectID, entity) in changeTracker.getUpdatedEntities() {
-            if let id = changeTracker.getEntityIdentifier(objectID: objectID),
+        for (objectID, entity) in changeTracker.getUpdates() {
+            if let id = changeTracker.getID(for: objectID),
                entityName == Configuration.entityName(from: entity) {
                 var values = [(String, Any?)]()
 
-                if let changeSet = changeTracker.getEntityChangeSet(objectID: objectID) {
+                if let changeSet = changeTracker.getChangeSet(for: objectID) {
                     for (key, (_, newValue)) in changeSet {
                         if let column = mapping.fields.first(where: { $0.name == key })?.column.name {
                             values.append((column, try changeTracker.encodeValue(newValue)))
@@ -352,8 +358,8 @@ extension SQLEntityManager {
         let table = try mapping(from: entityName).table
         let idColumn = idColumn(tableName: table)
 
-        for objectID in changeTracker.getDeletedEntities().keys {
-            if let id = changeTracker.getEntityIdentifier(objectID: objectID) {
+        for objectID in changeTracker.getRemovals().keys {
+            if let id = changeTracker.getID(for: objectID) {
                 let query = createQueryBuilder()
                     .delete()
                     .from(table)

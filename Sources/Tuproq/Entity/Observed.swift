@@ -53,7 +53,7 @@ public final class Observed<V: Codable & Sendable>: Codable, @unchecked Sendable
             storage.lock.unlock()
 
             guard let name = storage.name else { return }
-            entityChangeTracker?.propertyValueChanged(
+            entityChangeTracker?.updateProperty(
                 entity,
                 name: name,
                 oldValue: oldValue,
