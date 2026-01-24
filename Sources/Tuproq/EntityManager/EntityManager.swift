@@ -31,7 +31,7 @@ public extension EntityManager {
     func remove<E: SoftDeletableEntity>(
         _ entity: inout E,
         isSoft: Bool = true
-    ) async throws {
+    ) throws {
         isSoft ? entity.deletedDate = .init() : try remove(entity)
     }
 
