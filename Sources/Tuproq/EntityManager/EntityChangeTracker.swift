@@ -35,7 +35,7 @@ final class EntityChangeTracker: Locking, @unchecked Sendable {
             }
 
             for entity in removals.values {
-                removeEntityFromIdentityMap(entity)
+                removeFromIdentityMap(entity)
             }
 
             insertions.removeAll()
@@ -43,10 +43,6 @@ final class EntityChangeTracker: Locking, @unchecked Sendable {
             removals.removeAll()
             changeSets.removeAll()
         }
-    }
-
-    func id(for objectID: ObjectID) -> ID? {
-        withLock { idsMap[objectID] }
     }
 }
 
@@ -58,13 +54,34 @@ extension EntityChangeTracker {
     }
 }
 
+// MARK: - Entity
+
+extension EntityChangeTracker {
+    func entity<E: Entity>(_ entityType: E.Type, id: E.ID) -> E? {
+        withLock {
+            let entityName = Configuration.entityName(from: entityType)
+
+            if let objectID = objectIDsMap[id],
+               let entity = identityMap[entityName]?[objectID] as? E {
+                return entity
+            }
+
+            return nil
+        }
+    }
+
+    func id(for objectID: ObjectID) -> ID? {
+        withLock { idsMap[objectID] }
+    }
+}
+
 // MARK: - EntityMap
 
 extension EntityChangeTracker {
     func insert<E: Entity>(_ entity: E) {
         withLock {
             let objectID = ObjectIdentifier(entity)
-            addEntityToIdentityMap(entity)
+            insertIntoIdentityMap(entity)
             statesMap[objectID] = .managed
         }
     }
@@ -79,9 +96,9 @@ extension EntityChangeTracker {
                     statesMap[objectID] = .managed
                 }
             } else {
-                try register(&entity)
+                try encodeDecode(&entity)
                 let objectID = ObjectID(entity)
-                addEntityToIdentityMap(entity)
+                insertIntoIdentityMap(entity)
                 statesMap[objectID] = .new
                 insertions[objectID] = entity
             }
@@ -97,7 +114,7 @@ extension EntityChangeTracker {
             case .managed:
                 removals[objectID] = entity
                 statesMap[objectID] = .removed
-            case .new: removeEntityFromIdentityMap(entity)
+            case .new: removeFromIdentityMap(entity)
             default: break
             }
         }
@@ -119,7 +136,7 @@ extension EntityChangeTracker {
 // MARK: - IdentityMap
 
 extension EntityChangeTracker {
-    private func addEntityToIdentityMap<E: Entity>(_ entity: E) {
+    private func insertIntoIdentityMap<E: Entity>(_ entity: E) {
         let entityName = Configuration.entityName(from: entity)
         let objectID = ObjectID(entity)
         identityMap[entityName, default: .init()][objectID] = entity
@@ -127,20 +144,7 @@ extension EntityChangeTracker {
         objectIDsMap[entity.id] = objectID
     }
 
-    func getEntityFromIdentityMap<E: Entity>(_ entityType: E.Type, id: E.ID) -> E? {
-        withLock {
-            let entityName = Configuration.entityName(from: entityType)
-
-            if let objectID = objectIDsMap[id],
-               let entity = identityMap[entityName]?[objectID] as? E {
-                return entity
-            }
-
-            return nil
-        }
-    }
-
-    private func removeEntityFromIdentityMap<E: Entity>(_ entity: E) {
+    private func removeFromIdentityMap<E: Entity>(_ entity: E) {
         let objectID = ObjectID(entity)
 
         if let id = idsMap[objectID] {
@@ -184,16 +188,10 @@ extension EntityChangeTracker {
     }
 }
 
-// MARK: -
+// MARK: - Decoder/Encoder
 
 extension EntityChangeTracker {
-    private func register<E: Entity>(_ entity: inout E) throws {
-        let dictionary = try encodeToDictionary(entity)
-        let data = try JSONSerialization.data(withJSONObject: dictionary)
-        entity = try decoder.decode(E.self, from: data)
-    }
-
-    func encodeToDictionary<E: Entity>(_ entity: E) throws -> [String: Any?] {
+    func dictionary<E: Entity>(from entity: E) throws -> [String: Any?] {
         guard let dictionary = try JSONSerialization.jsonObject(
             with: try encoder.encode(entity),
             options: .fragmentsAllowed
@@ -207,5 +205,11 @@ extension EntityChangeTracker {
             with: try encoder.encode(value),
             options: .fragmentsAllowed
         )
+    }
+
+    private func encodeDecode<E: Entity>(_ entity: inout E) throws {
+        let dictionary = try dictionary(from: entity)
+        let data = try JSONSerialization.data(withJSONObject: dictionary)
+        entity = try decoder.decode(E.self, from: data)
     }
 }

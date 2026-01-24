@@ -82,7 +82,7 @@ extension SQLEntityManager {
         let idColumn = idColumn(tableName: mapping.table)
         guard !(id as AnyObject is NSNull) else { return nil }
 
-        if let entity = changeTracker.getEntityFromIdentityMap(entityType, id: id) {
+        if let entity = changeTracker.entity(entityType, id: id) {
             return entity
         }
 
@@ -267,7 +267,7 @@ extension SQLEntityManager {
                 var columns = [String]()
                 var values = [Any?]()
 
-                for (field, value) in try changeTracker.encodeToDictionary(entity) {
+                for (field, value) in try changeTracker.dictionary(from: entity) {
                     if mapping.children.contains(where: { $0.name == field }) ||
                         mapping.siblings.contains(where: { $0.name == field }) {
                         continue
