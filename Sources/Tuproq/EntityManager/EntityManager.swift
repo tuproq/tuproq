@@ -17,29 +17,10 @@ public protocol EntityManager: AnyObject {
     ) async throws -> [E]
 
     @discardableResult
-    func query<E: Entity>(
-        _ string: String,
-        arguments: Codable?...
-    ) async throws -> [E]
-
-    @discardableResult
     func query(
         _ string: String,
         arguments: [Codable?]
     ) async throws -> [[String: Any?]]
-
-    @discardableResult
-    func query(
-        _ string: String,
-        arguments: Codable?...
-    ) async throws -> [[String: Any?]]
-
-    func propertyValueChanged<E: Entity>(
-        _ entity: E,
-        name: String,
-        oldValue: Codable?,
-        newValue: Codable?
-    )
 }
 
 public extension EntityManager {

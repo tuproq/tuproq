@@ -1,6 +1,6 @@
 import NIOCore
 
-public protocol Connection: AnyObject {
+public protocol Connection: AnyObject, Sendable {
     var id: ObjectIdentifier { get }
     var isOpen: Bool { get }
     var channel: Channel { get }

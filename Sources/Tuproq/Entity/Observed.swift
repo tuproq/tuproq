@@ -7,7 +7,7 @@ public final class Observed<V: Codable & Sendable>: Codable, @unchecked Sendable
     private let lock = NSLock()
 
     private var _wrappedValue: V
-    private weak var _entityManager: (any EntityManager)?
+    private weak var entityChangeTracker: EntityChangeTracker?
 
     public var wrappedValue: V {
         get {
@@ -33,7 +33,7 @@ public final class Observed<V: Codable & Sendable>: Codable, @unchecked Sendable
         originalValue = try container.decode(V.self)
         _wrappedValue = originalValue
         name = decoder.codingPath.last?.stringValue
-        _entityManager = decoder.userInfo[.entityManager] as? (any EntityManager)
+        entityChangeTracker = decoder.userInfo[.entityChangeTracker] as? EntityChangeTracker
     }
 
     public static subscript<E: Entity>(
@@ -49,11 +49,11 @@ public final class Observed<V: Codable & Sendable>: Codable, @unchecked Sendable
             storage.lock.lock()
             let oldValue = storage.originalValue
             storage._wrappedValue = newValue
-            let entityManager = storage._entityManager
+            let entityChangeTracker = storage.entityChangeTracker
             storage.lock.unlock()
 
             guard let name = storage.name else { return }
-            entityManager?.propertyValueChanged(
+            entityChangeTracker?.propertyValueChanged(
                 entity,
                 name: name,
                 oldValue: oldValue,
