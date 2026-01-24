@@ -24,6 +24,49 @@ extension SQLEntityManager {
         try mapping(from: E.self)
         changeTracker.removeEntity(entity)
     }
+
+    func flush() async throws {
+        do {
+            let commitOrder = try await getCommitOrder()
+            var queries = [SQLQuery]()
+
+            for entityName in commitOrder {
+                queries.append(contentsOf: try prepareInserts(for: entityName))
+            }
+
+            for entityName in commitOrder {
+                queries.append(contentsOf: try prepareUpdates(for: entityName))
+            }
+
+            for entityName in commitOrder {
+                queries.append(contentsOf: try prepareDeletions(for: entityName))
+            }
+
+            if !queries.isEmpty {
+                var postInserts = [[String: Any?]]()
+                let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
+                try await connection.beginTransaction()
+
+                do {
+                    for query in queries {
+                        if let dictionary = try await self.query(query.raw).first {
+                            postInserts.append(dictionary)
+                        }
+                    }
+
+                    try await connection.commitTransaction()
+                    connectionPool.returnConnection(connection)
+                    changeTracker.cleanUpDirty()
+                } catch {
+                    try await connection.rollbackTransaction()
+                    connectionPool.returnConnection(connection)
+                    throw error
+                }
+            }
+        } catch {
+            throw error
+        }
+    }
 }
 
 extension SQLEntityManager {
@@ -39,7 +82,7 @@ extension SQLEntityManager {
         let idColumn = idColumn(tableName: mapping.table)
         guard !(id as AnyObject is NSNull) else { return nil }
 
-        if let entity = changeTracker.getEntityToIdentityMap(entityType, id: id) {
+        if let entity = changeTracker.getEntityIdentityMap(entityType, id: id) {
             return entity
         }
 
@@ -174,49 +217,6 @@ extension SQLEntityManager {
 }
 
 extension SQLEntityManager {
-    func flush() async throws {
-        do {
-            let commitOrder = try await getCommitOrder()
-            var queries = [any Query]()
-
-            for entityName in commitOrder {
-                queries.append(contentsOf: try prepareInserts(for: entityName))
-            }
-
-            for entityName in commitOrder {
-                queries.append(contentsOf: try prepareUpdates(for: entityName))
-            }
-
-            for entityName in commitOrder {
-                queries.append(contentsOf: try prepareDeletions(for: entityName))
-            }
-
-            if !queries.isEmpty {
-                var postInserts = [[String: Any?]]()
-                let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
-                try await connection.beginTransaction()
-
-                do {
-                    for query in queries {
-                        if let dictionary = try await self.query(query.raw).first {
-                            postInserts.append(dictionary)
-                        }
-                    }
-
-                    try await connection.commitTransaction()
-                    connectionPool.returnConnection(connection)
-                    changeTracker.cleanUpDirty()
-                } catch {
-                    try await connection.rollbackTransaction()
-                    connectionPool.returnConnection(connection)
-                    throw error
-                }
-            }
-        } catch {
-            throw error
-        }
-    }
-
     private func getCommitOrder() async throws -> [String] {
         let calculator = CommitOrderCalculator()
         var entityNames = [String]()
@@ -262,10 +262,10 @@ extension SQLEntityManager {
         return await calculator.sort()
     }
 
-    private func prepareInserts(for entityName: String) throws -> [any Query] {
+    private func prepareInserts(for entityName: String) throws -> [SQLQuery] {
         let mapping = try mapping(from: entityName)
         let idField = configuration.mapping(tableName: mapping.table)?.id.name ?? Configuration.defaultIDField
-        var queries = [any Query]()
+        var queries = [SQLQuery]()
 
         for entity in changeTracker.getInsertedEntities().values {
             if entityName == Configuration.entityName(from: entity) {
@@ -311,17 +311,17 @@ extension SQLEntityManager {
         return queries
     }
 
-    private func prepareUpdates(for entityName: String) throws -> [any Query] {
+    private func prepareUpdates(for entityName: String) throws -> [SQLQuery] {
         let mapping = try mapping(from: entityName)
         let idColumn = idColumn(tableName: mapping.table)
-        var queries = [any Query]()
+        var queries = [SQLQuery]()
 
         for (objectID, entity) in changeTracker.getUpdatedEntities() {
             if let id = changeTracker.getEntityIdentifier(objectID: objectID),
                entityName == Configuration.entityName(from: entity) {
                 var values = [(String, Any?)]()
 
-                if let changeSet = changeTracker.getEntityChangeSet(id: objectID) {
+                if let changeSet = changeTracker.getEntityChangeSet(objectID: objectID) {
                     for (key, (_, newValue)) in changeSet {
                         if let column = mapping.fields.first(where: { $0.name == key })?.column.name {
                             values.append((column, try changeTracker.encodeValue(newValue)))
@@ -347,8 +347,8 @@ extension SQLEntityManager {
         return queries
     }
 
-    private func prepareDeletions(for entityName: String) throws -> [any Query] {
-        var queries = [any Query]()
+    private func prepareDeletions(for entityName: String) throws -> [SQLQuery] {
+        var queries = [SQLQuery]()
         let table = try mapping(from: entityName).table
         let idColumn = idColumn(tableName: table)
 
