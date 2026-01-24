@@ -6,7 +6,7 @@ final class SQLEntityManager: EntityManager {
     private let changeTracker = EntityChangeTracker()
 
     init(
-        connectionPool: ConnectionPool,
+        connectionPool: ConnectionPool,encodeValue
         configuration: Configuration
     ) {
         self.connectionPool = connectionPool
@@ -110,7 +110,8 @@ extension SQLEntityManager {
             arguments: arguments
         )
         let data = try JSONSerialization.data(withJSONObject: result)
-        let entities = try changeTracker.decoder.decode([E].self, from: data)
+        let decoder = changeTracker.decoder()
+        let entities = try decoder.decode([E].self, from: data)
 
         for entity in entities {
             changeTracker.insert(entity)

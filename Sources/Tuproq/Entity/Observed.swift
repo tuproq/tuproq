@@ -1,19 +1,18 @@
 import Foundation
 
 @propertyWrapper
-public final class Observed<V: Codable & Sendable>: Codable, @unchecked Sendable {
+public final class Observed<V: Codable & Sendable>: Codable, Locking, @unchecked Sendable {
+    let lock = NSLock()
+
     private let name: String?
     private let originalValue: V
-    private let lock = NSLock()
 
     private var _wrappedValue: V
     private weak var entityChangeTracker: EntityChangeTracker?
 
     public var wrappedValue: V {
         get {
-            lock.lock()
-            defer { lock.unlock() }
-            return _wrappedValue
+            withLock { _wrappedValue }
         }
         set {
             lock.lock()

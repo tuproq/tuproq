@@ -6,8 +6,6 @@ final class EntityChangeTracker: Locking, @unchecked Sendable {
     typealias ID = AnyHashable
     typealias ObjectID = ObjectIdentifier
 
-    let decoder: JSONDecoder
-    private let encoder: JSONEncoder
     let lock = NSLock()
 
     private var insertions = EntityMap()
@@ -20,13 +18,7 @@ final class EntityChangeTracker: Locking, @unchecked Sendable {
     private var objectIDsMap = [ID: ObjectID]()
     private var statesMap = [ObjectID: EntityState]()
 
-    init() {
-        encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        decoder.userInfo = [.entityChangeTracker: self]
-    }
+    init() {}
 
     func cleanUpDirty() {
         withLock {
@@ -87,21 +79,26 @@ extension EntityChangeTracker {
     }
 
     func insertNew<E: Entity>(_ entity: inout E) throws {
-        try withLock {
-            let objectID = ObjectID(entity)
+        let objectID = ObjectID(entity)
 
+        let shouldInsert = withLock {
             if let state = statesMap[objectID] {
                 if state == .removed {
                     removals.removeValue(forKey: objectID)
                     statesMap[objectID] = .managed
                 }
-            } else {
-                try encodeDecode(&entity)
-                let objectID = ObjectID(entity)
-                insertIntoIdentityMap(entity)
-                statesMap[objectID] = .new
-                insertions[objectID] = entity
+                return false
             }
+            return true
+        }
+
+        guard shouldInsert else { return }
+        try encodeDecode(&entity)
+
+        withLock {
+            insertIntoIdentityMap(entity)
+            statesMap[objectID] = .new
+            insertions[objectID] = entity
         }
     }
 
@@ -192,24 +189,51 @@ extension EntityChangeTracker {
 
 extension EntityChangeTracker {
     func dictionary<E: Entity>(from entity: E) throws -> [String: Any?] {
+        try withLock { try _dictionary(from: entity) }
+    }
+
+    private func _dictionary<E: Entity>(from entity: E) throws -> [String: Any?] {
+        let encoder = self.encoder()
         guard let dictionary = try JSONSerialization.jsonObject(
             with: try encoder.encode(entity),
             options: .fragmentsAllowed
         ) as? [String: Any?] else { throw error(.entityToDictionaryFailed) }
+
         return dictionary
     }
 
     func encodeValue(_ value: (any Codable)?) throws -> Any? {
-        guard let value else { return nil }
-        return try JSONSerialization.jsonObject(
-            with: try encoder.encode(value),
-            options: .fragmentsAllowed
-        )
+        try withLock {
+            guard let value else { return nil }
+            let encoder = self.encoder()
+
+            return try JSONSerialization.jsonObject(
+                with: try encoder.encode(value),
+                options: .fragmentsAllowed
+            )
+        }
     }
 
     private func encodeDecode<E: Entity>(_ entity: inout E) throws {
-        let dictionary = try dictionary(from: entity)
+        let dictionary = try _dictionary(from: entity)
         let data = try JSONSerialization.data(withJSONObject: dictionary)
+
+        let decoder = self.decoder()
         entity = try decoder.decode(E.self, from: data)
+    }
+
+    private func encoder() -> JSONEncoder {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+
+        return encoder
+    }
+
+    func decoder() -> JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        decoder.userInfo = [.entityChangeTracker: self]
+
+        return decoder
     }
 }
