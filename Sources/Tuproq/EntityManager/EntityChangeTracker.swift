@@ -6,8 +6,8 @@ final class EntityChangeTracker: @unchecked Sendable {
     typealias ID = AnyHashable
     typealias ObjectID = ObjectIdentifier
 
-    private let encoder: JSONEncoder
     let decoder: JSONDecoder
+    private let encoder: JSONEncoder
     private let lock = NSLock()
 
     private var insertions = EntityMap()
@@ -45,10 +45,6 @@ final class EntityChangeTracker: @unchecked Sendable {
         }
     }
 
-    func getChangeSet(for objectID: ObjectID) -> ChangeSet? {
-        withLock { changeSets[objectID] }
-    }
-
     func setState(
         _ state: EntityState,
         for objectID: ObjectID
@@ -61,10 +57,26 @@ final class EntityChangeTracker: @unchecked Sendable {
     }
 }
 
+// MARK: - ChangeSet
+
+extension EntityChangeTracker {
+    func getChangeSet(for objectID: ObjectID) -> ChangeSet? {
+        withLock { changeSets[objectID] }
+    }
+}
+
 // MARK: - EntityMap
 
 extension EntityChangeTracker {
-    func insert<E: Entity>(_ entity: inout E) throws {
+    func insert<E: Entity>(_ entity: E) {
+        withLock {
+            let objectID = ObjectIdentifier(entity)
+            addEntityToIdentityMap(entity)
+            statesMap[objectID] = .managed
+        }
+    }
+
+    func insertNew<E: Entity>(_ entity: inout E) throws {
         try withLock {
             let objectID = ObjectID(entity)
 
@@ -76,7 +88,7 @@ extension EntityChangeTracker {
             } else {
                 try register(&entity)
                 let objectID = ObjectID(entity)
-                _addEntityToIdentityMap(entity)
+                addEntityToIdentityMap(entity)
                 statesMap[objectID] = .new
                 insertions[objectID] = entity
             }
@@ -114,11 +126,7 @@ extension EntityChangeTracker {
 // MARK: - IdentityMap
 
 extension EntityChangeTracker {
-    func addEntityToIdentityMap<E: Entity>(_ entity: E) {
-        withLock { _addEntityToIdentityMap(entity) }
-    }
-
-    private func _addEntityToIdentityMap<E: Entity>(_ entity: E) {
+    private func addEntityToIdentityMap<E: Entity>(_ entity: E) {
         let entityName = Configuration.entityName(from: entity)
         let objectID = ObjectID(entity)
         identityMap[entityName, default: .init()][objectID] = entity
@@ -166,8 +174,8 @@ extension EntityChangeTracker {
 
 extension EntityChangeTracker {
     func updateProperty<E: Entity>(
-        _ entity: E,
-        name: String,
+        _ property: String,
+        entity: E,
         oldValue: Codable?,
         newValue: Codable?
     ) {
@@ -177,7 +185,7 @@ extension EntityChangeTracker {
             guard identityMap[entityName]?[objectID] != nil else { return }
             updates[objectID] = entity
             var changeSet = changeSets[objectID, default: .init()]
-            changeSet[name] = (oldValue, newValue)
+            changeSet[property] = (oldValue, newValue)
             changeSets[objectID] = changeSet
         }
     }

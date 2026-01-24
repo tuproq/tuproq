@@ -17,7 +17,7 @@ final class SQLEntityManager: EntityManager {
 extension SQLEntityManager {
     func persist<E: Entity>(_ entity: inout E) throws {
         try mapping(from: E.self)
-        try changeTracker.insert(&entity)
+        try changeTracker.insertNew(&entity)
     }
 
     func remove<E: Entity>(_ entity: E) throws {
@@ -93,13 +93,7 @@ extension SQLEntityManager {
             .getQuery()
 
         if let entity: E = try await self.query(query.raw, arguments: [id]).first {
-            let objectID = ObjectIdentifier(entity)
-            changeTracker.addEntityToIdentityMap(entity)
-            changeTracker.setState(
-                .managed,
-                for: objectID
-            )
-
+            changeTracker.insert(entity)
             return entity
         }
 
@@ -119,12 +113,7 @@ extension SQLEntityManager {
         let entities = try changeTracker.decoder.decode([E].self, from: data)
 
         for entity in entities {
-            let objectID = ObjectIdentifier(entity)
-            changeTracker.addEntityToIdentityMap(entity)
-            changeTracker.setState(
-                .managed,
-                for: objectID
-            )
+            changeTracker.insert(entity)
         }
 
         return entities
