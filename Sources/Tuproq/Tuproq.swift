@@ -6,6 +6,7 @@ public final class Tuproq {
     public let eventLoopGroup: EventLoopGroup
     private let connectionPool: ConnectionPool
     public private(set) var configuration: Configuration
+    private var joinColumnTypes = [String: String]()
 
     public init(
         eventLoopGroup: EventLoopGroup? = nil,
@@ -150,7 +151,7 @@ extension Tuproq {
             ]
         )
         let tableName = table.name.trimmingCharacters(in: .init(charactersIn: "\""))
-        configuration.joinColumnTypes["\(tableName)_\(columnName)"] = column.type
+        joinColumnTypes["\(tableName)_\(columnName)"] = column.type
         table.columns.append(column)
     }
 
@@ -263,7 +264,7 @@ extension Tuproq {
                         joinTable.columns.append(
                             Table.Column(
                                 name: column.name,
-                                type: configuration.joinColumnTypes[column.name]!,
+                                type: joinColumnTypes[column.name]!,
                                 constraints: columnConstraints
                             )
                         )
@@ -295,7 +296,7 @@ extension Tuproq {
                         joinTable.columns.append(
                             Table.Column(
                                 name: column.name,
-                                type: configuration.joinColumnTypes[column.name]!,
+                                type: joinColumnTypes[column.name]!,
                                 constraints: columnConstraints
                             )
                         )

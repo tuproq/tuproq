@@ -10,7 +10,6 @@ public struct Configuration: Sendable {
 
     var mappings: OrderedDictionary<String, any EntityMapping> { _mappings }
     private var _mappings = OrderedDictionary<String, any EntityMapping>()
-    var joinColumnTypes = [String: String]()
 
     public init(
         driver: DatabaseDriver,
