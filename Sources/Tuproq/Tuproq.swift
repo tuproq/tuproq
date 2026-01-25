@@ -9,12 +9,12 @@ public final class Tuproq {
     private var joinColumnTypes = [String: String]()
 
     public init(
-        eventLoopGroup: EventLoopGroup? = nil,
+        eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         logger: Logger = .init(label: "dev.tuproq"),
         configuration: Configuration,
         connectionFactory: @escaping ConnectionFactory
     ) {
-        self.eventLoopGroup = eventLoopGroup ?? MultiThreadedEventLoopGroup.singleton
+        self.eventLoopGroup = eventLoopGroup
         self.configuration = configuration
         connectionPool = .init(
             eventLoop: self.eventLoopGroup.any(), // TODO: create one ConnectionPool per EventLoop
