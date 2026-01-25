@@ -3,7 +3,7 @@ import NIOCore
 
 public typealias ConnectionFactory = (EventLoop) async throws -> Connection
 
-final class ConnectionPool {
+final class ConnectionPool: @unchecked Sendable {
     let eventLoop: EventLoop
     let logger: Logger
     let size: ClosedRange<Int>
@@ -96,42 +96,64 @@ extension ConnectionPool {
         }
     }
 
-    private func createConnection(after delay: TimeAmount = .nanoseconds(0), backoff: TimeAmount) {
+    private func createConnection(
+        after delay: TimeAmount = .nanoseconds(0),
+        backoff: TimeAmount
+    ) {
         pendingConnectionsCount += 1
 
-        eventLoop.scheduleTask(in: delay) { [weak self] in
-            guard let self else { return }
+        eventLoop.scheduleTask(in: delay) {
             Task { [weak self] in
                 guard let self else { return }
 
                 do {
                     let connection = try await connectionFactory(eventLoop)
-                    pendingConnectionsCount -= 1
-                    connectionCreationSucceeded(connection)
+                    eventLoop.execute { [weak self] in
+                        self?.pendingConnectionsCount -= 1
+                        self?.connectionCreationSucceeded(connection)
+                    }
                 } catch {
-                    pendingConnectionsCount -= 1
-                    connectionCreationFailed(error, backoffDelay: backoff)
+                    eventLoop.execute { [weak self] in
+                        self?.pendingConnectionsCount -= 1
+                        self?.connectionCreationFailed(error, backoffDelay: backoff)
+                    }
                 }
             }
         }
     }
 
     private func connectionCreationSucceeded(_ connection: Connection) {
-        logger.trace("Connection succeeded", metadata: ["connection": "\(connection.id)"])
+        logger.trace(
+            "Connection succeeded",
+            metadata: ["connection": "\(connection.id)"]
+        )
 
         switch state {
         case .open:
-            connection.channel.closeFuture.whenComplete { [weak self] _ in self?.connectionClosed(connection) }
+            connection.channel.closeFuture.whenComplete { [weak self] _ in
+                self?.eventLoop.execute { [weak self] in
+                    self?.connectionClosed(connection)
+                }
+            }
             _returnConnection(connection)
         case .closing: closeConnection(connection)
         case .closed:
-            logger.critical("Connection created on closed pool", metadata: ["connection": "\(connection.id)"])
+            logger.critical(
+                "Connection created on closed pool",
+                metadata: ["connection": "\(connection.id)"]
+            )
             preconditionFailure("Invalid state: \(state)")
         }
     }
 
-    private func connectionCreationFailed(_ error: Error, backoffDelay: TimeAmount) {
-        logger.error("Connection failed", metadata: ["error": "\(error)"])
+    private func connectionCreationFailed(
+        _ error: Error,
+        backoffDelay: TimeAmount
+    ) {
+        logger.error(
+            "Connection failed",
+            metadata: ["error": "\(error)"]
+        )
 
         switch state {
         case .open: break
@@ -156,7 +178,10 @@ extension ConnectionPool {
         }
 
         let backoff = TimeAmount.nanoseconds(.init(Float32(backoffDelay.nanoseconds) * backoffFactor))
-        logger.debug("Reconnecting", metadata: ["backoffDelay": "\(backoffDelay)ns", "backoff": "\(backoff)ns"])
+        logger.debug(
+            "Reconnecting",
+            metadata: ["backoffDelay": "\(backoffDelay)ns", "backoff": "\(backoff)ns"]
+        )
         createConnection(after: backoffDelay, backoff: backoff)
     }
 
@@ -168,7 +193,10 @@ extension ConnectionPool {
         createConnections()
     }
 
-    private func leaseConnection(_ connection: Connection, to request: Request) {
+    private func leaseConnection(
+        _ connection: Connection,
+        to request: Request
+    ) {
         leasedConnectionsCount += 1
         request.succeed(connection)
     }
@@ -179,7 +207,7 @@ extension ConnectionPool {
             return eventLoop.makeFailedFuture(ConnectionPoolError.closed)
         }
 
-        var request = Request(response: eventLoop.makePromise())
+        let request = Request(response: eventLoop.makePromise())
 
         while let connection = availableConnections.popLast() {
             if connection.isOpen {
@@ -230,25 +258,56 @@ extension ConnectionPool {
             availableConnections.append(connection)
         } else if let evictedConnection = availableConnections.popFirst() {
             availableConnections.append(connection)
-            Task { try await evictedConnection.close() }
+
+            Task { [weak self] in
+                do {
+                    try await evictedConnection.close()
+                } catch {
+                    self?.logger.error(
+                        "Close failed",
+                        metadata: ["error": "\(error)"]
+                    )
+                }
+            }
         } else {
-            Task { try await connection.close() }
+            Task { [weak self] in
+                do {
+                    try await connection.close()
+                } catch {
+                    self?.logger.error(
+                        "Close failed",
+                        metadata: ["error": "\(error)"]
+                    )
+                }
+            }
         }
     }
 
     private func closeConnection(_ connection: Connection) {
-        Task {
-            try await connection.close()
+        Task { [weak self] in
+            do {
+                try await connection.close()
+            } catch {
+                self?.logger.error(
+                    "Close failed",
+                    metadata: ["error": "\(error)"]
+                )
+            }
 
-            switch state {
-            case .closing(let remaining, let promise):
-                if remaining == 1 {
-                    state = .closed
-                    promise?.succeed()
-                } else {
-                    state = .closing(remaining: remaining - 1, promise)
+            self?.eventLoop.execute { [weak self] in
+                guard let self else { return }
+
+                switch state {
+                case .closing(let remaining, let promise):
+                    if remaining == 1 {
+                        state = .closed
+                        promise?.succeed()
+                    } else {
+                        state = .closing(remaining: remaining - 1, promise)
+                    }
+                default:
+                    break
                 }
-            default: preconditionFailure("Invalid state: \(state)")
             }
         }
     }
@@ -301,16 +360,17 @@ extension ConnectionPool {
 }
 
 extension ConnectionPool {
-    struct Request {
+    private final class Request {
         var id: ObjectIdentifier { .init(response.futureResult) }
         let response: EventLoopPromise<Connection>
+        private var completed = false
         private var timeoutTask: Scheduled<Void>?
 
         init(response: EventLoopPromise<Connection>) {
             self.response = response
         }
 
-        mutating func scheduleDeadline(
+        func scheduleDeadline(
             _ deadline: NIODeadline,
             on eventLoop: EventLoop,
             _ task: @escaping () -> Void
@@ -320,11 +380,15 @@ extension ConnectionPool {
         }
 
         func succeed(_ connection: Connection) {
+            guard !completed else { return }
+            completed = true
             timeoutTask?.cancel()
             response.succeed(connection)
         }
 
         func fail(_ error: Error) {
+            guard !completed else { return }
+            completed = true
             timeoutTask?.cancel()
             response.fail(error)
         }
