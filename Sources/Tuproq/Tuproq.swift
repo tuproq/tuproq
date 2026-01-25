@@ -61,34 +61,32 @@ extension Tuproq {
 }
 
 extension Tuproq {
-    public func beginTransaction() async throws {
-        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
+    public func transaction<T>(_ body: (Connection) async throws -> T) async throws -> T {
+        let connection = try await connectionPool.leaseConnection()
+        defer { connectionPool.returnConnection(connection) }
         try await connection.beginTransaction()
-        connectionPool.returnConnection(connection)
-    }
 
-    public func commitTransaction() async throws {
-        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
-        try await connection.commitTransaction()
-        connectionPool.returnConnection(connection)
-    }
+        do {
+            let result = try await body(connection)
+            try await connection.commitTransaction()
 
-    public func rollbackTransaction() async throws {
-        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
-        try await connection.rollbackTransaction()
-        connectionPool.returnConnection(connection)
+            return result
+        } catch {
+            try await connection.rollbackTransaction()
+            throw error
+        }
     }
 }
 
 extension Tuproq {
     public func migrate() async throws {
-        let allQueries = "BEGIN;\(await createSchema())COMMIT;"
-        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
-        try await connection.query(allQueries)
-        connectionPool.returnConnection(connection)
+        let scheme = createTables().joined()
+        _ = try await transaction { connection in
+            try await connection.query(scheme)
+        }
     }
 
-    public func createTables() async -> [String] {
+    private func createTables() -> [String] {
         var queries = [String]()
         var tables = [Table]()
 
@@ -113,10 +111,6 @@ extension Tuproq {
         }
 
         return queries
-    }
-
-    public func createSchema() async -> String {
-        await createTables().joined()
     }
 
     private func createTable<M: EntityMapping>(from mapping: M) -> Table {
