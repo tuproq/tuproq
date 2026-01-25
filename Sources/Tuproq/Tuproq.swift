@@ -4,8 +4,10 @@ import NIOPosix
 
 public final class Tuproq {
     public let eventLoopGroup: EventLoopGroup
-    private let connectionPool: ConnectionPool
     public private(set) var configuration: Configuration
+    private let logger: Logger
+    private let connectionFactory: ConnectionFactory
+    private var connectionPools = [ObjectIdentifier: ConnectionPool]()
     private var joinColumnTypes = [String: String]()
 
     public init(
@@ -16,13 +18,27 @@ public final class Tuproq {
     ) {
         self.eventLoopGroup = eventLoopGroup
         self.configuration = configuration
-        connectionPool = .init(
-            eventLoop: self.eventLoopGroup.any(), // TODO: create one ConnectionPool per EventLoop
+        self.logger = logger
+        self.connectionFactory = connectionFactory
+    }
+
+    private func connectionPool(for eventLoop: EventLoop) -> ConnectionPool {
+        let id = ObjectIdentifier(eventLoop)
+
+        if let connectionPool = connectionPools[id] {
+            return connectionPool
+        }
+
+        let connectionPool = ConnectionPool(
+            eventLoop: eventLoop,
             logger: logger,
             size: configuration.poolSize,
             connectionFactory: connectionFactory
         )
+        connectionPools[id] = connectionPool
         connectionPool.activate()
+
+        return connectionPool
     }
 }
 
@@ -55,7 +71,7 @@ extension Tuproq {
 extension Tuproq {
     public func createEntityManager() -> any EntityManager {
         SQLEntityManager(
-            connectionPool: connectionPool,
+            connectionPool: connectionPool(for: eventLoopGroup.next()),
             configuration: configuration
         )
     }
@@ -63,6 +79,7 @@ extension Tuproq {
 
 extension Tuproq {
     public func transaction<T>(_ body: (Connection) async throws -> T) async throws -> T {
+        let connectionPool = connectionPool(for: eventLoopGroup.next())
         let connection = try await connectionPool.leaseConnection()
         defer { connectionPool.returnConnection(connection) }
         try await connection.beginTransaction()
