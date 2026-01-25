@@ -48,7 +48,7 @@ extension SQLEntityManager {
 
             if !queries.isEmpty {
                 var postInserts = [[String: Any?]]()
-                let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
+                let connection = try await connectionPool.leaseConnection()
                 try await connection.beginTransaction()
 
                 do {
@@ -125,7 +125,7 @@ extension SQLEntityManager {
         _ string: String,
         arguments: [Codable?]
     ) async throws -> [[String: Any?]] {
-        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
+        let connection = try await connectionPool.leaseConnection()
         let result = try await connection.query(
             string,
             arguments: arguments
@@ -178,7 +178,7 @@ extension SQLEntityManager {
     private func fetchTablesByIDs(_ ids: Set<Int32>) async throws -> [Int32: String] {
         let string = "SELECT oid, relname FROM pg_class WHERE oid = ANY($1)"
         var dictionary = [Int32: String]()
-        let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
+        let connection = try await connectionPool.leaseConnection()
         let result = try await connection.query(
             string,
             arguments: [Array(ids)]
@@ -223,7 +223,7 @@ extension SQLEntityManager {
         func processEntityMap(_ entityMap: EntityChangeTracker.EntityMap) async {
             for entity in entityMap.values {
                 let entityName = Configuration.entityName(from: entity)
-                let node = CommitOrderCalculator.Node(value: entityName)
+                let node = CommitOrderCalculator.Node(rawValue: entityName)
 
                 if !(await calculator.hasNode(node)) {
                     await calculator.addNode(node)
@@ -242,7 +242,7 @@ extension SQLEntityManager {
 
             for parentMapping in mapping.parents {
                 let parentEntityName = Configuration.entityName(from: parentMapping.entity)
-                let node = CommitOrderCalculator.Node(value: parentEntityName)
+                let node = CommitOrderCalculator.Node(rawValue: parentEntityName)
 
                 if !(await calculator.hasNode(node)) {
                     await calculator.addNode(node)

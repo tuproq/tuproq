@@ -1,47 +1,51 @@
+import Foundation
+
 final actor CommitOrderCalculator {
-    private var nodes = [String: Node]()
+    private var nodesMap = [String: Node]()
     private var sortedNodes = [String]()
 
-    init() {}
-
     func addNode(_ node: Node) {
-        nodes[node.value] = node
+        if !hasNode(node) {
+            nodesMap[node.rawValue] = node
+        }
     }
 
     func hasNode(_ node: Node) -> Bool {
-        nodes[node.value] != nil
+        nodesMap[node.rawValue] != nil
     }
 
-    func addDependency(_ dependency: Dependency) {
-        nodes[dependency.from]?.addDependency(dependency)
+    func addDependency(_ dependency: Dependency) async {
+        if let node = nodesMap[dependency.from] {
+            await node.addDependency(dependency)
+        }
     }
 
-    func sort() -> [String] {
-        for node in nodes.values {
-            if node.state == .notVisited {
-                visitNode(node)
+    func sort() async -> [String] {
+        for node in nodesMap.values {
+            if await node.getState() == .notVisited {
+                await visitNode(node)
             }
         }
 
         let result = Array(sortedNodes.reversed())
-
-        // Reset state
-        nodes.removeAll()
+        nodesMap.removeAll()
         sortedNodes.removeAll()
 
         return result
     }
 
-    private func visitNode(_ node: Node) {
-        node.state = .inProgress
+    private func visitNode(_ node: Node) async {
+        await node.setState(.inProgress)
 
-        for dependency in node.dependencies.values {
-            if let adjacentNode = nodes[dependency.to] {
-                switch adjacentNode.state {
-                case .notVisited: visitNode(adjacentNode)
+        for dependency in await node.getDependenciesMap().values {
+            if let adjacentNode = nodesMap[dependency.to] {
+                let state = await adjacentNode.getState()
+
+                switch state {
+                case .notVisited: await visitNode(adjacentNode)
                 case .visited: break
                 case .inProgress:
-                    handleCycle(
+                    await handleCycle(
                         node: node,
                         adjacentNode: adjacentNode,
                         dependency: dependency
@@ -50,9 +54,9 @@ final actor CommitOrderCalculator {
             }
         }
 
-        if node.state != .visited {
-            node.state = .visited
-            sortedNodes.append(node.value)
+        if await node.getState() != .visited {
+            await node.setState(.visited)
+            sortedNodes.append(node.rawValue)
         }
     }
 
@@ -60,27 +64,29 @@ final actor CommitOrderCalculator {
         node: Node,
         adjacentNode: Node,
         dependency: Dependency
-    ) {
-        if let adjacentDependency = adjacentNode.dependencies[node.value],
-           adjacentDependency.weight < dependency.weight {
-            for adjacentDependencyItem in adjacentNode.dependencies.values {
-                if let adjacentDependencyNode = nodes[adjacentDependencyItem.to],
-                   adjacentDependencyNode.state == .notVisited {
-                    visitNode(adjacentDependencyNode)
-                }
-            }
+    ) async {
+        guard let adjacentDependency = await adjacentNode.getDependenciesMap()[node.rawValue],
+              adjacentDependency.weight < dependency.weight
+        else { return }
 
-            adjacentNode.state = .visited
-            sortedNodes.append(adjacentNode.value)
+        for adjacentDependencyItem in await adjacentNode.getDependenciesMap().values {
+            if let nextNode = nodesMap[adjacentDependencyItem.to],
+               await nextNode.getState() == .notVisited {
+                await visitNode(nextNode)
+            }
         }
+
+        await adjacentNode.setState(.visited)
+        sortedNodes.append(adjacentNode.rawValue)
     }
 }
 
 extension CommitOrderCalculator {
-    final class Node {
-        let value: String
-        var state: State
-        private(set) var dependencies: [String: Dependency]
+    final actor Node: RawRepresentable {
+        let rawValue: String
+
+        private var state: State = .notVisited
+        private var dependenciesMap = [String: Dependency]()
 
         enum State {
             case notVisited
@@ -88,18 +94,24 @@ extension CommitOrderCalculator {
             case visited
         }
 
-        init(
-            value: String,
-            state: State = .notVisited,
-            dependencies: [String: Dependency] = .init()
-        ) {
-            self.value = value
+        init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        func getState() -> State {
+            state
+        }
+
+        func setState(_ state: State) {
             self.state = state
-            self.dependencies = dependencies
         }
 
         func addDependency(_ dependency: Dependency) {
-            dependencies[dependency.to] = dependency
+            dependenciesMap[dependency.to] = dependency
+        }
+
+        func getDependenciesMap() -> [String: Dependency] {
+            dependenciesMap
         }
     }
 

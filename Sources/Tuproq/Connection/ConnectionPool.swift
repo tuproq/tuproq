@@ -56,7 +56,7 @@ final class ConnectionPool {
         : eventLoop.execute { [weak self] in self?.createConnections() }
     }
 
-    func leaseConnection(timeout: TimeAmount) async throws -> Connection {
+    func leaseConnection(timeout: TimeAmount = .seconds(3)) async throws -> Connection {
         eventLoop.inEventLoop
         ? try await _leaseConnection(timeout).get()
         : try await eventLoop.flatSubmit { [unowned self] in self._leaseConnection(timeout) }.get()
