@@ -80,11 +80,13 @@ extension Tuproq {
 
 extension Tuproq {
     public func migrate() async throws {
-        let scheme = createTables().joined()
-        let allQueries = "BEGIN;\(scheme)COMMIT;"
-        let connection = try await connectionPool.leaseConnection()
-        try await connection.query(allQueries)
-        connectionPool.returnConnection(connection)
+        let queries = createTables()
+        let entityManager = createEntityManager()
+        try await transaction { connection in
+            for query in queries {
+                try await entityManager.query(query)
+            }
+        }
     }
 
     private func createTables() -> [String] {
