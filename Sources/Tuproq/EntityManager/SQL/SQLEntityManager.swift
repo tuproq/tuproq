@@ -1,26 +1,30 @@
 import Foundation
 
-final class SQLEntityManager: EntityManager {
+final actor SQLEntityManager: EntityManager {
     let connectionPool: ConnectionPool
     let configuration: Configuration
     private let changeTracker = EntityChangeTracker()
 
     init(
-        connectionPool: ConnectionPool,encodeValue
+        connectionPool: ConnectionPool,
         configuration: Configuration
     ) {
         self.connectionPool = connectionPool
         self.configuration = configuration
     }
+
+    nonisolated func createQueryBuilder() -> SQLQueryBuilder {
+        .init()
+    }
 }
 
 extension SQLEntityManager {
-    func persist<E: Entity>(_ entity: inout E) throws {
+    func persist<E: Entity>(_ entity: inout E) async throws {
         try mapping(from: E.self)
         try changeTracker.insertNew(&entity)
     }
 
-    func remove<E: Entity>(_ entity: E) throws {
+    func remove<E: Entity>(_ entity: E) async throws {
         try mapping(from: E.self)
         changeTracker.remove(entity)
     }
@@ -70,10 +74,6 @@ extension SQLEntityManager {
 }
 
 extension SQLEntityManager {
-    func createQueryBuilder() -> SQLQueryBuilder {
-        .init()
-    }
-
     func find<E: Entity>(
         _ entityType: E.Type,
         id: E.ID
@@ -134,7 +134,7 @@ extension SQLEntityManager {
 
         if let result {
             let tableIDs = Set<Int32>(result.columns.map { $0.tableID })
-            let tables = try await fetchTables(tableIDs: tableIDs)
+            let tables = try await fetchTablesByIDs(tableIDs)
 
             if tables.isEmpty || result.columns.contains(where: { tables[$0.tableID] == nil }) {
                 var array = [[String: Any?]]()
@@ -175,11 +175,14 @@ extension SQLEntityManager {
     }
 
     // TODO: PostgreSQL specific
-    private func fetchTables(tableIDs: Set<Int32>) async throws -> [Int32: String] {
+    private func fetchTablesByIDs(_ ids: Set<Int32>) async throws -> [Int32: String] {
         let string = "SELECT oid, relname FROM pg_class WHERE oid = ANY($1)"
         var dictionary = [Int32: String]()
         let connection = try await connectionPool.leaseConnection(timeout: .seconds(3))
-        let result = try await connection.query(string, arguments: [Array(tableIDs)])
+        let result = try await connection.query(
+            string,
+            arguments: [Array(ids)]
+        )
         connectionPool.returnConnection(connection)
 
         if let result {

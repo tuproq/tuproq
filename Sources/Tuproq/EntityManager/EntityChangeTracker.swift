@@ -79,28 +79,47 @@ extension EntityChangeTracker {
     }
 
     func insertNew<E: Entity>(_ entity: inout E) throws {
-        let objectID = ObjectID(entity)
-
         let shouldInsert = withLock {
+            let objectID = ObjectID(entity)
+
             if let state = statesMap[objectID] {
                 if state == .removed {
                     removals.removeValue(forKey: objectID)
                     statesMap[objectID] = .managed
                 }
+
                 return false
             }
+
+            statesMap[objectID] = .initializing
+
             return true
         }
 
         guard shouldInsert else { return }
-        try encodeDecode(&entity)
+
+        do {
+            try encodeDecode(&entity)
+        } catch {
+            withLock {
+                let objectID = ObjectID(entity)
+
+                if statesMap[objectID] == .initializing {
+                    statesMap.removeValue(forKey: objectID)
+                }
+            }
+
+            throw error
+        }
 
         withLock {
+            let objectID = ObjectID(entity)
             insertIntoIdentityMap(entity)
             statesMap[objectID] = .new
             insertions[objectID] = entity
         }
     }
+
 
     func remove<E: Entity>(_ entity: E) {
         withLock {

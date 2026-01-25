@@ -55,7 +55,7 @@ extension Tuproq {
     public func createEntityManager() -> any EntityManager {
         SQLEntityManager(
             connectionPool: connectionPool,
-            encodeValue: configuration
+            configuration: configuration
         )
     }
 }
