@@ -5,40 +5,22 @@ import NIOPosix
 public final class Tuproq {
     public let eventLoopGroup: EventLoopGroup
     public private(set) var configuration: Configuration
-    private let logger: Logger
-    private let connectionFactory: ConnectionFactory
-    private var connectionPools = [ObjectIdentifier: ConnectionPool]()
+    private let connectionPools: ConnectionPools
     private var joinColumnTypes = [String: String]()
 
     public init(
         eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
-        logger: Logger = .init(label: "dev.tuproq"),
         configuration: Configuration,
+        logger: Logger = .init(label: "dev.tuproq"),
         connectionFactory: @escaping ConnectionFactory
     ) {
         self.eventLoopGroup = eventLoopGroup
         self.configuration = configuration
-        self.logger = logger
-        self.connectionFactory = connectionFactory
-    }
-
-    private func connectionPool(for eventLoop: EventLoop) -> ConnectionPool {
-        let id = ObjectIdentifier(eventLoop)
-
-        if let connectionPool = connectionPools[id] {
-            return connectionPool
-        }
-
-        let connectionPool = ConnectionPool(
-            eventLoop: eventLoop,
+        connectionPools = .init(
+            configuration: configuration,
             logger: logger,
-            size: configuration.poolSize,
             connectionFactory: connectionFactory
         )
-        connectionPools[id] = connectionPool
-        connectionPool.activate()
-
-        return connectionPool
     }
 }
 
@@ -69,9 +51,9 @@ extension Tuproq {
 }
 
 extension Tuproq {
-    public func createEntityManager() -> any EntityManager {
+    public func createEntityManager() async -> any EntityManager {
         SQLEntityManager(
-            connectionPool: connectionPool(for: eventLoopGroup.next()),
+            connectionPool: await connectionPools[eventLoopGroup.next()],
             configuration: configuration
         )
     }
@@ -79,7 +61,7 @@ extension Tuproq {
 
 extension Tuproq {
     public func transaction<T>(_ body: (Connection) async throws -> T) async throws -> T {
-        let connectionPool = connectionPool(for: eventLoopGroup.next())
+        let connectionPool = await connectionPools[eventLoopGroup.next()]
         let connection = try await connectionPool.leaseConnection()
         defer { connectionPool.returnConnection(connection) }
         try await connection.beginTransaction()

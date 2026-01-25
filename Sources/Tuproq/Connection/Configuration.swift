@@ -54,18 +54,18 @@ extension Configuration {
 
 extension Configuration {
     static func entityName<E: Entity>(from entity: E) -> String {
-        String(describingNestedType: E.self)
+        .init(describingNestedType: E.self)
     }
 
     static func entityName<E: Entity>(from entityType: E.Type) -> String {
-        String(describingNestedType: entityType)
+        .init(describingNestedType: entityType)
     }
 
     static func entityName(from entityType: any Entity.Type) -> String {
-        String(describingNestedType: entityType)
+        .init(describingNestedType: entityType)
     }
 
     static func entityName<M: EntityMapping>(from mapping: M) -> String {
-        String(describingNestedType: M.E.self)
+        .init(describingNestedType: M.E.self)
     }
 }
