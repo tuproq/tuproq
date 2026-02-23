@@ -24,8 +24,6 @@ final class InsertIntoSQLExpression: SQLExpression, @unchecked Sendable {
                 if let value {
                     if value as AnyObject is NSNull {
                         return "NULL"
-                    } else if let bool = value as? Bool {
-                        return "\(bool)"
                     } else if let character = value as? Character {
                         return "'\(character)'"
                     } else if let data = value as? Data {
@@ -60,6 +58,8 @@ final class InsertIntoSQLExpression: SQLExpression, @unchecked Sendable {
                         return "\(uint64)"
                     } else if let uint = value as? UInt {
                         return "\(uint)"
+                    } else if let bool = value as? Bool {
+                        return "\(bool)"
                     } else if let url = value as? URL {
                         return "'\(url.absoluteString)'"
                     } else if let uuid = value as? UUID {
