@@ -20,7 +20,9 @@ final class UpdateSQLExpression: SQLExpression, @unchecked Sendable {
 
                 if let value = value.1 {
                     if value as AnyObject is NSNull {
-                        raw += " = NULL"
+                        raw += " = \(Kind.null)"
+                    } else if let bool = value as? Bool { // TODO: fix casting numbers to bool succeeds
+                        return "\(bool)"
                     } else if let character = value as? Character {
                         raw += " = '\(character)'"
                     } else if let data = value as? Data {
@@ -55,8 +57,6 @@ final class UpdateSQLExpression: SQLExpression, @unchecked Sendable {
                         raw += " = \(uint64)"
                     } else if let uint = value as? UInt {
                         raw += " = \(uint)"
-                    } else if let bool = value as? Bool {
-                        raw += " = \(bool)"
                     } else if let url = value as? URL {
                         raw += " = '\(url.absoluteString)'"
                     } else if let uuid = value as? UUID {
@@ -65,7 +65,7 @@ final class UpdateSQLExpression: SQLExpression, @unchecked Sendable {
                         raw += " = '\(value)'"
                     }
                 } else {
-                    raw += " = NULL"
+                    raw += " = \(Kind.null)"
                 }
 
                 return raw
