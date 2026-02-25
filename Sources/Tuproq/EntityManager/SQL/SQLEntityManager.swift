@@ -1,6 +1,6 @@
 import Foundation
 
-final actor SQLEntityManager: EntityManager {
+final class SQLEntityManager: EntityManager {
     let connectionPool: ConnectionPool
     let configuration: Configuration
     private let changeTracker = EntityChangeTracker()
