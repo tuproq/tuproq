@@ -3,18 +3,15 @@ import NIOCore
 import NIOPosix
 
 public final class Tuproq {
-    public let eventLoopGroup: EventLoopGroup
     public private(set) var configuration: Configuration
     private let connectionPools: ConnectionPools
     private var joinColumnTypes = [String: String]()
 
     public init(
-        eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup.singleton,
         configuration: Configuration,
         logger: Logger = .init(label: "dev.tuproq"),
         connectionFactory: @escaping ConnectionFactory
     ) {
-        self.eventLoopGroup = eventLoopGroup
         self.configuration = configuration
         connectionPools = .init(
             configuration: configuration,
@@ -51,17 +48,20 @@ extension Tuproq {
 }
 
 extension Tuproq {
-    public func createEntityManager() async -> any EntityManager {
+    public func createEntityManager(on eventLoop: EventLoop) async -> any EntityManager {
         SQLEntityManager(
-            connectionPool: await connectionPools[eventLoopGroup.next()],
+            connectionPool: await connectionPools[eventLoop],
             configuration: configuration
         )
     }
 }
 
 extension Tuproq {
-    public func transaction<T>(_ body: (Connection) async throws -> T) async throws -> T {
-        let connectionPool = await connectionPools[eventLoopGroup.next()]
+    public func transaction<T>(
+        on eventLoop: EventLoop,
+        body: (Connection) async throws -> T
+    ) async throws -> T {
+        let connectionPool = await connectionPools[eventLoop]
         let connection = try await connectionPool.leaseConnection()
         defer { connectionPool.returnConnection(connection) }
         try await connection.beginTransaction()
@@ -79,9 +79,9 @@ extension Tuproq {
 }
 
 extension Tuproq {
-    public func migrate() async throws {
+    public func migrate(on eventLoop: EventLoop) async throws {
         let queries = createTables()
-        try await transaction { connection in
+        try await transaction(on: eventLoop) { connection in
             for query in queries {
                 try await connection.query(query)
             }
