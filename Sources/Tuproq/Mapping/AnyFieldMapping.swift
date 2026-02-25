@@ -1,4 +1,4 @@
-public protocol AnyFieldMapping: Hashable, Sendable {
+public protocol AnyFieldMapping: Hashable {
     var name: String { get }
 }
 
