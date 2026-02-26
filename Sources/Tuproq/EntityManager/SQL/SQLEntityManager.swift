@@ -113,7 +113,7 @@ extension SQLEntityManager {
     @discardableResult
     func query<E: Entity>(
         _ string: String,
-        arguments: [Codable?]
+        arguments: [Any?]
     ) async throws -> [E] {
         let result = try await query(
             string,
@@ -141,7 +141,7 @@ extension SQLEntityManager {
     @discardableResult
     func query(
         _ string: String,
-        arguments: [Codable?]
+        arguments: [Any?]
     ) async throws -> [[String: Any?]] {
         let connection = try await connectionPool.leaseConnection()
         let result = try await connection.query(
@@ -286,7 +286,7 @@ extension SQLEntityManager {
 
         for entity in changeTracker.getInsertions().values {
             if entityName == Configuration.entityName(from: entity) {
-                var values = [(String, Codable?)]()
+                var values = [(String, Any?)]()
 
                 for (field, value) in try changeTracker.dictionary(from: entity) {
                     if mapping.children.contains(where: { $0.name == field }) ||
@@ -299,14 +299,14 @@ extension SQLEntityManager {
 
                         if let value,
                            let valueDictionary = value as? [String: Any?],
-                           let id = valueDictionary[idField] as? Codable {
+                           let id = valueDictionary[idField] {
                             values.append((column, id))
                         } else {
                             values.append((column, nil))
                         }
                     } else {
                         let column = Configuration.namingStrategy.column(field: field)
-                        values.append((column, value as? Codable))
+                        values.append((column, value))
                     }
                 }
 
@@ -333,15 +333,15 @@ extension SQLEntityManager {
         for (objectID, entity) in changeTracker.getUpdates() {
             if let id = changeTracker.id(for: objectID),
                entityName == Configuration.entityName(from: entity) {
-                var values = [(String, Codable?)]()
+                var values = [(String, Any?)]()
 
                 if let changeSet = changeTracker.changeSet(for: objectID) {
                     for (key, (_, newValue)) in changeSet {
                         if let column = mapping.fields.first(where: { $0.name == key })?.column.name {
-                            values.append((column, try changeTracker.encodeValue(newValue) as? Codable))
+                            values.append((column, try changeTracker.encodeValue(newValue)))
                         } else if let column = mapping.parents.first(where: { $0.name == key })?.column.name,
                                   let entity = newValue as? (any Entity) {
-                            values.append((column, try changeTracker.encodeValue(entity.id) as? Codable))
+                            values.append((column, try changeTracker.encodeValue(entity.id)))
                         }
                     }
 

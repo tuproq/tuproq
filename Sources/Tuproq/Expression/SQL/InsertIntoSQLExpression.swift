@@ -3,12 +3,12 @@ import Foundation
 final class InsertIntoSQLExpression: SQLExpression, @unchecked Sendable {
     let table: String
     let columns: [String]
-    let values: [Codable?]
+    let values: [Any?]
 
     init(
         table: String,
         columns: [String],
-        values: [Codable?]
+        values: [Any?]
     ) {
         self.table = table
         self.columns = columns

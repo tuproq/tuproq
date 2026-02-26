@@ -14,13 +14,13 @@ public protocol Connection: AnyObject, Sendable {
     @discardableResult
     func query(
         _ string: String,
-        arguments: [Codable?]
+        arguments: [Any?]
     ) async throws -> QueryResult?
 
     @discardableResult
     func query(
         _ string: String,
-        arguments: Codable?...
+        arguments: Any?...
     ) async throws -> QueryResult?
 }
 
@@ -30,7 +30,7 @@ public extension Connection {
     @discardableResult
     func query(
         _ string: String,
-        arguments: Codable?...
+        arguments: Any?...
     ) async throws -> QueryResult? {
         try await query(
             string,

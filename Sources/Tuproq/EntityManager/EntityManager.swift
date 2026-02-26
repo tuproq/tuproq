@@ -13,13 +13,13 @@ public protocol EntityManager: AnyObject, Sendable {
     @discardableResult
     func query<E: Entity>(
         _ string: String,
-        arguments: [Codable?]
+        arguments: [Any?]
     ) async throws -> [E]
 
     @discardableResult
     func query(
         _ string: String,
-        arguments: [Codable?]
+        arguments: [Any?]
     ) async throws -> [[String: Any?]]
 }
 
@@ -38,7 +38,7 @@ public extension EntityManager {
     @discardableResult
     func query<E: Entity>(
         _ string: String,
-        arguments: Codable?...
+        arguments: Any?...
     ) async throws -> [E] {
         try await query(
             string,
@@ -49,7 +49,7 @@ public extension EntityManager {
     @discardableResult
     func query(
         _ string: String,
-        arguments: Codable?...
+        arguments: Any?...
     ) async throws -> [[String: Any?]] {
         try await query(
             string,

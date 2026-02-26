@@ -13,7 +13,7 @@ public struct SQLQueryBuilder: QueryBuilder {
 }
 
 public extension SQLQueryBuilder {
-    func getQuery(bindings: [(String, Codable?)]) -> SQLQuery {
+    func getQuery(bindings: [(String, Any?)]) -> SQLQuery {
         let raw = _expressions.map { $0.raw }.joined(separator: " ")
         return .init(
             raw,
@@ -63,7 +63,7 @@ public extension SQLQueryBuilder {
     func insert(
         into table: String,
         columns: [String],
-        values: [Codable?]
+        values: [Any?]
     ) -> Self {
         var copy = self
         copy.addExpression(
@@ -81,7 +81,7 @@ public extension SQLQueryBuilder {
 public extension SQLQueryBuilder {
     func update(
         table: String,
-        values: (String, Codable?)...
+        values: (String, Any?)...
     ) -> Self {
         update(
             table: table,
@@ -91,7 +91,7 @@ public extension SQLQueryBuilder {
 
     func update(
         table: String,
-        values: [(String, Codable?)]
+        values: [(String, Any?)]
     ) -> Self {
         var copy = self
         copy.addExpression(

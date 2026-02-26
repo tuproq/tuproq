@@ -2,11 +2,11 @@ import Foundation
 
 final class UpdateSQLExpression: SQLExpression, @unchecked Sendable {
     let table: String
-    let values: [(String, Codable?)]
+    let values: [(String, Any?)]
 
     init(
         table: String,
-        values: [(String, Codable?)]
+        values: [(String, Any?)]
     ) {
         self.table = table
         self.values = values
