@@ -5,7 +5,7 @@ final class UpdateSQLExpressionTests: XCTestCase {
     func testInit() {
         // Arrange
         let table = "table"
-        let values: [(String, Any?)] = [("column1", 1), ("column2", "value2"), ("column3", nil)]
+        let values: [(String, Codable?)] = [("column1", 1), ("column2", "value2"), ("column3", nil)]
 
         // Act
         let expression = UpdateSQLExpression(table: table, values: values)
@@ -23,7 +23,7 @@ final class UpdateSQLExpressionTests: XCTestCase {
             expression.raw,
             """
             \(SQLExpression.Kind.update) \(table) \
-            \(SQLExpression.Kind.set) column1 = 1, column2 = 'value2', column3 = NULL
+            \(SQLExpression.Kind.set) column1 = {1}, column2 = {2}, column3 = {3}
             """
         )
         XCTAssertEqual(expression.raw, expression.description)

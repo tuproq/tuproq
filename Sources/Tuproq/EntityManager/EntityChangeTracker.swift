@@ -3,7 +3,6 @@ import Foundation
 final class EntityChangeTracker: Locking, @unchecked Sendable {
     typealias ChangeSet = [String: (oldValue: Codable?, newValue: Codable?)]
     typealias EntityMap = [ObjectID: any Entity]
-    typealias ID = AnyHashable
     typealias ObjectID = ObjectIdentifier
 
     let lock = NSLock()
@@ -14,8 +13,8 @@ final class EntityChangeTracker: Locking, @unchecked Sendable {
 
     private var changeSets = [ObjectID: ChangeSet]()
     private var identityMap = [String: EntityMap]()
-    private var idsMap = [ObjectID: ID]()
-    private var objectIDsMap = [ID: ObjectID]()
+    private var idsMap = [ObjectID: EntityID]()
+    private var objectIDsMap = [EntityID: ObjectID]()
     private var statesMap = [ObjectID: EntityState]()
 
     init() {}
@@ -49,11 +48,30 @@ extension EntityChangeTracker {
 // MARK: - Entity
 
 extension EntityChangeTracker {
+    struct EntityID: Codable, Hashable {
+        let value: AnyHashable
+
+        init(_ value: AnyHashable) {
+            self.value = value
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            let stringValue = try container.decode(String.self)
+            value = AnyHashable(stringValue)
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(String(describing: value))
+        }
+    }
+
     func entity<E: Entity>(_ entityType: E.Type, id: E.ID) -> E? {
         withLock {
             let entityName = Configuration.entityName(from: entityType)
 
-            if let objectID = objectIDsMap[id],
+            if let objectID = objectIDsMap[.init(id)],
                let entity = identityMap[entityName]?[objectID] as? E {
                 return entity
             }
@@ -62,7 +80,7 @@ extension EntityChangeTracker {
         }
     }
 
-    func id(for objectID: ObjectID) -> ID? {
+    func id(for objectID: ObjectID) -> EntityID? {
         withLock { idsMap[objectID] }
     }
 }
@@ -156,8 +174,8 @@ extension EntityChangeTracker {
         let entityName = Configuration.entityName(from: entity)
         let objectID = ObjectID(entity)
         identityMap[entityName, default: .init()][objectID] = entity
-        idsMap[objectID] = entity.id
-        objectIDsMap[entity.id] = objectID
+        idsMap[objectID] = .init(entity.id)
+        objectIDsMap[.init(entity.id)] = objectID
     }
 
     private func removeFromIdentityMap<E: Entity>(_ entity: E) {

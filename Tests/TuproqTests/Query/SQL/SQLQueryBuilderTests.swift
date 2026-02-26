@@ -31,7 +31,7 @@ final class SQLQueryBuilderTests: XCTestCase {
             .getQuery()
 
         // Assert
-        XCTAssertEqual(query.raw, "INSERT INTO table (column1, column2, column3) VALUES (1, 'value2', NULL)")
+        XCTAssertEqual(query.raw, "INSERT INTO table (column1, column2, column3) VALUES ({1}, {2}, {3})")
     }
 
     func testSelect() {
@@ -77,7 +77,7 @@ final class SQLQueryBuilderTests: XCTestCase {
         // Assert
         XCTAssertEqual(
             query.raw,
-            "UPDATE table SET column1 = 1, column2 = 'value2', column3 = NULL WHERE column1 = 1"
+            "UPDATE table SET column1 = {1}, column2 = {2}, column3 = {3} WHERE column1 = 1"
         )
     }
 }

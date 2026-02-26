@@ -53,10 +53,7 @@ extension SQLEntityManager {
 
                 do {
                     for query in queries {
-                        if let dictionary = try await self.query(
-                            query.raw,
-                            arguments: query.bindings
-                        ).first {
+                        if let dictionary = try await self.query(query).first {
                             postInserts.append(dictionary)
                         }
                     }
@@ -92,18 +89,25 @@ extension SQLEntityManager {
         let query = createQueryBuilder()
             .select()
             .from(mapping.table)
-            .where("\(idColumn) = $1")
-            .getQuery()
+            .where("\(idColumn) = {1}")
+            .getQuery(bindings: [("\(idColumn)", id)])
 
-        if let entity: E = try await self.query(
-            query.raw,
-            arguments: [id]
-        ).first {
+        if let entity: E = try await self.query(query).first {
             changeTracker.insert(entity)
             return entity
         }
 
         return nil
+    }
+
+    @discardableResult
+    func query<E: Entity>(
+        _ query: SQLQuery
+    ) async throws -> [E] {
+        try await self.query(
+            normalizeQuery(query),
+            arguments: query.bindings.map(\.1)
+        )
     }
 
     @discardableResult
@@ -124,6 +128,14 @@ extension SQLEntityManager {
         }
 
         return entities
+    }
+
+    @discardableResult
+    func query(_ query: SQLQuery) async throws -> [[String: Any?]] {
+        try await self.query(
+            normalizeQuery(query),
+            arguments: query.bindings.map(\.1)
+        )
     }
 
     @discardableResult
@@ -274,8 +286,7 @@ extension SQLEntityManager {
 
         for entity in changeTracker.getInsertions().values {
             if entityName == Configuration.entityName(from: entity) {
-                var columns = [String]()
-                var values = [Any?]()
+                var values = [(String, Codable?)]()
 
                 for (field, value) in try changeTracker.dictionary(from: entity) {
                     if mapping.children.contains(where: { $0.name == field }) ||
@@ -285,30 +296,28 @@ extension SQLEntityManager {
 
                     if mapping.parents.contains(where: { $0.name == field }) {
                         let column = Configuration.namingStrategy.joinColumn(field: field)
-                        columns.append(column)
 
                         if let value,
                            let valueDictionary = value as? [String: Any?],
-                           let id = valueDictionary[idField] {
-                            values.append(id)
+                           let id = valueDictionary[idField] as? Codable {
+                            values.append((column, id))
                         } else {
-                            values.append(nil)
+                            values.append((column, nil))
                         }
                     } else {
                         let column = Configuration.namingStrategy.column(field: field)
-                        columns.append(column)
-                        values.append(value)
+                        values.append((column, value as? Codable))
                     }
                 }
 
                 let query = createQueryBuilder()
                     .insert(
                         into: mapping.table,
-                        columns: columns,
-                        values: values
+                        columns: values.map(\.0),
+                        values: values.map(\.1)
                     )
                     .returning()
-                    .getQuery()
+                    .getQuery(bindings: values)
                 queries.append(query)
             }
         }
@@ -324,26 +333,27 @@ extension SQLEntityManager {
         for (objectID, entity) in changeTracker.getUpdates() {
             if let id = changeTracker.id(for: objectID),
                entityName == Configuration.entityName(from: entity) {
-                var values = [(String, Any?)]()
+                var values = [(String, Codable?)]()
 
                 if let changeSet = changeTracker.changeSet(for: objectID) {
                     for (key, (_, newValue)) in changeSet {
                         if let column = mapping.fields.first(where: { $0.name == key })?.column.name {
-                            values.append((column, try changeTracker.encodeValue(newValue)))
+                            values.append((column, try changeTracker.encodeValue(newValue) as? Codable))
                         } else if let column = mapping.parents.first(where: { $0.name == key })?.column.name,
                                   let entity = newValue as? (any Entity) {
-                            values.append((column, try changeTracker.encodeValue(entity.id)))
+                            values.append((column, try changeTracker.encodeValue(entity.id) as? Codable))
                         }
                     }
 
+                    let bindings = values + [("\(idColumn)", id)]
                     let query = createQueryBuilder()
                         .update(
                             table: mapping.table,
                             values: values
                         )
-                        .where("\(idColumn) = '\(id)'") // TODO: provide id as arguments to query() method
+                        .where("\(idColumn) = \(values.count + 1)")
                         .returning()
-                        .getQuery()
+                        .getQuery(bindings: bindings)
                     queries.append(query)
                 }
             }
@@ -362,9 +372,9 @@ extension SQLEntityManager {
                 let query = createQueryBuilder()
                     .delete()
                     .from(table)
-                    .where("\(idColumn) = '\(id)'") // TODO: provide id as arguments to query() method
+                    .where("\(idColumn) = {1}")
                     .returning()
-                    .getQuery()
+                    .getQuery(bindings: [("\(idColumn)", id)])
                 queries.append(query)
             }
         }
@@ -374,5 +384,36 @@ extension SQLEntityManager {
 
     private func idColumn(tableName: String) -> String {
         configuration.mapping(tableName: tableName)?.id.column ?? Configuration.defaultIDField
+    }
+
+    private func normalizeQuery(_ query: SQLQuery) -> String {
+        let sql = query.raw
+        let regex = try! NSRegularExpression(pattern: #"\{[^}]+\}"#)
+        var result = sql
+
+        let matches = regex.matches(
+            in: sql,
+            range: NSRange(sql.startIndex..., in: sql)
+        )
+
+        for (index, match) in matches.reversed().enumerated() {
+            if let range = Range(match.range, in: result) {
+                let placeholder: String
+
+                switch configuration.driver {
+                case .postgresql: placeholder = "$\(matches.count - index)"
+                case .mysql, .sqlite: placeholder = "?"
+                case .sqlserver: placeholder = "@p\(matches.count - index)"
+                case .oracle: placeholder = ":\(matches.count - index)"
+                }
+
+                result.replaceSubrange(
+                    range,
+                    with: placeholder
+                )
+            }
+        }
+
+        return result
     }
 }

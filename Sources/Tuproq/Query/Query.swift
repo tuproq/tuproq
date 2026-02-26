@@ -1,3 +1,3 @@
 public protocol Query: Expression {
-    var bindings: [Codable] { get }
+    var bindings: [(String, Codable?)] { get }
 }
