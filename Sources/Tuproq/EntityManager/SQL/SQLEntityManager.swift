@@ -53,7 +53,10 @@ extension SQLEntityManager {
 
                 do {
                     for query in queries {
-                        if let dictionary = try await self.query(query.raw).first {
+                        if let dictionary = try await self.query(
+                            query.raw,
+                            arguments: query.bindings
+                        ).first {
                             postInserts.append(dictionary)
                         }
                     }
@@ -92,7 +95,10 @@ extension SQLEntityManager {
             .where("\(idColumn) = $1")
             .getQuery()
 
-        if let entity: E = try await self.query(query.raw, arguments: [id]).first {
+        if let entity: E = try await self.query(
+            query.raw,
+            arguments: [id]
+        ).first {
             changeTracker.insert(entity)
             return entity
         }
