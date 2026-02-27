@@ -354,7 +354,7 @@ extension SQLEntityManager {
                             table: mapping.table,
                             values: values
                         )
-                        .where("\(idColumn) = \(values.count + 1)")
+                        .where("\(idColumn) = {\(values.count + 1)}")
                         .returning()
                         .getQuery(bindings: bindings)
                     queries.append(query)
