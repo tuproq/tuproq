@@ -297,10 +297,13 @@ extension SQLEntityManager {
                     if mapping.parents.contains(where: { $0.name == field }) {
                         let column = Configuration.namingStrategy.joinColumn(field: field)
 
-                        if let value,
-                           let valueDictionary = value as? [String: Any?],
-                           let id = valueDictionary[idField] {
-                            values.append((column, id))
+                        if let value {
+                            switch value {
+                            case .dictionary(let valueDictionary):
+                                let id = valueDictionary[idField]
+                                values.append((column, id))
+                            default: values.append((column, nil))
+                            }
                         } else {
                             values.append((column, nil))
                         }

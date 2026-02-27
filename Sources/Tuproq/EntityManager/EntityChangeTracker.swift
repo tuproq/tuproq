@@ -240,36 +240,32 @@ extension EntityChangeTracker {
         return encoder
     }
 
-    func dictionary<E: Entity>(from entity: E) throws -> [String: Any?] {
+    func dictionary<E: Entity>(from entity: E) throws -> [String: CodableValue?] {
         try withLock { try _dictionary(from: entity) }
     }
 
-    private func _dictionary<E: Entity>(from entity: E) throws -> [String: Any?] {
+    private func _dictionary<E: Entity>(from entity: E) throws -> [String: CodableValue?] {
         let encoder = createEncoder()
-        guard let dictionary = try JSONSerialization.jsonObject(
-            with: try encoder.encode(entity),
-            options: .fragmentsAllowed
-        ) as? [String: Any?] else { throw error(.entityToDictionaryFailed) }
+        let data = try encoder.encode(entity)
+        let decoder = createDecoder()
 
-        return dictionary
+        return try decoder.decode([String: CodableValue?].self, from: data)
     }
 
-    func encodeValue(_ value: (any Codable)?) throws -> Any? {
+    func encodeValue(_ value: (any Codable)?) throws -> CodableValue? {
         try withLock {
-            guard let value else { return nil }
+            guard let value else { return .null }
             let encoder = createEncoder()
+            let data = try encoder.encode(value)
+            let decoder = createDecoder()
 
-            return try JSONSerialization.jsonObject(
-                with: try encoder.encode(value),
-                options: .fragmentsAllowed
-            )
+            return try decoder.decode(CodableValue.self, from: data)
         }
     }
 
     private func encodeDecode<E: Entity>(_ entity: inout E) throws {
-        let dictionary = try _dictionary(from: entity)
-        let data = try JSONSerialization.data(withJSONObject: dictionary)
-
+        let encoder = createEncoder()
+        let data = try encoder.encode(entity)
         let decoder = createDecoder()
         entity = try decoder.decode(E.self, from: data)
     }
