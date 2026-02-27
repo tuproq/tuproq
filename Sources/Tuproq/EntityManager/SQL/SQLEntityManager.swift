@@ -90,7 +90,7 @@ extension SQLEntityManager {
             .select()
             .from(mapping.table)
             .where("\(idColumn) = {1}")
-            .getQuery(bindings: [("\(idColumn)", id)])
+            .getQuery(bindings: [("\(idColumn)", try changeTracker.encodeValue(id))])
 
         if let entity: E = try await self.query(query).first {
             changeTracker.insert(entity)
@@ -348,7 +348,7 @@ extension SQLEntityManager {
                         }
                     }
 
-                    let bindings = values + [("\(idColumn)", id)]
+                    let bindings = values + [("\(idColumn)", try changeTracker.encodeValue(id))]
                     let query = createQueryBuilder()
                         .update(
                             table: mapping.table,
@@ -377,7 +377,7 @@ extension SQLEntityManager {
                     .from(table)
                     .where("\(idColumn) = {1}")
                     .returning()
-                    .getQuery(bindings: [("\(idColumn)", id)])
+                    .getQuery(bindings: [("\(idColumn)", try changeTracker.encodeValue(id))])
                 queries.append(query)
             }
         }
