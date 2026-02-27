@@ -241,15 +241,13 @@ extension EntityChangeTracker {
     }
 
     func dictionary<E: Entity>(from entity: E) throws -> [String: CodableValue?] {
-        try withLock { try _dictionary(from: entity) }
-    }
+        try withLock {
+            let encoder = createEncoder()
+            let data = try encoder.encode(entity)
+            let decoder = createDecoder()
 
-    private func _dictionary<E: Entity>(from entity: E) throws -> [String: CodableValue?] {
-        let encoder = createEncoder()
-        let data = try encoder.encode(entity)
-        let decoder = createDecoder()
-
-        return try decoder.decode([String: CodableValue?].self, from: data)
+            return try decoder.decode([String: CodableValue?].self, from: data)
+        }
     }
 
     func encodeValue(_ value: (any Codable)?) throws -> CodableValue? {

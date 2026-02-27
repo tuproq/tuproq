@@ -77,11 +77,6 @@ public enum CodableValue: Codable, Hashable, Sendable {
             return
         }
 
-        if let data = try? container.decode(Data.self) {
-            self = .data(data)
-            return
-        }
-
         if let url = try? container.decode(URL.self) {
             self = .url(url)
             return
@@ -89,6 +84,11 @@ public enum CodableValue: Codable, Hashable, Sendable {
 
         if let string = try? container.decode(String.self) {
             self = .string(string)
+            return
+        }
+
+        if let data = try? container.decode(Data.self) {
+            self = .data(data)
             return
         }
 
